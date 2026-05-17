@@ -1,3 +1,4 @@
+import { maxLength } from "better-auth";
 import mongoose from "mongoose";
 
 const ProgramFileSchema = new mongoose.Schema(
@@ -35,6 +36,7 @@ const RemixSchema = new mongoose.Schema(
     description: {
       type: String,
       required: true,
+      maxLength: 500,
     },
     isMain: {
       type: Boolean,
