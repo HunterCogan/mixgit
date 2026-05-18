@@ -1,21 +1,19 @@
 import { verifySession } from "@/lib/dal";
-import { auth } from "@/lib/auth";
-import { Button, Form } from "@heroui/react";
-import { cookies, headers } from "next/headers";
-import { redirect } from "next/navigation";
+import { Button, Card, Form, Surface } from "@heroui/react";
 import Link from "next/link";
+import connectDB from "@/lib/db";
+import Project from "@/models/Project";
+import mongoose from "mongoose";
+import AddProjectForm from "./AddProjectForm";
+import { handleLogout } from "./actions";
 
 export default async function DashboardPage() {
   const session = await verifySession();
 
-  async function handleLogout() {
-    "use server";
-    await auth.api.signOut({ headers: await headers() });
-    const cookieStore = await cookies();
-    cookieStore.delete("better-auth.session_token");
-    cookieStore.delete("__Secure-better-auth.session_token");
-    redirect("/test-login");
-  }
+  await connectDB();
+  const projects = await Project.find({
+    creator: new mongoose.Types.ObjectId(session.userId),
+  }).lean();
 
   return (
     <div className="min-h-screen flex items-center justify-center font-sans">
@@ -29,6 +27,29 @@ export default async function DashboardPage() {
           <span className="text-blue-500">Email: {session.email}</span>
           <span className="text-blue-500">User ID: {session.userId}</span>
         </div>
+
+        <AddProjectForm />
+
+        <Surface
+          variant="secondary"
+          className="flex flex-col gap-2 w-full p-2 rounded-lg"
+        >
+          {projects.length === 0 ? (
+            <p>No projects yet.</p>
+          ) : (
+            projects.map((p) => (
+              <Card key={p._id}>
+                <Card.Header>
+                  <Card.Title>{p.name}</Card.Title>
+                  <Card.Description>
+                    Last changed: {p.updatedAt.toLocaleString()}
+                  </Card.Description>
+                </Card.Header>
+                <Card.Content>{p.description}</Card.Content>
+              </Card>
+            ))
+          )}
+        </Surface>
 
         <Button variant="primary" className="w-fit">
           <Link href="/test-project">Go to Project</Link>
