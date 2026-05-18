@@ -1,5 +1,5 @@
 import { verifySession } from "@/lib/dal";
-import { Button, Card, Form, Surface } from "@heroui/react";
+import { Button, Card, Form, ScrollShadow, Surface } from "@heroui/react";
 import Link from "next/link";
 import connectDB from "@/lib/db";
 import Project from "@/models/Project";
@@ -16,8 +16,8 @@ export default async function DashboardPage() {
   }).lean();
 
   return (
-    <div className="min-h-screen flex items-center justify-center font-sans">
-      <div className="flex flex-col gap-4 items-center justify-center">
+    <div className="min-h-screen w-full p-2 flex items-center justify-center font-sans">
+      <div className="flex flex-col gap-4 items-center justify-center max-w-lg">
         <div className="text-blue-500 text-2xl">
           Test Dashboard page, if logged in.
         </div>
@@ -30,24 +30,27 @@ export default async function DashboardPage() {
 
         <AddProjectForm />
 
-        <Surface
-          variant="secondary"
-          className="flex flex-col gap-2 w-full p-2 rounded-lg"
-        >
+        <Surface variant="secondary" className="w-full p-2 rounded-lg">
           {projects.length === 0 ? (
             <p>No projects yet.</p>
           ) : (
-            projects.map((p) => (
-              <Card key={p._id}>
-                <Card.Header>
-                  <Card.Title>{p.name}</Card.Title>
-                  <Card.Description>
-                    Last changed: {p.updatedAt.toLocaleString()}
-                  </Card.Description>
-                </Card.Header>
-                <Card.Content>{p.description}</Card.Content>
-              </Card>
-            ))
+            <div className="grid grid-cols-2 gap-2">
+              {projects.map((p) => (
+                <Card key={p._id}>
+                  <Card.Header>
+                    <Card.Title>{p.name}</Card.Title>
+                    <Card.Description>
+                      Last changed: {p.updatedAt.toLocaleString()}
+                    </Card.Description>
+                  </Card.Header>
+                  <Card.Content className="p-0">
+                    <ScrollShadow hideScrollBar size={20} className="h-[100px]">
+                      {p.description}
+                    </ScrollShadow>
+                  </Card.Content>
+                </Card>
+              ))}
+            </div>
           )}
         </Surface>
 
