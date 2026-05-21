@@ -62,7 +62,7 @@ export async function DELETE(
     const session = await verifySession();
     await connectDB();
 
-    // TODO: When a project is deleted, all associated files should also be deleted with it (e.g. ProgramFiles, images)
+    // TODO: When a project is deleted, all associated files should also be deleted with it (e.g. Remix (contains ProgramFiles), images)
 
     const result = await Project.deleteOne({
       _id: new mongoose.Types.ObjectId(id),
