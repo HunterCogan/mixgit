@@ -4,13 +4,13 @@ export const ProjectSchema = z.object({
   creator: z.string(),
   name: z
     .string()
+    .trim()
     .min(1, "Project name must be at least 1 character")
-    .max(200, "Project name cannot exceed 200 characters")
-    .trim(),
+    .max(200, "Project name cannot exceed 200 characters"),
   description: z
     .string()
-    .max(500, "Project description cannot exceed 500 characters")
     .trim()
+    .max(500, "Project description cannot exceed 500 characters")
     .optional(),
   team: z.array(z.string()).optional(),
 });
