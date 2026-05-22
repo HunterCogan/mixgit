@@ -4,7 +4,6 @@ import Project from "@/models/Project";
 import mongoose from "mongoose";
 import ProjectList from "./_components/ProjectList";
 import CreateProjectModal from "./_components/CreateProjectModal";
-import LogoutButton from "@/components/LogoutButton";
 
 export default async function DashboardPage() {
   const session = await verifySession();
@@ -33,17 +32,12 @@ export default async function DashboardPage() {
         <div className="flex items-start justify-between">
           <div>
             <h1 className="text-2xl font-bold">Your Scratchpad Projects</h1>
-            <p className="text-sm text-gray-400 mt-1">
-              Create and manage your Projects
-            </p>
+            <p className="text-sm mt-1">Create and manage your Projects</p>
           </div>
           <CreateProjectModal />
         </div>
         <ProjectList projects={serialized} />
       </main>
-      <div className="fixed bottom-5 right-5">
-        <LogoutButton />
-      </div>
     </div>
   );
 }

@@ -4,6 +4,14 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+
+  /* nav/header */
+  --nav-surface: #0f172a;
+  --nav-border: #64748b;
+  --nav-text: #cbd5e1;
+  --nav-text-subtle: #64748b;
+  --nav-item-hover: #1e293b;
+  --nav-item-active: #334155;
 }
 
 @theme inline {
@@ -11,6 +19,14 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  /* nav/header */
+  --color-nav-surface: var(--nav-surface);
+  --color-nav-border: var(--nav-border);
+  --color-nav-text: var(--nav-text);
+  --color-nav-text-subtle: var(--nav-text-subtle);
+  --color-nav-item-hover: var(--nav-item-hover);
+  --color-nav-item-active: var(--nav-item-active);
 }
 
 @media (prefers-color-scheme: dark) {

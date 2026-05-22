@@ -2,17 +2,19 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
 // !!! make sure to update these once we have the pages
-const protectedRoutes = ["/dashboard", "/test-dashboard", "/test-project"];
-const publicRoutes = ["/test-login", "/test-register"];
+const protectedRoutes = [
+  "/dashboard",
+  "/favorites",
+  "/shared-projects",
+  "/settings",
+  "/test-project",
+];
 
 // proxy function that runs on each request to check auth state and redirects accordingly
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   const isProtectedRoute = protectedRoutes.some((route) =>
-    pathname.startsWith(route),
-  );
-  const isPublicRoute = publicRoutes.some((route) =>
     pathname.startsWith(route),
   );
 
