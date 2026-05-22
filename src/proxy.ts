@@ -27,11 +27,6 @@ export function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL("/test-login", request.nextUrl));
   }
 
-  // redirect to dashboard if user tries to access login or register page while authenticated
-  if (isPublicRoute && isAuthenticated) {
-    return NextResponse.redirect(new URL("/dashboard", request.nextUrl));
-  }
-
   return NextResponse.next();
 }
 

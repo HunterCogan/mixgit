@@ -11,6 +11,7 @@ import {
   Label,
   Modal,
   Spinner,
+  TextArea,
   TextField,
   useOverlayState,
 } from "@heroui/react";
@@ -107,6 +108,7 @@ export default function CreateProjectModal() {
                   <Input
                     variant="secondary"
                     placeholder='"My Awesome Scratchpad Project!"'
+                    aria-label="Project title"
                   />
                   <Description>
                     Choose a unique name for your project
@@ -127,9 +129,13 @@ export default function CreateProjectModal() {
                   }}
                 >
                   <Label>Description</Label>
-                  <Input
+                  <TextArea
                     variant="secondary"
+                    aria-label="Project description"
                     placeholder='"Made by a smart team of students!"'
+                    rows={2}
+                    className="resize-y max-h-65"
+                    maxLength={500}
                   />
                   <Description>
                     Write a short description for your project
