@@ -3,7 +3,6 @@
 import { Button } from "@heroui/react";
 import { CalculatorIcon } from "@heroicons/react/24/solid";
 import { useState } from "react";
-import MongoTest from "@/components/MongoTest";
 import { HamburgerMenu } from "@/components/navigation/navbar";
 import { useRouter } from "next/navigation";
 
@@ -33,8 +32,6 @@ export default function Home() {
         <Button className="mt-6" onPress={() => router.push("/signup")}>
           Go to Signup
         </Button>
-
-        <MongoTest />
       </main>
     </div>
   );

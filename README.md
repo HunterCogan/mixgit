@@ -10,7 +10,13 @@ A collaborative, AI-powered coding platform that lets students upload, edit, and
 npm install
 ```
 
-2. IMPORTANT: Add .env, add "MONGODB_URI=" then contact me for the value.
+2. Make a copy of `.env.example` as `.env` or `.env.local`.
+
+```bash
+cp .env.example .env
+```
+
+Then acquire the required keys/values to your `.env`.
 
 3. Then run the development server:
 
@@ -19,10 +25,6 @@ npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
 ## Deploy on Vercel
 

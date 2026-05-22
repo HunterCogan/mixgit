@@ -1,59 +1,154 @@
 "use client";
 
 import Link from "next/link";
-import { Input, Form, Button } from "@heroui/react";
+import { Button, Form, Input, Label, TextField } from "@heroui/react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
-export function Signup() {
+export default function Signup() {
+  const router = useRouter();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+
+  async function handleSubmit(e: React.SyntheticEvent) {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+
+    if (!validate()) {
+      setLoading(false);
+      return;
+    }
+
+    const res = await fetch("/api/auth/signup", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password, confirmPassword }),
+    });
+
+    setLoading(false);
+
+    if (res.ok) {
+      router.push("/login");
+    } else {
+      const data = await res.json();
+      setError(data.error || "Signup failed");
+    }
+  }
+
+  function validate() {
+    setError("");
+
+    if (!email.trim()) {
+      setError("Email is required");
+      return false;
+    }
+
+    if (!email.includes("@")) {
+      setError("Enter a valid email");
+      return false;
+    }
+
+    if (!password.trim()) {
+      setError("Password is required");
+      return false;
+    }
+
+    if (password.length < 8) {
+      setError("Password must be at least 8 characters");
+      return false;
+    }
+
+    if (!confirmPassword.trim()) {
+      setError("Please confirm your password");
+      return false;
+    }
+
+    if (password !== confirmPassword) {
+      setError("Passwords do not match");
+      return false;
+    }
+
+    return true;
+  }
+
   return (
     <div className="bg-gray-900 min-h-screen flex items-center justify-center px-4">
-      <Form
-        className="bg-white p-10 rounded-2xl shadow-xl w-full max-w-md gap-6 flex flex-col"
-        onSubmit={(e) => {
-          e.preventDefault();
-          console.log("You are now signed in!");
-        }}
-      >
-        <h2 className="text-4xl font-bold text-blue-500 text-center w-full">
-          Sign Up
-        </h2>
+      <div className="flex flex-col items-center w-full">
+        <Label className="text-5xl mb-9 text-white">Sign Up</Label>
 
-        <Input
-          name="email"
-          type="text"
-          placeholder="Enter your email"
-          className="border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
-        />
-
-        <Input
-          name="password"
-          type="password"
-          placeholder="Enter your password"
-          className="border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
-        />
-
-        <Input
-          name="confirmPassword"
-          type="password"
-          placeholder="Confirm your password"
-          className="border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
-        />
-
-        <Button
-          type="submit"
-          className="bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 rounded-md transition-colors"
+        <Form
+          onSubmit={handleSubmit}
+          className="bg-white p-10 rounded-2xl justify-center shadow-xl w-full max-w-md gap-6 flex flex-col"
         >
-          Sign Up
-        </Button>
+          <TextField className="flex flex-col gap-1" isRequired>
+            <Label className="text-black">Email</Label>
 
-        <p className="text-sm text-center w-full text-black">
-          {"Already have an account? "}
-          <Link href="/login">
-            <Button className="bg-transparent shadow-none text-blue-500 p-0">
-              Login
-            </Button>
+            <Input
+              type="email"
+              value={email}
+              placeholder="Enter your email"
+              onChange={(e) => setEmail(e.target.value)}
+              className="border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+            />
+          </TextField>
+
+          <TextField className="flex flex-col gap-1" isRequired>
+            <Label className="text-black">Password</Label>
+            <div className="relative w-full">
+              <Input
+                type={showPassword ? "text" : "password"}
+                placeholder="Enter your password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="border border-gray-300 rounded-md px-4 py-2 pr-16 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+              />
+
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-gray-500 z-10"
+              >
+                {showPassword ? "Hide" : "Show"}
+              </button>
+            </div>
+          </TextField>
+
+          <TextField className="flex flex-col gap-1" isRequired>
+            <Label className="text-black">Confirm Password</Label>
+
+            <Input
+              type="password"
+              placeholder="Confirm your password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              className="border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+            />
+          </TextField>
+
+          {error && <p className="text-red-600 text-sm">{error}</p>}
+
+          <Button
+            type="submit"
+            variant="primary"
+            fullWidth
+            isDisabled={loading}
+          >
+            {loading ? "Signing up..." : "Sign Up"}
+          </Button>
+        </Form>
+
+        <div className="text-sm text-center text-white mt-6">
+          Already have a account?{" "}
+          <Link className="text-blue-500" href="/login">
+            Login
           </Link>
-        </p>
-      </Form>
+        </div>
+      </div>
     </div>
   );
 }

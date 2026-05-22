@@ -22,7 +22,7 @@ if (!global.__mongoose) {
 
 const cached: MongooseCache = global.__mongoose;
 
-// this function is currently used for db connections. app/api/test/route.ts for example.
+// this function is currently used for db connections.
 async function connectDB() {
   if (cached.conn) return cached.conn;
 
