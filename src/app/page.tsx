@@ -3,7 +3,6 @@
 import { Button } from "@heroui/react";
 import { CalculatorIcon } from "@heroicons/react/24/solid";
 import { useState } from "react";
-import { HamburgerMenu } from "@/components/navigation/navbar";
 import { useRouter } from "next/navigation";
 
 export default function Home() {
@@ -14,8 +13,6 @@ export default function Home() {
     <div className="flex flex-col flex-1 items-center justify-center font-sans">
       <main className="flex flex-1 w-full max-w-3xl flex-col items-center py-32 px-16 sm:items-start">
         <h1 className="text-4xl"> Welcome to Scratchpad</h1>
-
-        <HamburgerMenu />
 
         <p className="mt-6">
           This is an example for the landing page of Scratchpad. We will make
