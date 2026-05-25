@@ -32,6 +32,7 @@ export default async function ProjectPage({
 
   const serializedRemixes: RemixItem[] = remixes.map((remix) => ({
     id: remix._id.toString(),
+    name: remix.name,
     uploaderName: remix.uploader.name,
     description: remix.description,
     isMain: remix.isMain,

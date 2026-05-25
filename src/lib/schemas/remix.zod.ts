@@ -10,6 +10,11 @@ const ProgramFileSchema = z.object({
 export const RemixSchema = z.object({
   project: z.string(),
   uploader: z.string(),
+  name: z
+    .string()
+    .trim()
+    .min(1, "Remix name must be atleast 1 character")
+    .max(200, "Remix name cannot exceed 200 characters"),
   description: z
     .string()
     .trim()

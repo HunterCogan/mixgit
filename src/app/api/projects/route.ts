@@ -34,7 +34,8 @@ export async function POST(request: NextRequest) {
     await RemixModel.create({
       project: project._id,
       uploader: new mongoose.Types.ObjectId(session.userId),
-      description: "Initial mix",
+      name: "main",
+      description: "initial mix",
       isMain: true,
       files: [
         {

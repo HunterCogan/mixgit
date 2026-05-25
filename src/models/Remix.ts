@@ -34,6 +34,13 @@ const RemixSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+    name: {
+      type: String,
+      required: true,
+      trim: true,
+      minlength: [1, "Remix name must be atleast 1 character"],
+      maxlength: [200, "Remix name cannot exceed 200 characters"],
+    },
     description: {
       type: String,
       required: true,

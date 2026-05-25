@@ -21,6 +21,7 @@ import {
 
 export type RemixItem = {
   id: string;
+  name: string;
   uploaderName: string;
   description: string;
   isMain: boolean;
@@ -69,7 +70,7 @@ export function ProjectContent({ projectId, remixes }: Props) {
               >
                 <Card.Header>
                   <Card.Title className="flex justify-between">
-                    Remix Title
+                    {remix.name}
                     {remix.isMain && (
                       <Chip color="success" variant="primary">
                         <Chip.Label>Main</Chip.Label>
@@ -103,7 +104,7 @@ export function ProjectContent({ projectId, remixes }: Props) {
       </ScrollShadow>
       <Separator orientation="vertical"></Separator>
       <div className="flex-1 min-w-0 flex flex-col gap-3 p-2">
-        <h2 className="text-lg font-semibold">Remix Title</h2>
+        <h2 className="text-lg font-semibold">{selectedRemix?.name}</h2>
         <ScriptsPanel scripts={scripts} />
         <Card variant="secondary">
           <Card.Header>

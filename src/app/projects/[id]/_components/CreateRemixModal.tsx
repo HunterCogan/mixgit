@@ -31,6 +31,7 @@ function SubmitButton({ isPending }: { isPending?: boolean }) {
 export default function CreateRemixModal({ projectId }: { projectId: string }) {
   const state = useOverlayState();
   const router = useRouter();
+  const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [projectData, setProjectData] = useState("");
   const [submitted, setSubmitted] = useState(false);
@@ -47,7 +48,7 @@ export default function CreateRemixModal({ projectId }: { projectId: string }) {
       const res = await fetch(`/api/projects/${projectId}/remixes`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ description, projectData }),
+        body: JSON.stringify({ name, description, projectData }),
       });
 
       if (res.ok) {
@@ -85,6 +86,28 @@ export default function CreateRemixModal({ projectId }: { projectId: string }) {
                 validationBehavior="aria"
                 onSubmit={handleSubmit}
               >
+                <TextField
+                  isRequired
+                  name="name"
+                  value={name}
+                  onChange={setName}
+                  validate={(value) => {
+                    if (!submitted && !value) return null;
+                    if (!value) return "Name is required";
+                    const result = RemixSchema.shape.name.safeParse(value);
+                    return result.success
+                      ? null
+                      : result.error.issues[0].message;
+                  }}
+                >
+                  <Label>Name</Label>
+                  <Input
+                    variant="secondary"
+                    placeholder='"v2 - fixed jumping"'
+                  />
+                  <FieldError />
+                </TextField>
+
                 <TextField
                   isRequired
                   name="description"
