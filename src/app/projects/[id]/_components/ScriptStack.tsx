@@ -29,7 +29,6 @@ function computeIndents(blocks: Block[]): number[] {
   return blocks.map(depth);
 }
 
-// Determines if block would be rendered inline with the parent.
 function isBlockReporter(block: Block, blockMap: Map<string, Block>): boolean {
   if (!block.parent) return false;
   const parent = blockMap.get(block.parent);
@@ -69,7 +68,7 @@ export function ScriptStack({ script }: Props) {
               indent={indents[i]}
               isReporter={blockReporters[i]}
               lineNumber={lineNumbers[i]}
-            ></BlockRow>
+            />
           );
         })}
       </Card.Content>

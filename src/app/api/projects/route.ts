@@ -1,11 +1,12 @@
 import { verifySession } from "@/lib/dal";
 import { NextRequest, NextResponse } from "next/server";
 import connectDB from "@/lib/db";
-import Project from "@/models/Project";
-import Remix from "@/models/Remix";
+import ProjectModel from "@/models/Project";
+import RemixModel from "@/models/Remix";
 import mongoose from "mongoose";
 import { ProjectSchema } from "@/lib/schemas/project.zod";
 import { z } from "zod";
+import DEFAULT_PROJECT_JSON from "@/lib/defaults/project.json";
 
 export async function POST(request: NextRequest) {
   try {
@@ -25,17 +26,23 @@ export async function POST(request: NextRequest) {
 
     const session = await verifySession();
     await connectDB();
-    const project = await Project.create({
+    const project = await ProjectModel.create({
       creator: new mongoose.Types.ObjectId(session.userId),
       ...result.data,
     });
 
-    await Remix.create({
+    await RemixModel.create({
       project: project._id,
       uploader: new mongoose.Types.ObjectId(session.userId),
       description: "Initial mix",
       isMain: true,
-      files: [{ name: "project.json", fileType: "logic", data: "" }],
+      files: [
+        {
+          name: "project.json",
+          fileType: "logic",
+          data: JSON.stringify(DEFAULT_PROJECT_JSON),
+        },
+      ],
     });
 
     return NextResponse.json({ project }, { status: 201 });

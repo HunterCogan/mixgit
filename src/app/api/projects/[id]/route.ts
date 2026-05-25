@@ -1,8 +1,8 @@
 import { verifySession } from "@/lib/dal";
 import { NextRequest, NextResponse } from "next/server";
 import connectDB from "@/lib/db";
-import Project from "@/models/Project";
-import Remix from "@/models/Remix";
+import ProjectModel from "@/models/Project";
+import RemixModel from "@/models/Remix";
 import mongoose from "mongoose";
 
 export async function GET(
@@ -22,7 +22,7 @@ export async function GET(
     const session = await verifySession();
     await connectDB();
 
-    const project = await Project.findOne({
+    const project = await ProjectModel.findOne({
       _id: new mongoose.Types.ObjectId(id),
       creator: new mongoose.Types.ObjectId(session.userId),
     });
@@ -31,7 +31,7 @@ export async function GET(
       return NextResponse.json({ error: "Project not found" }, { status: 404 });
     }
 
-    const remixes = await Remix.find({ project: project._id })
+    const remixes = await RemixModel.find({ project: project._id })
       .sort({ createdAt: -1 })
       .lean();
 
@@ -64,7 +64,7 @@ export async function DELETE(
 
     // TODO: When a project is deleted, all associated files should also be deleted with it
     // e.g. Remix (contains ProgramFiles) and assets (images, sounds)
-    const result = await Project.deleteOne({
+    const result = await ProjectModel.deleteOne({
       _id: new mongoose.Types.ObjectId(id),
       creator: new mongoose.Types.ObjectId(session.userId),
     });

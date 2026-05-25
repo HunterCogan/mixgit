@@ -20,11 +20,11 @@ export function ScriptView({ scripts, selectedTarget }: Props) {
 
   return (
     <Surface
-      className="flex flex-wrap gap-3 p-3 justify-center border-1 rounded-md"
+      className="flex flex-wrap gap-3 p-3 justify-center border-1 rounded-md flex-1 min-h-0 overflow-auto"
       variant="secondary"
     >
       {targetScripts.map((script) => (
-        <ScriptStack key={script.hatBlockId} script={script}></ScriptStack>
+        <ScriptStack key={script.hatBlockId} script={script} />
       ))}
     </Surface>
   );

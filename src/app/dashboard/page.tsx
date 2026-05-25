@@ -1,6 +1,6 @@
 import { verifySession } from "@/lib/dal";
 import connectDB from "@/lib/db";
-import Project from "@/models/Project";
+import ProjectModel from "@/models/Project";
 import mongoose from "mongoose";
 import ProjectList from "./_components/ProjectList";
 import CreateProjectModal from "./_components/CreateProjectModal";
@@ -10,7 +10,7 @@ export default async function DashboardPage() {
   const session = await verifySession();
 
   await connectDB();
-  const projects = await Project.find({
+  const projects = await ProjectModel.find({
     creator: new mongoose.Types.ObjectId(session.userId),
   })
     .sort({ createdAt: -1 })

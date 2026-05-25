@@ -5,7 +5,7 @@ import { auth } from "@/lib/auth";
 import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import connectDB from "@/lib/db";
-import Project from "@/models/Project";
+import ProjectModel from "@/models/Project";
 import mongoose from "mongoose";
 import { ProjectSchema } from "@/lib/schemas/project.zod";
 
@@ -20,7 +20,7 @@ export async function handleCreateProject(formData: FormData) {
 
   const session = await verifySession();
   await connectDB();
-  await Project.create({
+  await ProjectModel.create({
     creator: new mongoose.Types.ObjectId(session.userId),
     ...result.data,
   });

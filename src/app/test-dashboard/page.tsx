@@ -2,7 +2,7 @@ import { verifySession } from "@/lib/dal";
 import { Button, Card, Form, ScrollShadow, Surface } from "@heroui/react";
 import Link from "next/link";
 import connectDB from "@/lib/db";
-import Project from "@/models/Project";
+import ProjectModel from "@/models/Project";
 import mongoose from "mongoose";
 import AddProjectForm from "./AddProjectForm";
 import { handleLogout } from "./actions";
@@ -11,7 +11,7 @@ export default async function DashboardPage() {
   const session = await verifySession();
 
   await connectDB();
-  const projects = await Project.find({
+  const projects = await ProjectModel.find({
     creator: new mongoose.Types.ObjectId(session.userId),
   }).lean();
 

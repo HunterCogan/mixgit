@@ -1,8 +1,8 @@
 import { verifySession } from "@/lib/dal";
 import { NextRequest, NextResponse } from "next/server";
 import connectDB from "@/lib/db";
-import Project from "@/models/Project";
-import Remix from "@/models/Remix";
+import ProjectModel from "@/models/Project";
+import RemixModel from "@/models/Remix";
 import mongoose from "mongoose";
 import { RemixSchema } from "@/lib/schemas/remix.zod";
 import { z } from "zod";
@@ -24,7 +24,7 @@ export async function POST(
     const session = await verifySession();
     await connectDB();
 
-    const project = await Project.findOne({
+    const project = await ProjectModel.findOne({
       _id: new mongoose.Types.ObjectId(id),
       creator: new mongoose.Types.ObjectId(session.userId),
     });
@@ -51,7 +51,7 @@ export async function POST(
 
     // TODO: a Remix is created with the "project.json" ProgramFile
     // when backend implements image/sound storage, a ProgramFile with fileType: "asset" should be created to point to each asset.
-    const remix = await Remix.create({
+    const remix = await RemixModel.create({
       project: project._id,
       uploader: new mongoose.Types.ObjectId(session.userId),
       ...result.data,
