@@ -58,7 +58,7 @@ export function ScriptStack({ script }: Props) {
   }, []);
 
   return (
-    <Card className="w-fit h-fit rounded-md p-1" variant="default">
+    <Card className="w-fit h-fit rounded-md p-1" variant="secondary">
       <Card.Content className="gap-0 overflow-hidden rounded-md">
         {blocks.map((block, i) => {
           return (
