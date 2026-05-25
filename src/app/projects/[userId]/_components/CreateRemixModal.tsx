@@ -23,7 +23,7 @@ function SubmitButton({ isPending }: { isPending?: boolean }) {
   return (
     <Button type="submit" variant="primary" fullWidth isPending={isPending}>
       {isPending && <Spinner size="sm" />}
-      {isPending ? "Creating..." : "Create Remix"}
+      {isPending ? "Sharing..." : "Share Remix"}
     </Button>
   );
 }
@@ -69,9 +69,9 @@ export default function CreateRemixModal({ projectId }: { projectId: string }) {
 
   return (
     <Modal state={state}>
-      <Button>
+      <Button fullWidth>
         <PlusIcon />
-        New Remix
+        Upload a Remix
       </Button>
       <Modal.Backdrop variant="blur">
         <Modal.Container>
@@ -101,10 +101,7 @@ export default function CreateRemixModal({ projectId }: { projectId: string }) {
                   }}
                 >
                   <Label>Name</Label>
-                  <Input
-                    variant="secondary"
-                    placeholder='"v2 - fixed jumping"'
-                  />
+                  <Input variant="secondary" placeholder='"boss-level"' />
                   <FieldError />
                 </TextField>
 
@@ -126,11 +123,9 @@ export default function CreateRemixModal({ projectId }: { projectId: string }) {
                   <Label>Description</Label>
                   <Input
                     variant="secondary"
-                    placeholder='"Fixed the jumping mechanic"'
+                    placeholder='"Added the boss to final level"'
                   />
-                  <Description>
-                    Describe what changed in this version
-                  </Description>
+                  <Description>Describe what changed in this Remix</Description>
                   <FieldError />
                 </TextField>
 

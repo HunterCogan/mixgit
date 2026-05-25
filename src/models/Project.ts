@@ -1,7 +1,16 @@
 import mongoose from "mongoose";
 import "@/models/User";
 
-const ProjectSchema = new mongoose.Schema(
+export interface IProject {
+  creator: mongoose.Types.ObjectId;
+  name: string;
+  description?: string;
+  team: mongoose.Types.ObjectId[];
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+const ProjectSchema = new mongoose.Schema<IProject>(
   {
     creator: {
       type: mongoose.Schema.Types.ObjectId,
@@ -33,5 +42,5 @@ const ProjectSchema = new mongoose.Schema(
 ProjectSchema.index({ creator: 1 });
 ProjectSchema.index({ createdAt: -1 });
 
-export default mongoose.models.Project ||
-  mongoose.model("Project", ProjectSchema);
+export default (mongoose.models.Project as mongoose.Model<IProject>) ||
+  mongoose.model<IProject>("Project", ProjectSchema);

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Button, ComboBox, Input, Label, ListBox } from "@heroui/react";
+import { ComboBox, Input, Label, ListBox } from "@heroui/react";
 import { ScriptView } from "./ScriptView";
 import type { Script } from "@/types";
 

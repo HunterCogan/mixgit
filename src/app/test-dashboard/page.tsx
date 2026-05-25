@@ -36,7 +36,7 @@ export default async function DashboardPage() {
           ) : (
             <div className="grid grid-cols-2 gap-2">
               {projects.map((p) => (
-                <Card key={p._id}>
+                <Card key={p._id.toString()}>
                   <Card.Header>
                     <Card.Title>{p.name}</Card.Title>
                     <Card.Description>

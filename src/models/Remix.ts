@@ -1,7 +1,26 @@
 import mongoose from "mongoose";
 import "@/models/User";
 
-const ProgramFileSchema = new mongoose.Schema(
+export interface IProgramFile {
+  name: string;
+  fileType: "asset" | "logic";
+  data?: string;
+  imagePath?: string;
+}
+
+export interface IRemix {
+  project: mongoose.Types.ObjectId;
+  uploader: mongoose.Types.ObjectId;
+  name: string;
+  description: string;
+  isMain: boolean;
+  parents: mongoose.Types.ObjectId[];
+  files: IProgramFile[];
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+const ProgramFileSchema = new mongoose.Schema<IProgramFile>(
   {
     name: {
       type: String,
@@ -22,7 +41,7 @@ const ProgramFileSchema = new mongoose.Schema(
   { _id: false },
 );
 
-const RemixSchema = new mongoose.Schema(
+const RemixSchema = new mongoose.Schema<IRemix>(
   {
     project: {
       type: mongoose.Schema.Types.ObjectId,
@@ -68,4 +87,5 @@ RemixSchema.index({ project: 1 });
 RemixSchema.index({ uploader: 1 });
 RemixSchema.index({ createdAt: -1 });
 
-export default mongoose.models.Remix || mongoose.model("Remix", RemixSchema);
+export default (mongoose.models.Remix as mongoose.Model<IRemix>) ||
+  mongoose.model<IRemix>("Remix", RemixSchema);
