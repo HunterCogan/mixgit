@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { ComboBox, Input, Label, ListBox } from "@heroui/react";
-import { ScriptView } from "./ScriptView";
+import { ComboBox, Input, Label, ListBox, Surface } from "@heroui/react";
+import { ScriptStack } from "./ScriptStack";
 import type { Script } from "@/types";
 
 interface Props {
@@ -13,6 +13,7 @@ export function ScriptsPanel({ scripts }: Props) {
   const [selectedTarget, setSelectedTarget] = useState(
     Object.keys(scripts)[0] ?? "",
   );
+  const targetScripts = scripts[selectedTarget] ?? [];
 
   if (Object.keys(scripts).length === 0) {
     return (
@@ -44,7 +45,20 @@ export function ScriptsPanel({ scripts }: Props) {
           </ListBox>
         </ComboBox.Popover>
       </ComboBox>
-      <ScriptView scripts={scripts} selectedTarget={selectedTarget} />
+      {targetScripts.length === 0 ? (
+        <p className="text-sm italic text-gray-500">
+          No scripts for {selectedTarget}.
+        </p>
+      ) : (
+        <Surface
+          className="flex flex-wrap gap-3 p-3 justify-around flex-1 min-h-0 overflow-auto bg-grid border-1 rounded-lg"
+          variant="transparent"
+        >
+          {targetScripts.map((script) => (
+            <ScriptStack key={script.hatBlockId} script={script} />
+          ))}
+        </Surface>
+      )}
     </div>
   );
 }
