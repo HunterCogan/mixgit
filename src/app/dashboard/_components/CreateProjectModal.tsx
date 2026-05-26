@@ -55,11 +55,9 @@ export default function CreateProjectModal() {
         state.close();
         router.refresh();
       } else {
-        const { data } = await res.json();
+        const { error } = await res.json().catch(() => ({}));
         setError(
-          typeof data.error == "string"
-            ? data.error
-            : "Failed to create project",
+          typeof error === "string" ? error : "Failed to create project",
         );
       }
     } finally {
