@@ -20,5 +20,5 @@ export default async function Navbar() {
     name: p.name,
   }));
 
-  return <NavbarClient projects={serialized} />;
+  return <NavbarClient projects={serialized} userId={userId} />;
 }

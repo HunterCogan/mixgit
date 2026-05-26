@@ -8,7 +8,13 @@ type Project = {
   name: string;
 };
 
-export default function NavbarClient({ projects }: { projects: Project[] }) {
+export default function NavbarClient({
+  projects,
+  userId,
+}: {
+  projects: Project[];
+  userId: string;
+}) {
   const pathname = usePathname();
 
   return (
@@ -52,9 +58,9 @@ export default function NavbarClient({ projects }: { projects: Project[] }) {
           {projects.map((p) => (
             <Link
               key={p.id}
-              href={`/projects/${p.id}`}
+              href={`/projects/${userId}?projectId=${p.id}`}
               className={`block px-3 py-1.5 rounded-md text-sm truncate transition-colors ${
-                pathname === `/projects/${p.id}`
+                pathname === `/projects/${userId}`
                   ? "bg-nav-item-active text-nav-text"
                   : "text-nav-text hover:bg-nav-item-hover hover:text-nav-text"
               }`}
