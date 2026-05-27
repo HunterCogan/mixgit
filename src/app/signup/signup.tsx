@@ -24,19 +24,26 @@ export default function Signup() {
       return;
     }
 
-    const res = await fetch("/api/auth/signup", {
+    const res = await fetch("/api/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password, confirmPassword }),
+      body: JSON.stringify({ email, password }),
     });
 
     setLoading(false);
 
     if (res.ok) {
-      router.push("/login");
+      router.push("/dashboard");
     } else {
-      const data = await res.json();
-      setError(data.error || "Signup failed");
+      let data;
+
+      try {
+        data = await res.json();
+      } catch {
+        data = { error: "Failed to sign up" };
+      }
+
+      setError(data.error || "Failed to sign up");
     }
   }
 
@@ -45,11 +52,6 @@ export default function Signup() {
 
     if (!email.trim()) {
       setError("Email is required");
-      return false;
-    }
-
-    if (!email.includes("@")) {
-      setError("Enter a valid email");
       return false;
     }
 
@@ -77,7 +79,7 @@ export default function Signup() {
   }
 
   return (
-    <div className="bg-gray-900 min-h-screen flex items-center justify-center px-4">
+    <div className="bg-black min-h-screen flex items-center justify-center px-4">
       <div className="flex flex-col items-center w-full">
         <Label className="text-5xl mb-9 text-white">Sign Up</Label>
 
@@ -93,7 +95,7 @@ export default function Signup() {
               value={email}
               placeholder="Enter your email"
               onChange={(e) => setEmail(e.target.value)}
-              className="border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+              className="border bg-white text-black border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-gray-500 transition-colors"
             />
           </TextField>
 
@@ -105,7 +107,7 @@ export default function Signup() {
                 placeholder="Enter your password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="border border-gray-300 rounded-md px-4 py-2 pr-16 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+                className="border bg-white text-black border-gray-300 rounded-md px-4 py-2 pr-16 w-full focus:outline-none focus:ring-2 focus:ring-gray-500 transition-colors"
               />
 
               <button
@@ -126,7 +128,7 @@ export default function Signup() {
               placeholder="Confirm your password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              className="border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+              className="border bg-white text-black border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-gray-500 transition-colors"
             />
           </TextField>
 
@@ -137,13 +139,14 @@ export default function Signup() {
             variant="primary"
             fullWidth
             isDisabled={loading}
+            className="bg-gray-500"
           >
             {loading ? "Signing up..." : "Sign Up"}
           </Button>
         </Form>
 
         <div className="text-sm text-center text-white mt-6">
-          Already have a account?{" "}
+          Don’t have an account?{" "}
           <Link className="text-blue-500" href="/login">
             Login
           </Link>

@@ -34,8 +34,15 @@ export default function LoginPage() {
     if (res.ok) {
       router.push("/dashboard");
     } else {
-      const data = await res.json();
-      setError(data.error || "Login failed");
+      let data;
+
+      try {
+        data = await res.json();
+      } catch {
+        data = { error: "Failed to login" };
+      }
+
+      setError(data.error || "Failed to login");
     }
   }
 
@@ -44,11 +51,6 @@ export default function LoginPage() {
 
     if (!email.trim()) {
       setError("Email is required");
-      return false;
-    }
-
-    if (!email.includes("@")) {
-      setError("Enter a valid email");
       return false;
     }
 
@@ -66,7 +68,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="bg-gray-900 min-h-screen flex items-center justify-center px-4">
+    <div className="bg-black min-h-screen flex items-center justify-center px-4">
       <div className="flex flex-col items-center w-full">
         <Label className="text-5xl mb-9 text-white">Login</Label>
 
@@ -74,7 +76,7 @@ export default function LoginPage() {
           onSubmit={handleSubmit}
           className="bg-white p-10 rounded-2xl justify-center shadow-xl w-full max-w-md gap-6 flex flex-col"
         >
-          <TextField className="flex flex-col gap-1" isRequired>
+          <TextField className=" flex flex-col gap-1" isRequired>
             <Label className="text-black">Email</Label>
 
             <Input
@@ -82,7 +84,7 @@ export default function LoginPage() {
               value={email}
               placeholder="Enter your email"
               onChange={(e) => setEmail(e.target.value)}
-              className="border border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+              className="border bg-white text-black border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-gray-500 transition-colors"
             />
           </TextField>
 
@@ -94,7 +96,7 @@ export default function LoginPage() {
                 placeholder="Enter your password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="border border-gray-300 rounded-md px-4 py-2 pr-16 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+                className="border bg-white text-black border-gray-300 rounded-md px-4 py-2 pr-16 w-full focus:outline-none focus:ring-2 focus:ring-gray-500 transition-colors"
               />
 
               <button
@@ -114,6 +116,7 @@ export default function LoginPage() {
             variant="primary"
             fullWidth
             isDisabled={loading}
+            className="bg-gray-500"
           >
             {loading ? "Logging in..." : "Login"}
           </Button>
