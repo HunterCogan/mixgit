@@ -13,7 +13,6 @@ type CollaboratingResult = {
   createdAt: Date;
   creatorInfo?: {
     name: string;
-    color: string;
   };
 };
 
@@ -41,7 +40,7 @@ export default async function SharedProjectsPage() {
           let: { cid: { $toString: "$creator" } },
           pipeline: [
             { $match: { $expr: { $eq: [{ $toString: "$_id" }, "$$cid"] } } },
-            { $project: { name: 1, color: 1 } },
+            { $project: { name: 1 } },
           ],
           as: "creatorData",
         },
@@ -64,7 +63,6 @@ export default async function SharedProjectsPage() {
       year: "numeric",
     }),
     ownerName: p.creatorInfo?.name ?? "Unknown",
-    ownerColor: p.creatorInfo?.color ?? "#808080",
     ownerId: p.creator.toString(),
   }));
 
