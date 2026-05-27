@@ -12,9 +12,8 @@ export const verifySession = cache(async () => {
     headers: await headers(),
   });
 
-  // !!! change to /login once that page is made
   if (!session?.user?.id) {
-    redirect("/test-login");
+    redirect("/login");
   }
 
   return {
