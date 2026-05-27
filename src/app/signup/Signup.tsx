@@ -79,56 +79,56 @@ export default function Signup() {
   }
 
   return (
-    <div className="bg-black min-h-screen flex items-center justify-center px-4">
+    <div className="min-h-screen flex items-center justify-center px-4">
       <div className="flex flex-col items-center w-full">
-        <Label className="text-5xl mb-9 text-white">Sign Up</Label>
+        <Label className="text-5xl mb-9"> Sign Up </Label>
 
         <Form
           onSubmit={handleSubmit}
-          className="bg-white p-10 rounded-2xl justify-center shadow-xl w-full max-w-md gap-6 flex flex-col"
+          className="p-10 rounded-2xl justify-center shadow-xl w-full max-w-md gap-6 flex flex-col"
         >
           <TextField className="flex flex-col gap-1" isRequired>
-            <Label className="text-black">Email</Label>
+            <Label> Email </Label>
 
             <Input
               type="email"
               value={email}
               placeholder="Enter your email"
               onChange={(e) => setEmail(e.target.value)}
-              className="border bg-white text-black border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-gray-500 transition-colors"
+              className="border rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
             />
           </TextField>
 
           <TextField className="flex flex-col gap-1" isRequired>
-            <Label className="text-black">Password</Label>
+            <Label> Password </Label>
             <div className="relative w-full">
               <Input
                 type={showPassword ? "text" : "password"}
                 placeholder="Enter your password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="border bg-white text-black border-gray-300 rounded-md px-4 py-2 pr-16 w-full focus:outline-none focus:ring-2 focus:ring-gray-500 transition-colors"
+                className="border rounded-md px-4 py-2 pr-16 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
               />
 
-              <button
+              <Button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-gray-500 z-10"
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-sm z-10 shadow-none bg-transparent text-black"
               >
                 {showPassword ? "Hide" : "Show"}
-              </button>
+              </Button>
             </div>
           </TextField>
 
           <TextField className="flex flex-col gap-1" isRequired>
-            <Label className="text-black">Confirm Password</Label>
+            <Label> Confirm Password </Label>
 
             <Input
               type="password"
               placeholder="Confirm your password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              className="border bg-white text-black border-gray-300 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-gray-500 transition-colors"
+              className="border rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
             />
           </TextField>
 
@@ -139,13 +139,12 @@ export default function Signup() {
             variant="primary"
             fullWidth
             isDisabled={loading}
-            className="bg-gray-500"
           >
             {loading ? "Signing up..." : "Sign Up"}
           </Button>
         </Form>
 
-        <div className="text-sm text-center text-white mt-6">
+        <div className="text-sm text-center mt-6">
           Don’t have an account?{" "}
           <Link className="text-blue-500" href="/login">
             Login
