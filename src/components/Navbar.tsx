@@ -8,17 +8,39 @@ export default async function Navbar() {
   const { userId } = await verifySession();
 
   await connectDB();
-  const projects = await Project.find({
-    creator: new mongoose.Types.ObjectId(userId),
-  })
-    .sort({ createdAt: -1 })
-    .limit(5)
-    .lean();
+  const objectId = new mongoose.Types.ObjectId(userId);
+
+  const [projects, sharedProjects] = await Promise.all([
+    Project.find({ creator: objectId }).sort({ createdAt: -1 }).limit(5).lean(),
+    Project.find({
+      $expr: {
+        $in: [
+          userId,
+          { $map: { input: "$team", as: "id", in: { $toString: "$$id" } } },
+        ],
+      },
+    })
+      .sort({ createdAt: -1 })
+      .limit(5)
+      .lean(),
+  ]);
 
   const serialized = projects.map((p) => ({
     id: p._id.toString(),
     name: p.name,
   }));
 
-  return <NavbarClient projects={serialized} userId={userId} />;
+  const serializedShared = sharedProjects.map((p) => ({
+    id: p._id.toString(),
+    name: p.name,
+    creatorId: p.creator.toString(),
+  }));
+
+  return (
+    <NavbarClient
+      projects={serialized}
+      userId={userId}
+      sharedProjects={serializedShared}
+    />
+  );
 }
