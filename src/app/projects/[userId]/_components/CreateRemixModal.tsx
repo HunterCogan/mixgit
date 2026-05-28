@@ -146,8 +146,9 @@ export default function CreateRemixModal({
                   }}
                 >
                   <Label>Description</Label>
-                  <Input
+                  <TextArea
                     variant="secondary"
+                    rows={3}
                     placeholder='"Added the boss to final level"'
                   />
                   <Description>Describe what changed in this Remix</Description>

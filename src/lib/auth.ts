@@ -60,6 +60,7 @@ export const auth = betterAuth({
 
   // generateId disables Better Auth ID generation, let MongoDB just use its native _id.
   // disablePasswordStrengthValidation enforces password strength validation.
+  // For future document update, make sure we know that this defaults to min 8 and max 128 characters
   advanced: {
     database: {
       generateId: false,

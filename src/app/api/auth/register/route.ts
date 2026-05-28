@@ -23,8 +23,7 @@ export async function POST(request: NextRequest) {
         ? name.trim()
         : email.split("@")[0] || "User";
 
-    // IMPORANT: This uses "signUpEmail", which securely saves the password.
-    // Better Auth hashes the password here
+    // Better Auth hashes the password here. This uses "signUpEmail", which securely saves the password.
     const response = await auth.api.signUpEmail({
       body: {
         name: finalName,

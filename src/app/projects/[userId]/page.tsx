@@ -6,7 +6,7 @@ import UserModel from "@/models/User";
 import mongoose from "mongoose";
 import { notFound } from "next/navigation";
 import { ProjectContent, type RemixItem } from "./_components/ProjectContent";
-import { Avatar, Chip, Separator } from "@heroui/react";
+import { Avatar, Chip, Separator, Surface } from "@heroui/react";
 import CreateRemixModal from "./_components/CreateRemixModal";
 import { BackButton } from "../../../components/BackButton";
 import AddCollaboratorModal from "./_components/AddCollaboratorModal";
@@ -73,9 +73,9 @@ export default async function ProjectPage({
   }));
 
   return (
-    <div className="font-sans h-screen flex flex-col overflow-hidden">
+    <div className="font-sans h-[calc(100vh-3.5rem)] flex flex-col overflow-hidden">
       <main className="px-6 py-8 flex flex-col gap-6 flex-1 min-h-0">
-        <div className="flex flex-row justify-between">
+        <Surface className="flex flex-row justify-between rounded-3xl p-6">
           <div className="flex flex-row gap-6">
             <BackButton href="/dashboard" />
             <div className="flex flex-col">
@@ -103,13 +103,16 @@ export default async function ProjectPage({
           <div className="flex flex-col gap-2">
             <div className="flex flex-row">
               {project.team.map((member) => (
-                <Avatar key={member._id.toString()} className="-mr-4 border-2">
+                <Avatar
+                  key={member._id.toString()}
+                  className="-mr-4 border-2 border-white"
+                >
                   <Avatar.Fallback style={{ backgroundColor: member.color }}>
                     {member.name.substring(0, 2).toUpperCase()}
                   </Avatar.Fallback>
                 </Avatar>
               ))}
-              <Avatar className="border-2">
+              <Avatar className="border-2 border-white">
                 <Avatar.Fallback style={{ backgroundColor: creator?.color }}>
                   {creator?.name?.substring(0, 2).toUpperCase()}
                 </Avatar.Fallback>
@@ -123,7 +126,7 @@ export default async function ProjectPage({
               creatorId={userId}
             />
           </div>
-        </div>
+        </Surface>
         <Separator></Separator>
         <ProjectContent remixes={serializedRemixes} />
       </main>

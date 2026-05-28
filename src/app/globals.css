@@ -2,16 +2,16 @@
 @import "@heroui/styles";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f1f5f9;
+  --foreground: #0f172a;
 
   /* nav/header */
-  --nav-surface: #0f172a;
-  --nav-border: #64748b;
-  --nav-text: #cbd5e1;
-  --nav-text-subtle: #64748b;
-  --nav-item-hover: #1e293b;
-  --nav-item-active: #334155;
+  --nav-surface: #ffffff;
+  --nav-border: #e2e8f0;
+  --nav-text: #1e293b;
+  --nav-text-subtle: #94a3b8;
+  --nav-item-hover: #f1f5f9;
+  --nav-item-active: #e2e8f0;
 }
 
 @theme inline {
@@ -29,12 +29,13 @@
   --color-nav-item-active: var(--nav-item-active);
 }
 
-@media (prefers-color-scheme: dark) {
+/* Commenting out dark theme, can be added later */
+/* @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
     --foreground: #ededed;
   }
-}
+} */
 
 @utility bg-grid {
   background-image: radial-gradient(

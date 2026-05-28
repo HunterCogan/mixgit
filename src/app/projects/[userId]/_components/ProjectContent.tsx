@@ -36,18 +36,22 @@ interface Props {
 
 export function ProjectContent({ remixes }: Props) {
   const defaultId = (remixes.find((r) => r.isMain) ?? remixes[0])?.id ?? null;
+
   const [selectedId, setSelectedId] = useState<string | null>(defaultId);
+
   const router = useRouter();
 
   const deleteState = useOverlayState();
 
   const [loading, setLoading] = useState(false);
+
   const [error, setError] = useState<string | null>(null);
 
   const selectedRemix = remixes.find((r) => r.id === selectedId) ?? null;
 
   const scripts = useMemo(() => {
     if (!selectedRemix?.projectJsonData) return {};
+
     try {
       return parseScripts(selectedRemix.projectJsonData);
     } catch {
@@ -90,8 +94,10 @@ export function ProjectContent({ remixes }: Props) {
       >
         <div className="flex flex-row justify-between">
           <h2 className="text-lg font-semibold">Remixes</h2>
+
           <Chip>{remixes.length}</Chip>
         </div>
+
         {remixes.length === 0 ? (
           <p className="text-sm text-gray-400">No remixes yet.</p>
         ) : (
@@ -107,28 +113,36 @@ export function ProjectContent({ remixes }: Props) {
                   <Card.Title className="flex justify-between">
                     <div className="flex gap-2">
                       {remix.name}
+
                       {remix.isMain && (
                         <Chip size="sm">
                           <Chip.Label>main</Chip.Label>
                         </Chip>
                       )}
                     </div>
+
                     {remix.id === selectedId && (
                       <div className="w-2 h-2 rounded-full bg-green-500 self-center shrink-0" />
                     )}
                   </Card.Title>
+
                   <Card.Description>Created {remix.createdAt}</Card.Description>
                 </Card.Header>
+
                 <Card.Content className="flex flex-row gap-2 items-center">
                   <Avatar size="sm">
                     <Avatar.Fallback
-                      style={{ backgroundColor: remix.uploaderColor }}
+                      style={{
+                        backgroundColor: remix.uploaderColor,
+                      }}
                     >
                       {remix.uploaderName.substring(0, 2).toUpperCase()}
                     </Avatar.Fallback>
                   </Avatar>
-                  <span className="truncate text-sm"> {remix.description}</span>
+
+                  <span className="truncate text-sm">{remix.description}</span>
                 </Card.Content>
+
                 <Card.Footer>
                   <Button
                     variant="outline"
@@ -144,10 +158,14 @@ export function ProjectContent({ remixes }: Props) {
           </div>
         )}
       </ScrollShadow>
-      <Separator orientation="vertical"></Separator>
+
+      <Separator orientation="vertical" />
+
       <div className="flex-1 min-w-0 flex flex-col gap-3 p-2">
         <h2 className="text-lg font-semibold">{selectedRemix?.name}</h2>
-        <ScriptsPanel scripts={scripts} />
+
+        <ScriptsPanel raw={selectedRemix?.projectJsonData} scripts={scripts} />
+
         {selectedRemix && (
           <Card variant="secondary">
             <Card.Header>
@@ -162,83 +180,84 @@ export function ProjectContent({ remixes }: Props) {
               </Card.Description>
             </Card.Header>
 
-            <Card.Content>
+            <Card.Content className="flex flex-row justify-between">
               <ScrollShadow className="h-[60px]">
                 {selectedRemix.description}
               </ScrollShadow>
-            </Card.Content>
 
-            <Card.Footer className="flex gap-2">
-              <Button
-                size="sm"
-                onPress={() => {
-                  const blob = new Blob([selectedRemix.projectJsonData], {
-                    type: "application/json",
-                  });
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  onPress={() => {
+                    const blob = new Blob([selectedRemix.projectJsonData], {
+                      type: "application/json",
+                    });
 
-                  const url = URL.createObjectURL(blob);
+                    const url = URL.createObjectURL(blob);
 
-                  const a = document.createElement("a");
+                    const a = document.createElement("a");
 
-                  a.href = url;
-                  a.download = "project.json";
-                  a.click();
+                    a.href = url;
+                    a.download = "project.json";
+                    a.click();
 
-                  URL.revokeObjectURL(url);
-                }}
-              >
-                <ArrowDownTrayIcon />
-                Download
-              </Button>
-
-              <AlertDialog
-                isOpen={deleteState.isOpen}
-                onOpenChange={deleteState.setOpen}
-              >
-                <Button variant="danger" size="sm" onPress={deleteState.open}>
-                  <TrashIcon className="h-4 w-4" />
-                  Delete
+                    URL.revokeObjectURL(url);
+                  }}
+                >
+                  <ArrowDownTrayIcon />
+                  Download
                 </Button>
 
-                <AlertDialog.Backdrop>
-                  <AlertDialog.Container>
-                    <AlertDialog.Dialog>
-                      <AlertDialog.CloseTrigger className="m-3" />
+                <AlertDialog
+                  isOpen={deleteState.isOpen}
+                  onOpenChange={deleteState.setOpen}
+                >
+                  <Button variant="danger" size="sm" onPress={deleteState.open}>
+                    <TrashIcon className="h-4 w-4" />
+                    Delete
+                  </Button>
 
-                      <AlertDialog.Header>
-                        <AlertDialog.Heading className="flex items-center gap-2 text-2xl mb-3">
-                          <AlertDialog.Icon />
-                          Delete Remix?
-                        </AlertDialog.Heading>
-                      </AlertDialog.Header>
+                  <AlertDialog.Backdrop>
+                    <AlertDialog.Container>
+                      <AlertDialog.Dialog>
+                        <AlertDialog.CloseTrigger className="m-3" />
 
-                      <AlertDialog.Body>
-                        This remix will be permanently deleted.
-                      </AlertDialog.Body>
+                        <AlertDialog.Header>
+                          <AlertDialog.Heading className="flex items-center gap-2 text-2xl mb-3">
+                            <AlertDialog.Icon />
+                            Delete Remix?
+                          </AlertDialog.Heading>
+                        </AlertDialog.Header>
 
-                      <AlertDialog.Footer>
-                        {error && (
-                          <p className="text-sm text-red-500">{error}</p>
-                        )}
+                        <AlertDialog.Body>
+                          This remix will be permanently deleted.
+                        </AlertDialog.Body>
 
-                        <Button variant="outline" onPress={deleteState.close}>
-                          Cancel
-                        </Button>
+                        <AlertDialog.Footer>
+                          {error && (
+                            <p className="text-sm text-red-500">{error}</p>
+                          )}
 
-                        <Button
-                          variant="danger"
-                          isDisabled={loading}
-                          onPress={handleDeleteRemix}
-                        >
-                          {loading && <Spinner size="sm" />}
-                          {loading ? "Deleting..." : "Delete"}
-                        </Button>
-                      </AlertDialog.Footer>
-                    </AlertDialog.Dialog>
-                  </AlertDialog.Container>
-                </AlertDialog.Backdrop>
-              </AlertDialog>
-            </Card.Footer>
+                          <Button variant="outline" onPress={deleteState.close}>
+                            Cancel
+                          </Button>
+
+                          <Button
+                            variant="danger"
+                            isDisabled={loading}
+                            onPress={handleDeleteRemix}
+                          >
+                            {loading && <Spinner size="sm" />}
+
+                            {loading ? "Deleting..." : "Delete"}
+                          </Button>
+                        </AlertDialog.Footer>
+                      </AlertDialog.Dialog>
+                    </AlertDialog.Container>
+                  </AlertDialog.Backdrop>
+                </AlertDialog>
+              </div>
+            </Card.Content>
           </Card>
         )}
       </div>

@@ -13,7 +13,7 @@ export default function ShellLayout({
   navbar: React.ReactNode;
   children: React.ReactNode;
 }) {
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(false);
 
   return (
     <>
