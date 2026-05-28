@@ -93,5 +93,46 @@ export async function DELETE(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  // TODO
+  try {
+    const { id } = await params;
+
+    if (!id) {
+      return NextResponse.json(
+        { error: "Remix ID is required" },
+        { status: 400 },
+      );
+    }
+
+    const session = await verifySession();
+
+    await connectDB();
+
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return NextResponse.json({ error: "Invalid Remix ID" }, { status: 400 });
+    }
+
+    const remix = await RemixModel.findById(id);
+
+    if (!remix) {
+      return NextResponse.json({ error: "Remix not found" }, { status: 404 });
+    }
+
+    if (!remix.uploader.equals(session.userId)) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    await RemixModel.findByIdAndDelete(id);
+
+    return NextResponse.json({
+      success: true,
+      message: "Remix deleted successfully",
+    });
+  } catch (error) {
+    console.error("Delete remix error:", error);
+
+    return NextResponse.json(
+      { error: "Failed to delete remix" },
+      { status: 500 },
+    );
+  }
 }

@@ -1,7 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
+  AlertDialog,
   Avatar,
   Button,
   Card,
@@ -9,6 +11,8 @@ import {
   Link,
   ScrollShadow,
   Separator,
+  Spinner,
+  useOverlayState,
 } from "@heroui/react";
 import { parseScripts } from "@/lib/scratch";
 import { ScriptsPanel } from "./ScriptsPanel";
@@ -33,6 +37,12 @@ interface Props {
 export function ProjectContent({ remixes }: Props) {
   const defaultId = (remixes.find((r) => r.isMain) ?? remixes[0])?.id ?? null;
   const [selectedId, setSelectedId] = useState<string | null>(defaultId);
+  const router = useRouter();
+
+  const deleteState = useOverlayState();
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const selectedRemix = remixes.find((r) => r.id === selectedId) ?? null;
 
@@ -44,6 +54,33 @@ export function ProjectContent({ remixes }: Props) {
       return {};
     }
   }, [selectedRemix]);
+
+  async function handleDeleteRemix() {
+    if (!selectedRemix) return;
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const res = await fetch(`/api/projects/${selectedRemix.id}/remixes`, {
+        method: "DELETE",
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.error || "Failed to delete remix");
+        return;
+      }
+
+      deleteState.close();
+      router.refresh();
+    } catch {
+      setError("Something went wrong");
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
     <div className="flex gap-6 flex-1 min-h-0">
@@ -111,50 +148,99 @@ export function ProjectContent({ remixes }: Props) {
       <div className="flex-1 min-w-0 flex flex-col gap-3 p-2">
         <h2 className="text-lg font-semibold">{selectedRemix?.name}</h2>
         <ScriptsPanel scripts={scripts} />
-        <Card variant="secondary">
-          <Card.Header>
-            <Card.Title>About this Remix</Card.Title>
-            <Card.Description>
-              Created {selectedRemix?.createdAt} by{" "}
-              <Link href="#">
-                @{selectedRemix?.uploaderName}
-                <Link.Icon></Link.Icon>
-              </Link>
-            </Card.Description>
-          </Card.Header>
-          <Card.Content className="">
-            <ScrollShadow className="h-[60px]">
-              {selectedRemix?.description}
-            </ScrollShadow>
-          </Card.Content>
-          <Card.Footer className="flex gap-2">
-            <Button
-              size="sm"
-              onPress={() => {
-                if (!selectedRemix) return;
-                // Store project.json of selectedRemix as raw binary data
-                // then create a URL to point to this data to download it
-                const blob = new Blob([selectedRemix.projectJsonData], {
-                  type: "application/json",
-                });
-                const url = URL.createObjectURL(blob);
-                // link element with "download" required for download
-                const a = document.createElement("a");
-                a.href = url;
-                a.download = "project.json";
-                a.click();
-                URL.revokeObjectURL(url);
-              }}
-            >
-              <ArrowDownTrayIcon />
-              Download
-            </Button>
-            <Button variant="danger" size="sm">
-              <TrashIcon className="h-4 w-4" />
-              Delete
-            </Button>
-          </Card.Footer>
-        </Card>
+        {selectedRemix && (
+          <Card variant="secondary">
+            <Card.Header>
+              <Card.Title>About this Remix</Card.Title>
+
+              <Card.Description>
+                Created {selectedRemix.createdAt} by{" "}
+                <Link href="#">
+                  @{selectedRemix.uploaderName}
+                  <Link.Icon />
+                </Link>
+              </Card.Description>
+            </Card.Header>
+
+            <Card.Content>
+              <ScrollShadow className="h-[60px]">
+                {selectedRemix.description}
+              </ScrollShadow>
+            </Card.Content>
+
+            <Card.Footer className="flex gap-2">
+              <Button
+                size="sm"
+                onPress={() => {
+                  const blob = new Blob([selectedRemix.projectJsonData], {
+                    type: "application/json",
+                  });
+
+                  const url = URL.createObjectURL(blob);
+
+                  const a = document.createElement("a");
+
+                  a.href = url;
+                  a.download = "project.json";
+                  a.click();
+
+                  URL.revokeObjectURL(url);
+                }}
+              >
+                <ArrowDownTrayIcon />
+                Download
+              </Button>
+
+              <AlertDialog
+                isOpen={deleteState.isOpen}
+                onOpenChange={deleteState.setOpen}
+              >
+                <Button variant="danger" size="sm" onPress={deleteState.open}>
+                  <TrashIcon className="h-4 w-4" />
+                  Delete
+                </Button>
+
+                <AlertDialog.Backdrop>
+                  <AlertDialog.Container>
+                    <AlertDialog.Dialog>
+                      <AlertDialog.CloseTrigger className="m-3" />
+
+                      <AlertDialog.Header>
+                        <AlertDialog.Heading className="flex items-center gap-2 text-2xl mb-3">
+                          <AlertDialog.Icon />
+                          Delete Remix?
+                        </AlertDialog.Heading>
+                      </AlertDialog.Header>
+
+                      <AlertDialog.Body>
+                        This remix will be permanently deleted.
+                      </AlertDialog.Body>
+
+                      <AlertDialog.Footer>
+                        {error && (
+                          <p className="text-sm text-red-500">{error}</p>
+                        )}
+
+                        <Button variant="outline" onPress={deleteState.close}>
+                          Cancel
+                        </Button>
+
+                        <Button
+                          variant="danger"
+                          isDisabled={loading}
+                          onPress={handleDeleteRemix}
+                        >
+                          {loading && <Spinner size="sm" />}
+                          {loading ? "Deleting..." : "Delete"}
+                        </Button>
+                      </AlertDialog.Footer>
+                    </AlertDialog.Dialog>
+                  </AlertDialog.Container>
+                </AlertDialog.Backdrop>
+              </AlertDialog>
+            </Card.Footer>
+          </Card>
+        )}
       </div>
     </div>
   );
