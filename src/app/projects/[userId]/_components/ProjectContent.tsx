@@ -33,6 +33,11 @@ interface Props {
 export function ProjectContent({ remixes }: Props) {
   const defaultId = (remixes.find((r) => r.isMain) ?? remixes[0])?.id ?? null;
   const [selectedId, setSelectedId] = useState<string | null>(defaultId);
+  const [aiFeedback, setAiFeedback] = useState<string | null>(null);
+  const [loadingFeedback, setLoadingFeedback] = useState(false);
+  const [feedbackTimestamp, setFeedbackTimestamp] = useState<string | null>(
+    null,
+  );
 
   const selectedRemix = remixes.find((r) => r.id === selectedId) ?? null;
 
@@ -44,6 +49,35 @@ export function ProjectContent({ remixes }: Props) {
       return {};
     }
   }, [selectedRemix]);
+
+  async function handleGetFeedback() {
+    if (!selectedRemix) return;
+    setLoadingFeedback(true);
+    setAiFeedback(null);
+    try {
+      const res = await fetch("/api/ai/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          projectJsonData: selectedRemix.projectJsonData,
+          remixName: selectedRemix.name,
+          remixDescription: selectedRemix.description,
+        }),
+      });
+      const data = await res.json();
+      setAiFeedback(data.feedback ?? "No feedback returned.");
+      setFeedbackTimestamp(
+        new Date().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+      );
+    } catch {
+      setAiFeedback("Failed to get feedback. Please try again.");
+    } finally {
+      setLoadingFeedback(false);
+    }
+  }
 
   return (
     <div className="flex gap-6 flex-1 min-h-0">
@@ -95,7 +129,11 @@ export function ProjectContent({ remixes }: Props) {
                 <Card.Footer>
                   <Button
                     variant="outline"
-                    onPress={() => setSelectedId(remix.id)}
+                    onPress={() => {
+                      setSelectedId(remix.id);
+                      setAiFeedback(null);
+                      setFeedbackTimestamp(null);
+                    }}
                     fullWidth
                   >
                     <EyeIcon />
@@ -109,7 +147,16 @@ export function ProjectContent({ remixes }: Props) {
       </ScrollShadow>
       <Separator orientation="vertical"></Separator>
       <div className="flex-1 min-w-0 flex flex-col gap-3 p-2">
-        <ScriptsPanel raw={selectedRemix?.projectJsonData} scripts={scripts} />
+        <ScriptsPanel
+          raw={selectedRemix?.projectJsonData}
+          scripts={scripts}
+          aiFeedback={aiFeedback}
+          loadingFeedback={loadingFeedback}
+          onGetFeedback={handleGetFeedback}
+          remixName={selectedRemix?.name ?? null}
+          remixDescription={selectedRemix?.description ?? null}
+          feedbackTimestamp={feedbackTimestamp}
+        />
         <Card variant="secondary">
           <Card.Header>
             <Card.Title>About this Remix</Card.Title>

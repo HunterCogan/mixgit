@@ -11,6 +11,7 @@
     "test": "vitest"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.100.1",
     "@better-auth/mongo-adapter": "^1.6.9",
     "@heroicons/react": "^2.2.0",
     "@heroui/react": "^3.0.3",
