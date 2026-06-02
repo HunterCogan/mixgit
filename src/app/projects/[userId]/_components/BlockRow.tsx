@@ -1,6 +1,7 @@
 import type { Block, ResolvedInput } from "@/types";
 import { getAllInputValues, getAllFieldValues } from "@/lib/scratch";
 import { ArrowUpIcon, CodeBracketSquareIcon } from "@heroicons/react/20/solid";
+import { inputLabel } from "@/lib/scratch-pseudocode";
 
 const CATEGORY_COLORS: Record<string, string> = {
   motion: "bg-blue-600",
@@ -20,26 +21,6 @@ function parseOpcode(opcode: string): { category: string; action: string } {
   const sep = opcode.indexOf("_");
   if (sep === -1) return { category: "", action: opcode };
   return { category: opcode.slice(0, sep), action: opcode.slice(sep + 1) };
-}
-
-function inputLabel(input: ResolvedInput): string | null {
-  switch (input.type) {
-    case "number":
-      return String(input.value);
-    case "string":
-      return `"${input.value}"`;
-    case "color":
-      return input.value;
-    case "broadcast":
-      return `@${input.name}`;
-    case "variable":
-    case "list":
-      return `(${input.name})`;
-    case "block":
-      return `[ ]`;
-    default:
-      return null;
-  }
 }
 
 interface Props {

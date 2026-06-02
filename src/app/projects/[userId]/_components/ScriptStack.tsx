@@ -1,33 +1,7 @@
 import type { Script, Block } from "@/types";
 import { BlockRow } from "./BlockRow";
 import { Card } from "@heroui/react";
-
-function computeIndents(blocks: Block[]): number[] {
-  const blockMap = new Map(blocks.map((b) => [b.id, b]));
-  const memo = new Map<string, number>();
-
-  function depth(block: Block): number {
-    if (memo.has(block.id)) return memo.get(block.id)!;
-    let result: number;
-    if (!block.parent) {
-      result = 0;
-    } else {
-      const parent = blockMap.get(block.parent);
-
-      // Sequential blocks (parent.next === block.id) have no nesting,
-      // so they have the same indent: depth(parent)
-      // Nested input (condition, operand, body, etc.) goes one deeper: depth(parent) + 1
-      result =
-        !parent || parent.next === block.id
-          ? depth(parent ?? block)
-          : depth(parent) + 1;
-    }
-    memo.set(block.id, result);
-    return result;
-  }
-
-  return blocks.map(depth);
-}
+import { computeIndents } from "@/lib/scratch-pseudocode";
 
 function isBlockReporter(block: Block, blockMap: Map<string, Block>): boolean {
   if (!block.parent) return false;
