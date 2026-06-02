@@ -7,6 +7,7 @@ export interface IUser {
   name: string;
   email: string;
   color: string;
+  about?: string;
 }
 
 const UserSchema = new mongoose.Schema<IUser>(
@@ -14,6 +15,7 @@ const UserSchema = new mongoose.Schema<IUser>(
     name: String,
     email: String,
     color: { type: String, default: "#808080" },
+    about: { type: String, default: "" },
   },
   { collection: "user" }, // Better Auth's default collection name
 );

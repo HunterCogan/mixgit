@@ -26,6 +26,11 @@ export const auth = betterAuth({
             .toString(16)
             .padStart(6, "0"),
       },
+      about: {
+        type: "string",
+        required: false,
+        defaultValue: "",
+      },
     },
   },
   baseURL: process.env.BETTER_AUTH_URL || "http://localhost:3000",
