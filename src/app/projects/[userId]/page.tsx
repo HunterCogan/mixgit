@@ -6,7 +6,14 @@ import UserModel from "@/models/User";
 import mongoose from "mongoose";
 import { notFound } from "next/navigation";
 import { ProjectContent, type RemixItem } from "./_components/ProjectContent";
-import { Avatar, Chip, Separator, Surface } from "@heroui/react";
+import {
+  Avatar,
+  Chip,
+  Input,
+  Separator,
+  Surface,
+  TextArea,
+} from "@heroui/react";
 import CreateRemixModal from "./_components/CreateRemixModal";
 import { BackButton } from "../../../components/BackButton";
 import AddCollaboratorModal from "./_components/AddCollaboratorModal";
@@ -76,11 +83,17 @@ export default async function ProjectPage({
     <div className="font-sans h-[calc(100vh-3.5rem)] flex flex-col overflow-hidden">
       <main className="px-6 py-8 flex flex-col gap-6 flex-1 min-h-0">
         <Surface className="flex flex-row justify-between rounded-3xl p-6">
-          <div className="flex flex-row gap-6">
+          <div className="flex flex-row flex-1 gap-6">
             <BackButton href="/dashboard" />
-            <div className="flex flex-col">
-              <h1 className="text-2xl font-bold">{project.name}</h1>
-              {project.description}
+            <div className="flex flex-col flex-1">
+              <Input
+                value={project.name}
+                className="border-none shadow-none rounded-none text-2xl font-bold m-1 p-1"
+              ></Input>
+              <TextArea
+                value={project.description}
+                className="border-none shadow-none rounded-none text-sm m-1 p-1 max-h-18"
+              ></TextArea>
               <div className="flex flex-row gap-2 my-2">
                 <Chip>
                   Created:{" "}

@@ -12,8 +12,11 @@ import {
 } from "@heroui/react";
 import { parseScripts } from "@/lib/scratch";
 import { ScriptsPanel } from "./ScriptsPanel";
-import { ArrowDownTrayIcon, TrashIcon } from "@heroicons/react/24/outline";
-import { EyeIcon } from "@heroicons/react/24/solid";
+import {
+  ArrowDownTrayIcon,
+  TrashIcon,
+  EyeIcon,
+} from "@heroicons/react/24/outline";
 
 export type RemixItem = {
   id: string;
