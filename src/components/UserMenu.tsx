@@ -6,9 +6,11 @@ import { logout } from "@/lib/actions/auth";
 export default function UserMenu({
   name,
   color,
+  userId,
 }: {
   name: string;
   color: string | undefined;
+  userId: string;
 }) {
   const initial = name.substring(0, 2).toUpperCase();
 
@@ -24,6 +26,7 @@ export default function UserMenu({
         </Dropdown.Trigger>
         <Dropdown.Popover placement="bottom end">
           <Dropdown.Menu>
+            <Dropdown.Item href={`/users/${userId}`}>My profile</Dropdown.Item>
             <Dropdown.Item href="/settings">Settings</Dropdown.Item>
             <Dropdown.Item onPress={() => logout()} className="text-red-400">
               Logout

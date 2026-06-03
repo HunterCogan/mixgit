@@ -12,7 +12,7 @@ export default async function Header() {
       <Link href="/dashboard" className="text-3xl font-bold">
         Scratchpad
       </Link>
-      <UserMenu name={name} color={user?.color} />
+      <UserMenu name={name} color={user?.color} userId={userId} />
     </header>
   );
 }

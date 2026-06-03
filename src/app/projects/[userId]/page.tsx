@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { verifySession } from "@/lib/dal";
 import connectDB from "@/lib/db";
 import ProjectModel from "@/models/Project";
@@ -112,11 +113,13 @@ export default async function ProjectPage({
                   </Avatar.Fallback>
                 </Avatar>
               ))}
-              <Avatar className="border-2 border-white">
-                <Avatar.Fallback style={{ backgroundColor: creator?.color }}>
-                  {creator?.name?.substring(0, 2).toUpperCase()}
-                </Avatar.Fallback>
-              </Avatar>
+              <Link href={`/users/${userId}`}>
+                <Avatar className="border-2 border-white">
+                  <Avatar.Fallback style={{ backgroundColor: creator?.color }}>
+                    {creator?.name?.substring(0, 2).toUpperCase()}
+                  </Avatar.Fallback>
+                </Avatar>
+              </Link>
               <span className="ml-2">
                 <AddCollaboratorModal projectId={project._id.toString()} />
               </span>
