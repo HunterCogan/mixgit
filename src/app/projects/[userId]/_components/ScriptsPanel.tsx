@@ -18,6 +18,7 @@ import {
   InformationCircleIcon,
   SparklesIcon,
 } from "@heroicons/react/24/outline";
+import ReactMarkdown from "react-markdown";
 import { ScriptStack } from "./ScriptStack";
 import type { Script } from "@/types";
 
@@ -114,17 +115,11 @@ export function ScriptsPanel({
                       <p className="text-sm mb-4">{remixDescription}</p>
                     )}
                     {aiFeedback && (
-                      <Card variant="secondary" className="pt-1">
+                      <Card variant="secondary">
                         <Card.Content className="overflow-auto">
-                          {aiFeedback.split("\n").map((line, i) =>
-                            line.startsWith("## ") ? (
-                              <p key={i} className="font-bold mt-2">
-                                {line.slice(3)}
-                              </p>
-                            ) : (
-                              <p key={i}>{line}</p>
-                            ),
-                          )}
+                          <div className="text-sm prose prose-h4:mb-0 prose-code:font-family:monospace prose-code:before:content-none prose-code:after:content-none">
+                            <ReactMarkdown>{aiFeedback}</ReactMarkdown>
+                          </div>
                         </Card.Content>
                       </Card>
                     )}
@@ -176,11 +171,11 @@ export function ScriptsPanel({
         )}
       </div>
       {isEmpty || isRawToggled ? (
-        <Surface className="flex flex-wrap flex-1 overflow-auto whitespace-pre-wrap p-3 min-h-0 border-1 rounded-lg">
+        <Surface className="flex flex-wrap flex-1 overflow-auto whitespace-pre-wrap p-3 min-h-0 border rounded-lg">
           {raw}
         </Surface>
       ) : (
-        <Surface className="flex flex-wrap gap-3 p-3 justify-around flex-1 min-h-0 overflow-auto bg-grid border-1 rounded-lg">
+        <Surface className="flex flex-wrap gap-3 p-3 justify-around flex-1 min-h-0 overflow-auto bg-grid border rounded-lg">
           {targetScripts.map((script) => (
             <ScriptStack key={script.hatBlockId} script={script} />
           ))}
