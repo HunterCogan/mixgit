@@ -1,6 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
+
+import { AlertDialog, Spinner, useOverlayState } from "@heroui/react";
 import {
   Avatar,
   Button,
@@ -12,8 +14,11 @@ import {
 } from "@heroui/react";
 import { parseScripts } from "@/lib/scratch";
 import { ScriptsPanel } from "./ScriptsPanel";
-import { ArrowDownTrayIcon, TrashIcon } from "@heroicons/react/24/outline";
-import { EyeIcon } from "@heroicons/react/24/solid";
+import {
+  ArrowDownTrayIcon,
+  TrashIcon,
+  EyeIcon,
+} from "@heroicons/react/24/outline";
 
 export type RemixItem = {
   id: string;
@@ -33,6 +38,15 @@ interface Props {
 export function ProjectContent({ remixes }: Props) {
   const defaultId = (remixes.find((r) => r.isMain) ?? remixes[0])?.id ?? null;
   const [selectedId, setSelectedId] = useState<string | null>(defaultId);
+  const [aiFeedback, setAiFeedback] = useState<string | null>(null);
+  const [loadingFeedback, setLoadingFeedback] = useState(false);
+  const [feedbackTimestamp, setFeedbackTimestamp] = useState<string | null>(
+    null,
+  );
+
+  const [loading, setLoading] = useState(false);
+
+  const deleteState = useOverlayState();
 
   const selectedRemix = remixes.find((r) => r.id === selectedId) ?? null;
 
@@ -45,6 +59,59 @@ export function ProjectContent({ remixes }: Props) {
     }
   }, [selectedRemix]);
 
+  async function handleGetFeedback() {
+    if (!selectedRemix) return;
+    setLoadingFeedback(true);
+    setAiFeedback(null);
+    try {
+      const res = await fetch("/api/ai/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          projectJsonData: selectedRemix.projectJsonData,
+          remixName: selectedRemix.name,
+          remixDescription: selectedRemix.description,
+        }),
+      });
+      const data = await res.json();
+      setAiFeedback(data.feedback ?? "No feedback returned.");
+      setFeedbackTimestamp(
+        new Date().toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+      );
+    } catch {
+      setAiFeedback("Failed to get feedback. Please try again.");
+    } finally {
+      setLoadingFeedback(false);
+    }
+  }
+
+  async function handleDeleteRemix() {
+    if (!selectedRemix) {
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const response = await fetch(`/api/remixes/${selectedRemix.id}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete remix");
+      }
+
+      window.location.reload();
+    } catch (error) {
+      console.error(error);
+      alert("Failed to delete remix");
+    } finally {
+      setLoading(false);
+    }
+  }
   return (
     <div className="flex gap-6 flex-1 min-h-0">
       <ScrollShadow
@@ -95,7 +162,11 @@ export function ProjectContent({ remixes }: Props) {
                 <Card.Footer>
                   <Button
                     variant="outline"
-                    onPress={() => setSelectedId(remix.id)}
+                    onPress={() => {
+                      setSelectedId(remix.id);
+                      setAiFeedback(null);
+                      setFeedbackTimestamp(null);
+                    }}
                     fullWidth
                   >
                     <EyeIcon />
@@ -109,51 +180,109 @@ export function ProjectContent({ remixes }: Props) {
       </ScrollShadow>
       <Separator orientation="vertical"></Separator>
       <div className="flex-1 min-w-0 flex flex-col gap-3 p-2">
-        <ScriptsPanel raw={selectedRemix?.projectJsonData} scripts={scripts} />
-        <Card variant="secondary">
-          <Card.Header>
-            <Card.Title>About this Remix</Card.Title>
-            <Card.Description>
-              {selectedRemix?.name} created {selectedRemix?.createdAt} by{" "}
-              <Link href="#">
-                @{selectedRemix?.uploaderName}
-                <Link.Icon></Link.Icon>
-              </Link>
-            </Card.Description>
-          </Card.Header>
-          <Card.Content className="flex flex-row justify-between">
-            <ScrollShadow className="h-15">
-              {selectedRemix?.description}
-            </ScrollShadow>
-            <div className="flex gap-2">
-              <Button
-                size="sm"
-                onPress={() => {
-                  if (!selectedRemix) return;
-                  // Store project.json of selectedRemix as raw binary data
-                  // then create a URL to point to this data to download it
-                  const blob = new Blob([selectedRemix.projectJsonData], {
-                    type: "application/json",
-                  });
-                  const url = URL.createObjectURL(blob);
-                  // link element with "download" required for download
-                  const a = document.createElement("a");
-                  a.href = url;
-                  a.download = "project.json";
-                  a.click();
-                  URL.revokeObjectURL(url);
-                }}
-              >
-                <ArrowDownTrayIcon />
-                Download
-              </Button>
-              <Button variant="danger" size="sm">
-                <TrashIcon className="h-4 w-4" />
-                Delete
-              </Button>
-            </div>
-          </Card.Content>
-        </Card>
+        <ScriptsPanel
+          raw={selectedRemix?.projectJsonData}
+          scripts={scripts}
+          aiFeedback={aiFeedback}
+          loadingFeedback={loadingFeedback}
+          onGetFeedback={handleGetFeedback}
+          remixName={selectedRemix?.name ?? null}
+          remixDescription={selectedRemix?.description ?? null}
+          feedbackTimestamp={feedbackTimestamp}
+          hasSelectedRemix={selectedRemix !== null}
+        />
+        {selectedRemix && (
+          <Card variant="secondary">
+            <Card.Header>
+              <Card.Title>About this Remix</Card.Title>
+              <Card.Description>
+                {selectedRemix.name} created {selectedRemix.createdAt} by{" "}
+                <Link href="#">
+                  @{selectedRemix.uploaderName}
+                  <Link.Icon />
+                </Link>
+              </Card.Description>
+            </Card.Header>
+
+            <Card.Content className="flex flex-row justify-between">
+              <ScrollShadow className="h-15">
+                {selectedRemix.description}
+              </ScrollShadow>
+
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  onPress={() => {
+                    const blob = new Blob([selectedRemix.projectJsonData], {
+                      type: "application/json",
+                    });
+
+                    const url = URL.createObjectURL(blob);
+
+                    const a = document.createElement("a");
+
+                    a.href = url;
+                    a.download = "project.json";
+                    a.click();
+
+                    URL.revokeObjectURL(url);
+                  }}
+                >
+                  <ArrowDownTrayIcon />
+                  Download
+                </Button>
+
+                <AlertDialog
+                  isOpen={deleteState.isOpen}
+                  onOpenChange={deleteState.setOpen}
+                >
+                  <Button variant="danger" size="sm" onPress={deleteState.open}>
+                    <TrashIcon className="h-4 w-4" />
+                    Delete
+                  </Button>
+
+                  <AlertDialog.Backdrop>
+                    <AlertDialog.Container>
+                      <AlertDialog.Dialog>
+                        <AlertDialog.CloseTrigger className="m-3" />
+
+                        <AlertDialog.Header>
+                          <AlertDialog.Heading className="flex items-center gap-2 text-2xl mb-3">
+                            <AlertDialog.Icon />
+                            Delete Remix?
+                          </AlertDialog.Heading>
+                        </AlertDialog.Header>
+
+                        <AlertDialog.Body>
+                          <strong>{selectedRemix.name}</strong> will be
+                          permanently deleted. This cannot be undone.
+                        </AlertDialog.Body>
+
+                        <AlertDialog.Footer>
+                          <Button variant="outline" onPress={deleteState.close}>
+                            Cancel
+                          </Button>
+
+                          <Button
+                            variant="danger"
+                            isDisabled={loading}
+                            onPress={async () => {
+                              await handleDeleteRemix();
+                              deleteState.close();
+                            }}
+                          >
+                            {loading && <Spinner size="sm" />}
+                            {loading ? "Deleting..." : "Delete"}
+                          </Button>
+                        </AlertDialog.Footer>
+                      </AlertDialog.Dialog>
+                    </AlertDialog.Container>
+                  </AlertDialog.Backdrop>
+                </AlertDialog>
+              </div>
+            </Card.Content>
+          </Card>
+        )}
       </div>
     </div>
   );

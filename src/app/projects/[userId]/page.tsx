@@ -6,10 +6,8 @@ import UserModel from "@/models/User";
 import mongoose from "mongoose";
 import { notFound } from "next/navigation";
 import { ProjectContent, type RemixItem } from "./_components/ProjectContent";
-import { Avatar, Chip, Separator, Surface } from "@heroui/react";
-import CreateRemixModal from "./_components/CreateRemixModal";
-import { BackButton } from "../../../components/BackButton";
-import AddCollaboratorModal from "./_components/AddCollaboratorModal";
+import { Separator } from "@heroui/react";
+import { ProjectHeader } from "./_components/ProjectHeader";
 
 function formatTimestamp(date: Date): string {
   const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
@@ -75,58 +73,25 @@ export default async function ProjectPage({
   return (
     <div className="font-sans h-[calc(100vh-3.5rem)] flex flex-col overflow-hidden">
       <main className="px-6 py-8 flex flex-col gap-6 flex-1 min-h-0">
-        <Surface className="flex flex-row justify-between rounded-3xl p-6">
-          <div className="flex flex-row gap-6">
-            <BackButton href="/dashboard" />
-            <div className="flex flex-col">
-              <h1 className="text-2xl font-bold">{project.name}</h1>
-              {project.description}
-              <div className="flex flex-row gap-2 my-2">
-                <Chip>
-                  Created:{" "}
-                  {project.createdAt.toLocaleDateString("en-US", {
-                    month: "short",
-                    day: "numeric",
-                    year: "numeric",
-                  })}
-                </Chip>
-                {remixes[0] ? (
-                  <Chip>
-                    Updated: {serializedRemixes[0]?.createdAt ?? "Never"}
-                  </Chip>
-                ) : (
-                  <></>
-                )}
-              </div>
-            </div>
-          </div>
-          <div className="flex flex-col gap-2">
-            <div className="flex flex-row">
-              {project.team.map((member) => (
-                <Avatar
-                  key={member._id.toString()}
-                  className="-mr-4 border-2 border-white"
-                >
-                  <Avatar.Fallback style={{ backgroundColor: member.color }}>
-                    {member.name.substring(0, 2).toUpperCase()}
-                  </Avatar.Fallback>
-                </Avatar>
-              ))}
-              <Avatar className="border-2 border-white">
-                <Avatar.Fallback style={{ backgroundColor: creator?.color }}>
-                  {creator?.name?.substring(0, 2).toUpperCase()}
-                </Avatar.Fallback>
-              </Avatar>
-              <span className="ml-2">
-                <AddCollaboratorModal projectId={project._id.toString()} />
-              </span>
-            </div>
-            <CreateRemixModal
-              projectId={project._id.toString()}
-              creatorId={userId}
-            />
-          </div>
-        </Surface>
+        <ProjectHeader
+          projectId={project._id.toString()}
+          creatorId={userId}
+          initialName={project.name}
+          initialDescription={project.description ?? ""}
+          createdAt={project.createdAt.toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+          })}
+          lastUpdated={serializedRemixes[0]?.createdAt}
+          team={project.team.map((m) => ({
+            id: m._id.toString(),
+            name: m.name,
+            color: m.color,
+          }))}
+          creatorName={creator?.name ?? ""}
+          creatorColor={creator?.color ?? ""}
+        />
         <Separator></Separator>
         <ProjectContent remixes={serializedRemixes} />
       </main>

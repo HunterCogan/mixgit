@@ -7,7 +7,12 @@ import { useRouter } from "next/navigation";
 export function BackButton({ href }: { href: string }) {
   const router = useRouter();
   return (
-    <Button variant="outline" isIconOnly onPress={() => router.push(href)}>
+    <Button
+      variant="outline"
+      isIconOnly
+      size="md"
+      onPress={() => router.push(href)}
+    >
       <ArrowLeftIcon />
     </Button>
   );
