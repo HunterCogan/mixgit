@@ -88,10 +88,3 @@ export async function POST(
     );
   }
 }
-
-export async function DELETE(
-  _req: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
-  // TODO
-}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 
 import { AlertDialog, Spinner, useOverlayState } from "@heroui/react";
 import {
@@ -36,6 +37,7 @@ interface Props {
 }
 
 export function ProjectContent({ remixes }: Props) {
+  const router = useRouter();
   const defaultId = (remixes.find((r) => r.isMain) ?? remixes[0])?.id ?? null;
   const [selectedId, setSelectedId] = useState<string | null>(defaultId);
   const [aiFeedback, setAiFeedback] = useState<string | null>(null);
@@ -45,6 +47,7 @@ export function ProjectContent({ remixes }: Props) {
   );
 
   const [loading, setLoading] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   const deleteState = useOverlayState();
 
@@ -89,25 +92,24 @@ export function ProjectContent({ remixes }: Props) {
   }
 
   async function handleDeleteRemix() {
-    if (!selectedRemix) {
-      return;
-    }
-
+    if (!selectedRemix) return;
     setLoading(true);
-
     try {
-      const response = await fetch(`/api/remixes/${selectedRemix.id}`, {
+      const res = await fetch(`/api/remixes/${selectedRemix.id}`, {
         method: "DELETE",
       });
 
-      if (!response.ok) {
-        throw new Error("Failed to delete remix");
+      if (res.ok) {
+        deleteState.close();
+        router.refresh();
+      } else {
+        const data = await res.json();
+        setDeleteError(
+          typeof data.error === "string"
+            ? data.error
+            : "Failed to delete remix",
+        );
       }
-
-      window.location.reload();
-    } catch (error) {
-      console.error(error);
-      alert("Failed to delete remix");
     } finally {
       setLoading(false);
     }
@@ -259,6 +261,11 @@ export function ProjectContent({ remixes }: Props) {
                         </AlertDialog.Body>
 
                         <AlertDialog.Footer>
+                          {deleteError && (
+                            <p className="text-sm text-red-500">
+                              {deleteError}
+                            </p>
+                          )}
                           <Button variant="outline" onPress={deleteState.close}>
                             Cancel
                           </Button>
@@ -266,10 +273,7 @@ export function ProjectContent({ remixes }: Props) {
                           <Button
                             variant="danger"
                             isDisabled={loading}
-                            onPress={async () => {
-                              await handleDeleteRemix();
-                              deleteState.close();
-                            }}
+                            onPress={handleDeleteRemix}
                           >
                             {loading && <Spinner size="sm" />}
                             {loading ? "Deleting..." : "Delete"}
