@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { verifySession } from "@/lib/dal";
 import connectDB from "@/lib/db";
 import ProjectModel from "@/models/Project";

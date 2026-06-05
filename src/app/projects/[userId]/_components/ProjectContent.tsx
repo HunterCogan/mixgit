@@ -2,9 +2,15 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
-
-import { AlertDialog, Spinner, useOverlayState } from "@heroui/react";
+import {
+  AlertDialog,
+  Badge,
+  ErrorMessage,
+  Popover,
+  Spinner,
+  ToggleButton,
+  useOverlayState,
+} from "@heroui/react";
 import {
   Avatar,
   Button,
@@ -12,14 +18,12 @@ import {
   Chip,
   ScrollShadow,
   Separator,
+  Link,
 } from "@heroui/react";
 import { parseScripts } from "@/lib/scratch";
 import { ScriptsPanel } from "./ScriptsPanel";
-import {
-  ArrowDownTrayIcon,
-  TrashIcon,
-  EyeIcon,
-} from "@heroicons/react/24/outline";
+import { ArrowDownTrayIcon, TrashIcon } from "@heroicons/react/24/outline";
+import { StarIcon } from "@heroicons/react/16/solid";
 
 export type RemixItem = {
   id: string;
@@ -120,10 +124,10 @@ export function ProjectContent({ creatorId, userId, remixes }: Props) {
   return (
     <div className="flex gap-6 flex-1 min-h-0">
       <ScrollShadow
-        className="max-w-60 shrink-0 flex flex-col gap-3 p-2"
+        className="w-xs shrink-0 flex flex-col gap-3 p-2"
         hideScrollBar
       >
-        <div className="flex flex-row justify-between">
+        <div className="flex justify-between">
           <h2 className="text-lg font-semibold">Remixes</h2>
           <Chip>{remixes.length}</Chip>
         </div>
@@ -132,62 +136,70 @@ export function ProjectContent({ creatorId, userId, remixes }: Props) {
         ) : (
           <div className="flex flex-col gap-2">
             {remixes.map((remix) => (
-              <Card
-                key={remix.id}
-                className={
-                  remix.id === selectedId ? "ring-2 ring-green-500" : ""
-                }
-              >
-                <Card.Header>
-                  <Card.Title className="flex justify-between">
-                    <div className="flex gap-2">
-                      {remix.name}
+              <Card key={remix.id}>
+                <div className="flex flex-row items-center gap-1">
+                  <Avatar size="sm">
+                    <Avatar.Fallback
+                      className="select-none"
+                      style={{ backgroundColor: remix.uploaderColor }}
+                    >
+                      {remix.uploaderName.substring(0, 2).toUpperCase()}
+                    </Avatar.Fallback>
+                  </Avatar>
+                  <Card.Header className="flex flex-row flex-1 items-center justify-between">
+                    <Badge.Anchor>
+                      <Card.Title className="flex gap-1">
+                        <ToggleButton
+                          size="sm"
+                          variant="ghost"
+                          isSelected={remix.id === selectedId}
+                          defaultSelected={remix.isMain}
+                          onPress={() => {
+                            setSelectedId(remix.id);
+                            setAiFeedback(null);
+                            setFeedbackTimestamp(null);
+                          }}
+                        >
+                          {remix.name}
+                        </ToggleButton>
+                      </Card.Title>
                       {remix.isMain && (
-                        <Chip size="sm">
-                          <Chip.Label>main</Chip.Label>
-                        </Chip>
+                        <Popover>
+                          <Popover.Trigger>
+                            <Badge color="accent" size="sm">
+                              <StarIcon className="size-2.5" />
+                            </Badge>
+                          </Popover.Trigger>
+                          <Popover.Content>
+                            <Popover.Dialog>
+                              <p className="text-xs max-w-56">
+                                {userId === creatorId ? (
+                                  <span>You&apos;ve </span>
+                                ) : (
+                                  "The project owner has "
+                                )}
+                                marked this as the <strong>main </strong> mix,
+                                the primary version of the codebase. New
+                                contributors should start here!
+                              </p>
+                            </Popover.Dialog>
+                          </Popover.Content>
+                        </Popover>
                       )}
-                    </div>
-                    {remix.id === selectedId && (
-                      <div className="w-2 h-2 rounded-full bg-green-500 self-center shrink-0" />
-                    )}
-                  </Card.Title>
-                  <Card.Description>Created {remix.createdAt}</Card.Description>
-                </Card.Header>
-                <Card.Content className="flex flex-row gap-2 items-center">
-                  <Link target="_blank" href={`/users/${remix.uploaderId}`}>
-                    <Avatar size="sm">
-                      <Avatar.Fallback
-                        style={{ backgroundColor: remix.uploaderColor }}
-                      >
-                        {remix.uploaderName.substring(0, 2).toUpperCase()}
-                      </Avatar.Fallback>
-                    </Avatar>
-                  </Link>
-                  <span className="truncate text-sm"> {remix.description}</span>
+                    </Badge.Anchor>
+                    <Card.Description>{remix.createdAt}</Card.Description>
+                  </Card.Header>
+                </div>
+                <Card.Content>
+                  <p className="text-xs truncate">{remix.description}</p>
                 </Card.Content>
-                <Card.Footer>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onPress={() => {
-                      setSelectedId(remix.id);
-                      setAiFeedback(null);
-                      setFeedbackTimestamp(null);
-                    }}
-                    fullWidth
-                  >
-                    <EyeIcon />
-                    View
-                  </Button>
-                </Card.Footer>
               </Card>
             ))}
           </div>
         )}
       </ScrollShadow>
       <Separator orientation="vertical"></Separator>
-      <div className="flex-1 min-w-0 flex flex-col gap-3 p-2">
+      <div className="flex flex-1 flex-col min-w-0 gap-3 p-2">
         <ScriptsPanel
           raw={selectedRemix?.projectJsonData}
           scripts={scripts}
@@ -206,16 +218,16 @@ export function ProjectContent({ creatorId, userId, remixes }: Props) {
               <Card.Description>
                 {selectedRemix.name} created {selectedRemix.createdAt} by{" "}
                 <Link
-                  className="link"
                   target="_blank"
                   href={`/users/${selectedRemix.uploaderId}`}
                 >
                   {selectedRemix.uploaderName}
+                  <Link.Icon />
                 </Link>
               </Card.Description>
             </Card.Header>
 
-            <Card.Content className="flex flex-row justify-between">
+            <Card.Content className="flex justify-between">
               <ScrollShadow className="h-15">
                 {selectedRemix.description}
               </ScrollShadow>
@@ -277,13 +289,13 @@ export function ProjectContent({ creatorId, userId, remixes }: Props) {
                         </AlertDialog.Body>
 
                         <AlertDialog.Footer>
+                          <ErrorMessage>{deleteError}</ErrorMessage>
                           <Button
                             variant="tertiary"
                             onPress={deleteState.close}
                           >
                             Cancel
                           </Button>
-
                           <Button
                             variant="danger"
                             isDisabled={loading}
