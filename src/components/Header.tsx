@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { verifySession } from "@/lib/dal";
+import { Header as HeroHeader } from "@heroui/react";
 import UserMenu from "./UserMenu";
+import GlobalSearch from "./GlobalSearch";
 import User from "@/models/User";
 
 export default async function Header() {
@@ -9,11 +11,14 @@ export default async function Header() {
   const displayName = user?.name ?? name;
 
   return (
-    <header className="fixed top-0 left-0 right-0 h-14 flex items-center justify-between px-6 border-b border-nav-border bg-nav-surface z-30">
+    <HeroHeader className="fixed top-0 left-0 right-0 h-14 flex items-center justify-between px-6 py-0 border-b border-nav-border bg-nav-surface z-30">
       <Link href="/dashboard" className="text-3xl font-bold">
         Scratchpad
       </Link>
-      <UserMenu name={displayName} color={user?.color} userId={userId} />
-    </header>
+      <div className="flex items-center gap-4 min-w-0 shrink">
+        <GlobalSearch />
+        <UserMenu name={displayName} color={user?.color} userId={userId} />
+      </div>
+    </HeroHeader>
   );
 }
