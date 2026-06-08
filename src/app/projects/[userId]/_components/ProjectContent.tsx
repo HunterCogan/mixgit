@@ -6,6 +6,7 @@ import { Badge, Popover, ToggleButton } from "@heroui/react";
 import { Avatar, Card, Chip, ScrollShadow, Link } from "@heroui/react";
 import { parseScripts } from "@/lib/scratch";
 import { ScriptsPanel } from "./ScriptsPanel";
+import type { AIFeedback } from "@/types";
 import { StarIcon } from "@heroicons/react/16/solid";
 
 export type RemixItem = {
@@ -30,7 +31,7 @@ export function ProjectContent({ creatorId, userId, remixes }: Props) {
   const router = useRouter();
   const defaultId = (remixes.find((r) => r.isMain) ?? remixes[0])?.id ?? null;
   const [selectedId, setSelectedId] = useState<string | null>(defaultId);
-  const [aiFeedback, setAiFeedback] = useState<string | null>(null);
+  const [aiFeedback, setAiFeedback] = useState<AIFeedback | null>(null);
   const [loadingFeedback, setLoadingFeedback] = useState(false);
   const [feedbackTimestamp, setFeedbackTimestamp] = useState<string | null>(
     null,
@@ -52,7 +53,7 @@ export function ProjectContent({ creatorId, userId, remixes }: Props) {
     setLoadingFeedback(true);
     setAiFeedback(null);
     try {
-      const res = await fetch("/api/ai/feedback", {
+      const res = await fetch("/api/ai/feedback/block", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -62,7 +63,7 @@ export function ProjectContent({ creatorId, userId, remixes }: Props) {
         }),
       });
       const data = await res.json();
-      setAiFeedback(data.feedback ?? "No feedback returned.");
+      setAiFeedback(data.feedback ?? null);
       setFeedbackTimestamp(
         new Date().toLocaleTimeString([], {
           hour: "2-digit",
@@ -70,7 +71,12 @@ export function ProjectContent({ creatorId, userId, remixes }: Props) {
         }),
       );
     } catch {
-      setAiFeedback("Failed to get feedback. Please try again.");
+      setAiFeedback({
+        what_works_well: "",
+        suggestions: [],
+        logic_issues: [],
+        error: "Failed to get feedback. Please try again later.",
+      });
     } finally {
       setLoadingFeedback(false);
     }
