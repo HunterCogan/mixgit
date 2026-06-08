@@ -6,7 +6,7 @@ import { Badge, Popover, ToggleButton } from "@heroui/react";
 import { Avatar, Card, Chip, ScrollShadow, Link } from "@heroui/react";
 import { parseScripts } from "@/lib/scratch";
 import { ScriptsPanel } from "./ScriptsPanel";
-import type { AiFeedback } from "@/types";
+import type { AIFeedback } from "@/types";
 import { StarIcon } from "@heroicons/react/16/solid";
 
 export type RemixItem = {
@@ -31,7 +31,7 @@ export function ProjectContent({ creatorId, userId, remixes }: Props) {
   const router = useRouter();
   const defaultId = (remixes.find((r) => r.isMain) ?? remixes[0])?.id ?? null;
   const [selectedId, setSelectedId] = useState<string | null>(defaultId);
-  const [aiFeedback, setAiFeedback] = useState<AiFeedback | null>(null);
+  const [aiFeedback, setAiFeedback] = useState<AIFeedback | null>(null);
   const [loadingFeedback, setLoadingFeedback] = useState(false);
   const [feedbackTimestamp, setFeedbackTimestamp] = useState<string | null>(
     null,

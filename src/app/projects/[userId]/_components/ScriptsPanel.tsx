@@ -23,18 +23,17 @@ import {
 import {
   ArrowDownTrayIcon,
   InformationCircleIcon,
-  PlusIcon,
   SparklesIcon,
   TrashIcon,
 } from "@heroicons/react/24/outline";
 import ReactMarkdown from "react-markdown";
 import { ScriptStack } from "./ScriptStack";
-import type { Script, AiFeedback } from "@/types";
+import type { Script, AIFeedback } from "@/types";
 
 interface Props {
   raw: string | undefined;
   scripts: Record<string, Script[]>;
-  aiFeedback: AiFeedback | null;
+  aiFeedback: AIFeedback | null;
   loadingFeedback: boolean;
   onGetFeedback: () => void;
   onDeleteRemix: () => Promise<void>;
