@@ -1,13 +1,24 @@
 "use client";
 
 import { useState } from "react";
+import {
+  AlertDialog,
+  Button,
+  ErrorMessage,
+  Input,
+  Label,
+  Spinner,
+  TextField,
+  useOverlayState,
+} from "@heroui/react";
 
 export default function UsernameForm({ initialName }: { initialName: string }) {
   const [name, setName] = useState(initialName);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
-  const [isOpen, setIsOpen] = useState(false);
+
+  const editState = useOverlayState();
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -38,7 +49,8 @@ export default function UsernameForm({ initialName }: { initialName: string }) {
       }
 
       setMessage("Username updated successfully");
-      setIsOpen(false);
+
+      editState.close();
 
       setTimeout(() => {
         setMessage("");
@@ -61,93 +73,58 @@ export default function UsernameForm({ initialName }: { initialName: string }) {
           <span className="text-xl font-semibold text-gray-900">{name}</span>
         </div>
 
-        <button
-          type="button"
-          onClick={() => setIsOpen(true)}
-          className="
-            px-5
-            py-2
-            rounded-full
-            border
-            border-gray-300
-            bg-white
-            text-gray-700
-            font-medium
-            hover:bg-gray-50
-            transition
-        "
-        >
+        <Button variant="primary" onPress={editState.open}>
           Update Username
-        </button>
+        </Button>
       </div>
 
       {message && (
         <p className="text-sm text-emerald-600 mt-4 font-medium">{message}</p>
       )}
 
-      {error && <p className="text-sm text-red-600 mt-4">{error}</p>}
+      <ErrorMessage>{error}</ErrorMessage>
 
-      {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
-          <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-xl">
-            <div className="flex items-center justify-between">
-              <h3 className="text-2xl font-semibold">Update Username</h3>
+      <AlertDialog isOpen={editState.isOpen} onOpenChange={editState.setOpen}>
+        <AlertDialog.Backdrop>
+          <AlertDialog.Container>
+            <AlertDialog.Dialog>
+              <AlertDialog.CloseTrigger className="m-3" />
 
-              <button
-                type="button"
-                onClick={() => setIsOpen(false)}
-                className="text-2xl"
-              ></button>
-            </div>
+              <AlertDialog.Header>
+                <AlertDialog.Heading>Update Username</AlertDialog.Heading>
+              </AlertDialog.Header>
 
-            <p className="mt-3 text-sm text-gray-500">
-              Enter a new username for your account.
-            </p>
+              <AlertDialog.Body>
+                <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+                  <TextField value={name} onChange={setName}>
+                    <Label>New Username</Label>
 
-            <form onSubmit={handleSubmit} className="mt-6">
-              <label className="block text-sm font-medium mb-2">
-                New Username
-              </label>
+                    <Input
+                      variant="secondary"
+                      placeholder="Enter new username"
+                    />
+                  </TextField>
 
-              <input
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="w-full border rounded-full px-4 py-3"
-                placeholder="Enter new username"
-              />
+                  <div className="flex justify-end gap-3 mt-2">
+                    <Button variant="outline" onPress={() => editState.close()}>
+                      Cancel
+                    </Button>
 
-              <div className="mt-6 flex justify-end gap-3">
-                <button
-                  type="button"
-                  onClick={() => setIsOpen(false)}
-                  className="px-5 py-2 border rounded-full"
-                >
-                  Cancel
-                </button>
-
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="
-                    px-5
-                    py-2
-                    rounded-full
-                    border
-                    border-gray-300
-                    bg-white
-                    text-gray-700
-                    font-medium
-                    hover:bg-gray-50
-                    transition
-                    "
-                >
-                  {loading ? "Saving..." : "Confirm"}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+                    <Button
+                      variant="primary"
+                      type="submit"
+                      isDisabled={loading}
+                    >
+                      {loading && <Spinner size="sm" />}
+                      {loading ? "Saving..." : "Confirm"}
+                    </Button>
+                  </div>
+                </form>
+              </AlertDialog.Body>
+            </AlertDialog.Dialog>
+          </AlertDialog.Container>
+        </AlertDialog.Backdrop>
+      </AlertDialog>
     </div>
   );
 }

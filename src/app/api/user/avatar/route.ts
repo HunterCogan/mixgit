@@ -4,7 +4,6 @@ import User from "@/models/User";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function PATCH(request: NextRequest) {
-  console.log("AVATAR ROUTE HIT");
   try {
     const session = await verifySession();
 
@@ -32,7 +31,6 @@ export async function PATCH(request: NextRequest) {
       },
     );
   } catch (error) {
-    console.error(error);
     console.error("Avatar update error:", error);
 
     return NextResponse.json(

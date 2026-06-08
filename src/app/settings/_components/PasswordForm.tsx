@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Button, ErrorMessage, Form, Input, TextField } from "@heroui/react";
 
 export default function PasswordForm() {
   const [currentPassword, setCurrentPassword] = useState("");
@@ -68,56 +69,41 @@ export default function PasswordForm() {
     <div className="rounded-xl border p-5 bg-white">
       <h2 className="text-lg font-semibold">Change Password</h2>
 
-      <form onSubmit={handleSubmit} className="mt-4 space-y-4">
-        <input
-          type="password"
-          placeholder="Current Password"
-          value={currentPassword}
-          onChange={(e) => setCurrentPassword(e.target.value)}
-          className="w-full rounded-full border px-4 py-3"
-        />
+      <Form onSubmit={handleSubmit} className="mt-4 flex flex-col gap-4">
+        <TextField value={currentPassword} onChange={setCurrentPassword}>
+          <Input
+            type="password"
+            variant="secondary"
+            placeholder="Current Password"
+          />
+        </TextField>
 
-        <input
-          type="password"
-          placeholder="New Password"
-          value={newPassword}
-          onChange={(e) => setNewPassword(e.target.value)}
-          className="w-full rounded-full border px-4 py-3"
-        />
+        <TextField value={newPassword} onChange={setNewPassword}>
+          <Input
+            type="password"
+            variant="secondary"
+            placeholder="New Password"
+          />
+        </TextField>
 
-        <input
-          type="password"
-          placeholder="Confirm Password"
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-          className="w-full rounded-full border px-4 py-3"
-        />
+        <TextField value={confirmPassword} onChange={setConfirmPassword}>
+          <Input
+            type="password"
+            variant="secondary"
+            placeholder="Confirm Password"
+          />
+        </TextField>
 
         {message && <p className="text-sm text-green-600">{message}</p>}
 
-        {error && <p className="text-sm text-red-600">{error}</p>}
+        <ErrorMessage>{error}</ErrorMessage>
 
-        <div className="flex justify-end">
-          <button
-            type="submit"
-            disabled={loading}
-            className="
-              px-5
-              py-2
-              rounded-full
-              border
-              border-gray-300
-              bg-white
-              text-gray-700
-              font-medium
-              hover:bg-gray-50
-              transition
-            "
-          >
+        <div className="flex justify-end w-full">
+          <Button type="submit" variant="primary" isPending={loading}>
             {loading ? "Updating..." : "Update Password"}
-          </button>
+          </Button>
         </div>
-      </form>
+      </Form>
     </div>
   );
 }

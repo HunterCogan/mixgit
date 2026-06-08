@@ -1,9 +1,16 @@
 "use client";
 
 import { useState } from "react";
+import {
+  AlertDialog,
+  Button,
+  ErrorMessage,
+  Spinner,
+  useOverlayState,
+} from "@heroui/react";
 
 export default function DeleteAccountForm() {
-  const [isOpen, setIsOpen] = useState(false);
+  const deleteState = useOverlayState();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -39,58 +46,52 @@ export default function DeleteAccountForm() {
       </p>
 
       <div className="flex justify-end mt-4">
-        <button
-          type="button"
-          onClick={() => setIsOpen(true)}
-          className="px-5 py-2 rounded-full bg-red-600 text-white hover:bg-red-700 transition"
-        >
+        <Button variant="danger" onPress={deleteState.open}>
           Delete Account
-        </button>
+        </Button>
       </div>
 
-      {error && <p className="text-sm text-red-600 mt-4">{error}</p>}
+      <ErrorMessage>{error}</ErrorMessage>
 
-      {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30">
-          <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-xl">
-            <h2 className="text-lg font-semibold text-red-600">
-              Delete Account
-            </h2>
+      <AlertDialog
+        isOpen={deleteState.isOpen}
+        onOpenChange={deleteState.setOpen}
+      >
+        <AlertDialog.Backdrop>
+          <AlertDialog.Container>
+            <AlertDialog.Dialog>
+              <AlertDialog.CloseTrigger className="m-3" />
 
-            <p className="mt-4 text-sm text-gray-600">
-              This action cannot be undone.
-            </p>
+              <AlertDialog.Header>
+                <AlertDialog.Heading className="flex items-center gap-2 text-2xl mb-3">
+                  <AlertDialog.Icon />
+                  Delete Account?
+                </AlertDialog.Heading>
+              </AlertDialog.Header>
 
-            <div className="mt-6 flex justify-end gap-3">
-              <button
-                type="button"
-                onClick={() => setIsOpen(false)}
-                className="
-                px-5
-                py-2
-                rounded-full
-                bg-red-600
-                text-white
-                font-medium
-                hover:bg-red-700
-                transition
-                "
-              >
-                Cancel
-              </button>
+              <AlertDialog.Body>
+                This action cannot be undone. Your account and associated data
+                will be permanently deleted.
+              </AlertDialog.Body>
 
-              <button
-                type="button"
-                onClick={handleDelete}
-                disabled={loading}
-                className="px-5 py-2 bg-red-600 text-white rounded-full"
-              >
-                {loading ? "Deleting..." : "Delete Account"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+              <AlertDialog.Footer>
+                <Button variant="outline" onPress={deleteState.close}>
+                  Cancel
+                </Button>
+
+                <Button
+                  variant="danger"
+                  isDisabled={loading}
+                  onPress={handleDelete}
+                >
+                  {loading && <Spinner size="sm" />}
+                  {loading ? "Deleting..." : "Delete Account"}
+                </Button>
+              </AlertDialog.Footer>
+            </AlertDialog.Dialog>
+          </AlertDialog.Container>
+        </AlertDialog.Backdrop>
+      </AlertDialog>
     </div>
   );
 }

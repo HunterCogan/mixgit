@@ -1,6 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import {
+  Button,
+  Modal,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+} from "@heroui/react";
 
 export default function ProfilePictureForm({
   initialAvatarUrl,
@@ -73,7 +80,7 @@ export default function ProfilePictureForm({
     <div className="rounded-xl border p-4 bg-white">
       <h2 className="text-lg font-semibold">Profile Picture</h2>
 
-      <div className="mt-4 flex items-center justify-between gap-6">
+      <div className="mt-4 flex items-start justify-between gap-6">
         <button
           type="button"
           onClick={() => avatarUrl && setIsPreviewOpen(true)}
@@ -90,13 +97,7 @@ export default function ProfilePictureForm({
           )}
         </button>
 
-        <button
-          type="button"
-          onClick={() => setIsOpen(true)}
-          className="px-5 py-2 border rounded-full hover:bg-gray-100 transition"
-        >
-          Update Picture
-        </button>
+        <Button onPress={() => setIsOpen(true)}>Update Picture</Button>
       </div>
 
       {message && <p className="mt-4 text-sm text-green-600">{message}</p>}
@@ -170,21 +171,13 @@ export default function ProfilePictureForm({
               </div>
 
               <div className="mt-6 flex justify-end gap-3">
-                <button
-                  type="button"
-                  onClick={() => setIsOpen(false)}
-                  className="px-5 py-2 border rounded-full"
-                >
+                <Button variant="outline" onPress={() => setIsOpen(false)}>
                   Cancel
-                </button>
+                </Button>
 
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="px-5 py-2 bg-blue-600 text-white rounded-full"
-                >
+                <Button isDisabled={loading} type="submit">
                   {loading ? "Saving..." : "Confirm"}
-                </button>
+                </Button>
               </div>
             </form>
           </div>
