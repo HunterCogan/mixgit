@@ -108,8 +108,9 @@ export function ProjectContent({ creatorId, userId, remixes }: Props) {
               <Card
                 key={remix.id}
                 variant={userId === remix.uploaderId ? "secondary" : "default"}
+                className="gap-1"
               >
-                <div className="flex flex-row items-center gap-1">
+                <div className="flex flex-row items-center gap-2">
                   <Avatar size="sm" className="ring-2 ring-white">
                     <Avatar.Fallback
                       className="select-none"
@@ -120,50 +121,53 @@ export function ProjectContent({ creatorId, userId, remixes }: Props) {
                   </Avatar>
                   <Card.Header className="flex flex-row flex-1 items-center justify-between">
                     <Badge.Anchor>
-                      <Card.Title className="flex gap-2">
-                        <ToggleButton
-                          size="sm"
-                          variant="ghost"
-                          isSelected={remix.id === selectedId}
-                          defaultSelected={remix.isMain}
-                          onPress={() => {
-                            setSelectedId(remix.id);
-                            setAiFeedback(null);
-                            setFeedbackTimestamp(null);
-                          }}
-                        >
-                          {remix.name}
-                        </ToggleButton>
+                      <Card.Title className="pe-3">
+                        {remix.name}
+                        {remix.isMain && (
+                          <Popover>
+                            <Popover.Trigger>
+                              <Badge color="accent" size="sm">
+                                <StarIcon className="size-2.5" />
+                              </Badge>
+                            </Popover.Trigger>
+                            <Popover.Content>
+                              <Popover.Dialog>
+                                <p className="text-xs max-w-56">
+                                  {userId === creatorId ? (
+                                    <span>You&apos;ve </span>
+                                  ) : (
+                                    "The project owner has "
+                                  )}
+                                  marked this as the <strong>main </strong> mix,
+                                  the primary version of the codebase. New
+                                  contributors should start here!
+                                </p>
+                              </Popover.Dialog>
+                            </Popover.Content>
+                          </Popover>
+                        )}
                       </Card.Title>
-                      {remix.isMain && (
-                        <Popover>
-                          <Popover.Trigger>
-                            <Badge color="accent" size="sm">
-                              <StarIcon className="size-2.5" />
-                            </Badge>
-                          </Popover.Trigger>
-                          <Popover.Content>
-                            <Popover.Dialog>
-                              <p className="text-xs max-w-56">
-                                {userId === creatorId ? (
-                                  <span>You&apos;ve </span>
-                                ) : (
-                                  "The project owner has "
-                                )}
-                                marked this as the <strong>main </strong> mix,
-                                the primary version of the codebase. New
-                                contributors should start here!
-                              </p>
-                            </Popover.Dialog>
-                          </Popover.Content>
-                        </Popover>
-                      )}
                     </Badge.Anchor>
                     <Card.Description>{remix.createdAt}</Card.Description>
                   </Card.Header>
                 </div>
                 <Card.Content>
-                  <p className="text-sm truncate">{remix.description}</p>
+                  <div className="flex justify-between items-end">
+                    <p className="text-sm truncate">{remix.description}</p>
+                    <ToggleButton
+                      size="sm"
+                      variant="ghost"
+                      isSelected={remix.id === selectedId}
+                      defaultSelected={remix.isMain}
+                      onPress={() => {
+                        setSelectedId(remix.id);
+                        setAiFeedback(null);
+                        setFeedbackTimestamp(null);
+                      }}
+                    >
+                      View
+                    </ToggleButton>
+                  </div>
                 </Card.Content>
               </Card>
             ))}
