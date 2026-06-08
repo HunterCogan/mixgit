@@ -7,6 +7,9 @@ import {
   Card,
   ComboBox,
   Description,
+  Disclosure,
+  DisclosureGroup,
+  ErrorMessage,
   Input,
   Label,
   ListBox,
@@ -26,12 +29,12 @@ import {
 } from "@heroicons/react/24/outline";
 import ReactMarkdown from "react-markdown";
 import { ScriptStack } from "./ScriptStack";
-import type { Script } from "@/types";
+import type { Script, AIFeedback } from "@/types";
 
 interface Props {
   raw: string | undefined;
   scripts: Record<string, Script[]>;
-  aiFeedback: string | null;
+  aiFeedback: AIFeedback | null;
   loadingFeedback: boolean;
   onGetFeedback: () => void;
   onDeleteRemix: () => Promise<void>;
@@ -111,15 +114,111 @@ export function ScriptsPanel({
                     {remixDescription && (
                       <p className="text-sm mb-4">{remixDescription}</p>
                     )}
-                    {aiFeedback && (
-                      <Card variant="secondary">
-                        <Card.Content className="overflow-auto">
-                          <div className="text-sm prose prose-h4:mb-0 prose-code:font-family:monospace prose-code:before:content-none prose-code:after:content-none">
-                            <ReactMarkdown>{aiFeedback}</ReactMarkdown>
-                          </div>
-                        </Card.Content>
-                      </Card>
-                    )}
+                    {aiFeedback &&
+                      (aiFeedback.error ? (
+                        <ErrorMessage>{aiFeedback.error}</ErrorMessage>
+                      ) : (
+                        <Card variant="secondary">
+                          <Card.Content className="overflow-auto">
+                            <div className="">
+                              <div className="text-sm prose prose-h4:mb-0 prose-code:font-family:monospace prose-code:before:content-none prose-code:after:content-none">
+                                <h4>What Works Well</h4>
+                                <ReactMarkdown>
+                                  {aiFeedback.what_works_well}
+                                </ReactMarkdown>
+                              </div>
+                              <div>
+                                <div className="text-sm prose prose-h4:mb-0 prose-code:font-family:monospace prose-code:before:content-none prose-code:after:content-none">
+                                  <h4>Suggestions</h4>
+                                </div>
+                                <DisclosureGroup>
+                                  {aiFeedback.suggestions.map(
+                                    (suggestion, i) => {
+                                      return (
+                                        <div key={i}>
+                                          <Disclosure>
+                                            <Disclosure.Heading>
+                                              <Button
+                                                slot="trigger"
+                                                variant="secondary"
+                                                className="flex bg-transparent justify-between"
+                                                fullWidth
+                                              >
+                                                {suggestion.title}
+                                                <Disclosure.Indicator />
+                                              </Button>
+                                            </Disclosure.Heading>
+                                            <Disclosure.Content>
+                                              <Disclosure.Body>
+                                                <div className="text-sm prose prose-h4:mb-0 prose-code:font-family:monospace prose-code:before:content-none prose-code:after:content-none">
+                                                  <ReactMarkdown>
+                                                    {suggestion.detail}
+                                                  </ReactMarkdown>
+                                                </div>
+                                                <Button
+                                                  size="sm"
+                                                  className="mt-4"
+                                                >
+                                                  <SparklesIcon />
+                                                  Remix
+                                                </Button>
+                                              </Disclosure.Body>
+                                            </Disclosure.Content>
+                                          </Disclosure>
+                                          <Separator />
+                                        </div>
+                                      );
+                                    },
+                                  )}
+                                </DisclosureGroup>
+                              </div>
+                              <div>
+                                <div className="text-sm prose prose-h4:mb-0 prose-code:font-family:monospace prose-code:before:content-none prose-code:after:content-none">
+                                  <h4>Logic Issues</h4>
+                                </div>
+                                <DisclosureGroup>
+                                  {aiFeedback.logic_issues.map((issue, i) => {
+                                    return (
+                                      <div key={i}>
+                                        <Disclosure>
+                                          <Disclosure.Heading>
+                                            <Button
+                                              slot="trigger"
+                                              variant="secondary"
+                                              className="flex bg-transparent justify-between"
+                                              fullWidth
+                                            >
+                                              {issue.title}
+                                              <Disclosure.Indicator />
+                                            </Button>
+                                          </Disclosure.Heading>
+                                          <Disclosure.Content>
+                                            <Disclosure.Body>
+                                              <div className="text-sm prose prose-h4:mb-0 prose-code:font-family:monospace prose-code:before:content-none prose-code:after:content-none">
+                                                <ReactMarkdown>
+                                                  {issue.detail}
+                                                </ReactMarkdown>
+                                              </div>
+                                              <Button
+                                                size="sm"
+                                                className="mt-4"
+                                              >
+                                                <SparklesIcon />
+                                                Remix
+                                              </Button>
+                                            </Disclosure.Body>
+                                          </Disclosure.Content>
+                                        </Disclosure>
+                                        <Separator />
+                                      </div>
+                                    );
+                                  })}
+                                </DisclosureGroup>
+                              </div>
+                            </div>
+                          </Card.Content>
+                        </Card>
+                      ))}
                   </Modal.Body>
                   <Modal.Footer className="flex justify-between items-center">
                     {feedbackTimestamp ? (
