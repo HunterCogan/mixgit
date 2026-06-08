@@ -36,11 +36,11 @@ function ProjectRow({
           </Card.Description>
         </Card.Header>
         <Card.Footer>
-          <div className="flex gap-1">
+          <div className="flex gap-1 flex-wrap">
             <Chip size="md">ID: {shortProjectId(project.id)}</Chip>
             <Chip size="md">Created: {project.createdAt}</Chip>
           </div>
-          <div className="flex gap-1 ml-auto">
+          <div className="flex gap-1 ml-auto shrink-0">
             <Button
               variant="outline"
               size="sm"

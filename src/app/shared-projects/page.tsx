@@ -80,7 +80,7 @@ export default async function SharedProjectsPage() {
 
   return (
     <div className="w-full font-sans">
-      <main className="max-w-3xl mx-auto px-6 py-8 flex flex-col gap-6">
+      <main className="max-w-3xl mx-auto px-3 sm:px-6 py-8 flex flex-col gap-6">
         <SharedProjectsList
           collaborating={collaborating}
           sharing={sharing}

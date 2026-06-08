@@ -94,8 +94,11 @@ export function ProjectContent({ creatorId, userId, remixes }: Props) {
   }
 
   return (
-    <div className="flex gap-6 flex-1 min-h-0">
-      <ScrollShadow className="w-xs shrink-0 flex flex-col gap-3 p-2">
+    <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 flex-1 overflow-auto sm:overflow-hidden min-h-50">
+      <ScrollShadow
+        className="w-full sm:max-w-60 sm:shrink-0 flex flex-col gap-3 p-2 min-h-44 max-h-[35vh] sm:max-h-none sm:min-h-0"
+        hideScrollBar
+      >
         <div className="flex justify-between">
           <h2 className="text-lg font-semibold">Remixes</h2>
           <Chip>{remixes.length}</Chip>

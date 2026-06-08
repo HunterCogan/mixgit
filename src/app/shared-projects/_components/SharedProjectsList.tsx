@@ -36,11 +36,11 @@ function CollaboratingRow({ project }: { project: CollaboratingProject }) {
           </Card.Description>
         </Card.Header>
         <Card.Footer>
-          <div className="flex gap-1">
+          <div className="flex gap-1 flex-wrap">
             <Chip size="md">Owner: {project.ownerName}</Chip>
             <Chip size="md">Added: {project.createdAt}</Chip>
           </div>
-          <div className="flex gap-1 ml-auto">
+          <div className="flex gap-1 ml-auto shrink-0">
             <Button
               variant="outline"
               size="sm"
@@ -81,7 +81,7 @@ function SharingRow({
           </Card.Description>
         </Card.Header>
         <Card.Footer>
-          <div className="flex gap-1">
+          <div className="flex gap-1 flex-wrap">
             <Chip size="md">
               <UserGroupIcon className="h-3.5 w-3.5 inline mr-1" />
               {project.teamCount} collaborator
@@ -89,7 +89,7 @@ function SharingRow({
             </Chip>
             <Chip size="md">Created: {project.createdAt}</Chip>
           </div>
-          <div className="flex gap-1 ml-auto">
+          <div className="flex gap-1 ml-auto shrink-0">
             <Button
               variant="outline"
               size="sm"
@@ -120,7 +120,7 @@ export default function SharedProjectsList({
     <div className="flex flex-col gap-8">
       <section className="flex flex-col gap-3">
         <div>
-          <h2 className="text-2xl font-semibold">Shared with Me</h2>
+          <h1 className="text-xl sm:text-2xl font-bold">Shared with Me</h1>
           <p className="text-sm mt-0.5">
             Projects you&apos;ve been added to as a collaborator
           </p>
@@ -138,7 +138,7 @@ export default function SharedProjectsList({
 
       <section className="flex flex-col gap-3">
         <div>
-          <h2 className="text-2xl font-semibold">My Shared Projects</h2>
+          <h2 className="text-xl sm:text-2xl font-bold">My Shared Projects</h2>
           <p className="text-sm mt-0.5">
             Your projects that have collaborators
           </p>

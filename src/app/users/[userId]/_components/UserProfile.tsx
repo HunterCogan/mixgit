@@ -23,15 +23,15 @@ export default function UserProfile({
 
   return (
     <div className="w-full font-sans">
-      <main className="max-w-3xl mx-auto px-6 py-8 flex flex-col gap-6">
-        <div className="flex items-start justify-between gap-4">
+      <main className="max-w-3xl mx-auto px-3 sm:px-6 py-8 flex flex-col gap-6">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div className="flex items-center gap-4">
             <Avatar size="lg">
               <Avatar.Fallback style={{ backgroundColor: color }}>
                 {initial}
               </Avatar.Fallback>
             </Avatar>
-            <h1 className="text-2xl font-bold">{name}</h1>
+            <h1 className="text-2xl sm:text-2xl font-bold">{name}</h1>
           </div>
           {isOwner && (
             <Link href="/settings" className="shrink-0">
@@ -45,7 +45,7 @@ export default function UserProfile({
 
         <Card>
           <Card.Header>
-            <Card.Title>About me</Card.Title>
+            <Card.Title className="text-lg font-semibold">About me</Card.Title>
           </Card.Header>
           <Card.Content>
             <p className="text-sm text-default-500 whitespace-pre-wrap">

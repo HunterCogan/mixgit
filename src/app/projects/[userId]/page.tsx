@@ -73,7 +73,7 @@ export default async function ProjectPage({
 
   return (
     <div className="font-sans h-[calc(100vh-3.5rem)] flex flex-col overflow-hidden">
-      <main className="px-6 py-8 flex flex-col gap-6 flex-1 min-h-0">
+      <main className="px-3 sm:px-6 py-4 sm:py-8 flex flex-col gap-6 flex-1 min-h-0">
         <ProjectHeader
           projectId={project._id.toString()}
           creatorId={userId}

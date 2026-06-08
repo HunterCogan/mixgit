@@ -28,10 +28,12 @@ export default async function DashboardPage() {
 
   return (
     <div className="w-full font-sans">
-      <main className="max-w-3xl mx-auto px-6 py-8 flex flex-col gap-6">
-        <div className="flex items-start justify-between">
+      <main className="max-w-3xl mx-auto px-3 sm:px-6 py-8 flex flex-col gap-6">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <h1 className="text-2xl font-bold">Your Scratchpad Projects</h1>
+            <h1 className="text-xl sm:text-2xl font-bold">
+              Your Scratchpad Projects
+            </h1>
             <p className="text-sm mt-1">Create and manage your Projects</p>
           </div>
           <CreateProjectModal />

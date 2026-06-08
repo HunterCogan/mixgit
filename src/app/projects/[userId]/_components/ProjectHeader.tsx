@@ -121,9 +121,9 @@ export function ProjectHeader({
   }
 
   return (
-    <Surface className="flex gap-2" variant="transparent">
-      <div className="flex flex-1">
-        <div className="flex flex-col flex-1 gap-1">
+    <Surface className="flex flex-col sm:flex-row sm:justify-between rounded-2xl sm:rounded-3xl p-4 sm:p-6 gap-4">
+      <div className="flex flex-row flex-1 gap-4 sm:gap-6">
+        <div className="flex flex-col flex-1 gap-1 min-w-0">
           <TextField
             aria-label="Project name"
             isRequired
@@ -164,7 +164,7 @@ export function ProjectHeader({
           )}
         </div>
       </div>
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-2 sm:items-end">
         <div className="flex justify-between items-end">
           <div className="flex -space-x-2">
             {sortedTeam.slice(0, 3).map((member) => (
