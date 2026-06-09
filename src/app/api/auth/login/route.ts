@@ -5,7 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { email, password } = body;
+    const { email, password, rememberMe } = body;
 
     if (!email || !password) {
       return NextResponse.json(
@@ -14,17 +14,24 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const response = await auth.api.signInEmail({
+    if (rememberMe) {
+      console.log("Remember Me is enabled");
+    } else {
+      console.log("Remember Me is disabled");
+    }
+
+    const authResponse = await auth.api.signInEmail({
       body: {
         email,
         password,
+        rememberMe,
       },
       asResponse: true,
     });
 
-    return response;
+    return authResponse;
   } catch (error) {
-    console.error("Login error:", error);
-    return NextResponse.json({ error: "Failed to login" }, { status: 500 });
+    console.error(error);
+    return NextResponse.json({ error: "Login failed" }, { status: 500 });
   }
 }

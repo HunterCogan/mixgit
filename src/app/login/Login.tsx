@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Button, Form, Input, Label, TextField } from "@heroui/react";
+import { Button, Form, Input, Label, TextField, Checkbox } from "@heroui/react";
 import Link from "next/link";
 
 export default function LoginPage() {
@@ -12,6 +12,7 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
 
   async function handleSubmit(e: React.SyntheticEvent) {
     e.preventDefault();
@@ -26,7 +27,7 @@ export default function LoginPage() {
     const res = await fetch("/api/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ email, password, rememberMe }),
     });
 
     setLoading(false);
@@ -108,6 +109,15 @@ export default function LoginPage() {
               </Button>
             </div>
           </TextField>
+
+          <Checkbox className="flex items-center gap-2">
+            <Input
+              type="checkbox"
+              checked={rememberMe}
+              onChange={(e) => setRememberMe(e.target.checked)}
+            />
+            <Label className="text-sm">Remember me</Label>
+          </Checkbox>
 
           {error && <p className="text-red-600 text-sm">{error}</p>}
 

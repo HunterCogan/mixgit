@@ -46,9 +46,9 @@ export const auth = betterAuth({
   // "sendVerificationEmail" in "emailVerification" and set "requireEmailVerification" to true.
   // This is an optional thing that we will discuss in the future
 
-  // Session configuration. 7 days in seconds for expiration. Updates every 24 hours.
+  // Session configuration. 30 days in seconds for expiration. Updates every 24 hours.
   session: {
-    expiresIn: 7 * 24 * 60 * 60,
+    expiresIn: 7 * 24 * 60 * 60, // 7 days in seconds
     updateAgeUnitInMs: 24 * 60 * 60 * 1000,
     cookieAttributes: {
       httpOnly: true,
