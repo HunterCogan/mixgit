@@ -4,21 +4,15 @@ export interface IUser {
   name: string;
   email: string;
   color: string;
-  avatarUrl?: string;
+  about: string;
 }
 
 const UserSchema = new mongoose.Schema<IUser>(
   {
     name: String,
     email: String,
-    color: {
-      type: String,
-      default: "#808080",
-    },
-    avatarUrl: {
-      type: String,
-      default: "",
-    },
+    color: { type: String, default: "#808080" },
+    about: { type: String, default: "" },
   },
   { collection: "user" },
 );

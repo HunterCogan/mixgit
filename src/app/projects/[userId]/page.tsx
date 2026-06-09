@@ -6,8 +6,8 @@ import UserModel from "@/models/User";
 import mongoose from "mongoose";
 import { notFound } from "next/navigation";
 import { ProjectContent, type RemixItem } from "./_components/ProjectContent";
-import { Separator } from "@heroui/react";
 import { ProjectHeader } from "./_components/ProjectHeader";
+import { Separator } from "@heroui/react";
 
 function formatTimestamp(date: Date): string {
   const seconds = Math.floor((Date.now() - date.getTime()) / 1000);
@@ -31,7 +31,7 @@ export default async function ProjectPage({
   const { userId } = await params;
   const { projectId } = await searchParams;
 
-  await verifySession();
+  const session = await verifySession();
   await connectDB();
 
   // populate the "name" field from each User object in team for displaying Avatars
@@ -61,8 +61,9 @@ export default async function ProjectPage({
   const serializedRemixes: RemixItem[] = remixes.map((remix) => ({
     id: remix._id.toString(),
     name: remix.name,
-    uploaderName: remix.uploader.name,
-    uploaderColor: remix.uploader.color,
+    uploaderName: remix.uploader?.name ?? "Unknown",
+    uploaderColor: remix.uploader?.color ?? "#808080",
+    uploaderId: remix.uploader._id.toString(),
     description: remix.description,
     isMain: remix.isMain,
     projectJsonData:
@@ -72,10 +73,11 @@ export default async function ProjectPage({
 
   return (
     <div className="font-sans h-[calc(100vh-3.5rem)] flex flex-col overflow-hidden">
-      <main className="px-6 py-8 flex flex-col gap-6 flex-1 min-h-0">
+      <main className="px-3 sm:px-6 py-4 sm:py-8 flex flex-col gap-6 flex-1 min-h-0">
         <ProjectHeader
           projectId={project._id.toString()}
           creatorId={userId}
+          userId={session.userId}
           initialName={project.name}
           initialDescription={project.description ?? ""}
           createdAt={project.createdAt.toLocaleDateString("en-US", {
@@ -83,7 +85,7 @@ export default async function ProjectPage({
             day: "numeric",
             year: "numeric",
           })}
-          lastUpdated={serializedRemixes[0]?.createdAt}
+          lastUpdated={formatTimestamp(project.updatedAt)}
           team={project.team.map((m) => ({
             id: m._id.toString(),
             name: m.name,
@@ -92,8 +94,12 @@ export default async function ProjectPage({
           creatorName={creator?.name ?? ""}
           creatorColor={creator?.color ?? ""}
         />
-        <Separator></Separator>
-        <ProjectContent remixes={serializedRemixes} />
+        <Separator />
+        <ProjectContent
+          creatorId={userId}
+          userId={session.userId}
+          remixes={serializedRemixes}
+        />
       </main>
     </div>
   );

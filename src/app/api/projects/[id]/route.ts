@@ -4,6 +4,8 @@ import connectDB from "@/lib/db";
 import ProjectModel from "@/models/Project";
 import RemixModel from "@/models/Remix";
 import mongoose from "mongoose";
+import { ProjectSchema } from "@/lib/schemas/project.zod";
+import z from "zod";
 
 export async function GET(
   _req: NextRequest,
@@ -41,6 +43,98 @@ export async function GET(
     return NextResponse.json(
       { error: "Failed to get project" },
       { status: 500 },
+    );
+  }
+}
+
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> },
+) {
+  try {
+    const body = await request.json();
+
+    const result = ProjectSchema.omit({ creator: true }).safeParse({
+      name: body.name,
+      description: body.description || undefined,
+    });
+
+    if (!result.success) {
+      return NextResponse.json(
+        { error: z.flattenError(result.error).fieldErrors },
+        { status: 400 },
+      );
+    }
+
+    const session = await verifySession();
+    await connectDB();
+
+    const { id } = await params;
+
+    if (!id) {
+      return NextResponse.json(
+        {
+          error: "Project ID is required",
+        },
+        {
+          status: 400,
+        },
+      );
+    }
+
+    const project = await ProjectModel.findById(id);
+
+    if (!project) {
+      return NextResponse.json(
+        {
+          error: "Project not found",
+        },
+        {
+          status: 404,
+        },
+      );
+    }
+
+    if (project.creator.toString() !== session.userId) {
+      return NextResponse.json(
+        {
+          error: "User does not own this project",
+        },
+        {
+          status: 403,
+        },
+      );
+    }
+
+    if (body.name !== undefined) {
+      project.name = body.name;
+    }
+
+    if (body.description !== undefined) {
+      project.description = body.description;
+    }
+
+    await project.save();
+
+    return NextResponse.json(
+      {
+        success: true,
+        project,
+      },
+      {
+        status: 200,
+      },
+    );
+  } catch (error) {
+    console.error("Update project error:", error);
+
+    return NextResponse.json(
+      {
+        error: "Failed to update project",
+      },
+      {
+        status: 500,
+      },
     );
   }
 }

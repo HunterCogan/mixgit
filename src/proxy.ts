@@ -8,6 +8,7 @@ const protectedRoutes = [
   "/shared-projects",
   "/settings",
   "/projects",
+  "/users",
 ];
 
 // proxy function that runs on each request to check auth state and redirects accordingly

@@ -1,4 +1,4 @@
-import type { Block, ResolvedInput } from "@/types";
+import type { Block } from "@/types";
 import { getAllInputValues, getAllFieldValues } from "@/lib/scratch";
 import { ArrowUpIcon, CodeBracketSquareIcon } from "@heroicons/react/20/solid";
 import { inputLabel } from "@/lib/scratch-pseudocode";

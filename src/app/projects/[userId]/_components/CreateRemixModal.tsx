@@ -94,11 +94,11 @@ export default function CreateRemixModal({
 
   return (
     <Modal state={state}>
-      <Button fullWidth>
+      <Button>
         <PlusIcon />
-        Upload a Remix
+        Remix
       </Button>
-      <Modal.Backdrop variant="blur">
+      <Modal.Backdrop>
         <Modal.Container>
           <Modal.Dialog>
             <Modal.CloseTrigger />
@@ -170,11 +170,9 @@ export default function CreateRemixModal({
                   <TextArea
                     variant="secondary"
                     rows={6}
-                    placeholder="Paste project.json here…"
+                    placeholder="Paste your project data here"
                   />
-                  <Description>
-                    The project.json contents for this version
-                  </Description>
+                  <Description>The project data for this</Description>
                   <FieldError />
                 </TextField>
                 <ErrorMessage>{error}</ErrorMessage>

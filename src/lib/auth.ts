@@ -16,6 +16,10 @@ export const auth = betterAuth({
   database: mongodbAdapter(client.db()),
   secret: authSecret,
   user: {
+    deleteUser: {
+      enabled: true,
+    },
+
     additionalFields: {
       color: {
         type: "string",
@@ -25,6 +29,11 @@ export const auth = betterAuth({
           Math.floor(Math.random() * 0xffffff)
             .toString(16)
             .padStart(6, "0"),
+      },
+      about: {
+        type: "string",
+        required: false,
+        defaultValue: "",
       },
     },
   },

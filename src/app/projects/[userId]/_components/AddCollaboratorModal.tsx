@@ -12,6 +12,7 @@ import {
   Modal,
   SearchField,
   Spinner,
+  Tooltip,
   useOverlayState,
 } from "@heroui/react";
 
@@ -24,11 +25,12 @@ function SubmitButton({ isPending }: { isPending?: boolean }) {
   );
 }
 
-export default function AddCollaboratorModal({
-  projectId,
-}: {
+interface Props {
   projectId: string;
-}) {
+  isDisabled: boolean;
+}
+
+export default function AddCollaboratorModal({ projectId, isDisabled }: Props) {
   const state = useOverlayState();
   const [username, setUsername] = useState("");
   const [submitted, setSubmitted] = useState(false);
@@ -49,11 +51,10 @@ export default function AddCollaboratorModal({
 
   return (
     <Modal state={state}>
-      <Button variant="outline" fullWidth>
+      <Button isIconOnly isDisabled={isDisabled} variant="secondary" size="sm">
         <UserPlusIcon />
-        Add Collaborator
       </Button>
-      <Modal.Backdrop variant="blur">
+      <Modal.Backdrop>
         <Modal.Container>
           <Modal.Dialog>
             <Modal.CloseTrigger />

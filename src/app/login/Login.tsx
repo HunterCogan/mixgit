@@ -70,7 +70,7 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex items-center justify-center px-4">
       <div className="flex flex-col items-center w-full">
-        <Label className="text-5xl mb-9">Login</Label>
+        <Label className="text-3xl sm:text-5xl mb-5">Login</Label>
 
         <Form
           onSubmit={handleSubmit}

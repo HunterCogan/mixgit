@@ -66,13 +66,12 @@ function ProjectRow({ project, userId }: { project: Project; userId: string }) {
               : "No description"}
           </Card.Description>
         </Card.Header>
-        <Card.Footer>
-          <div className="flex gap-1">
+        <Card.Footer className="flex-col items-start gap-2 sm:flex-row sm:items-center">
+          <div className="flex gap-1 flex-wrap">
             <Chip size="md">ID: {shortProjectId(project.id)}</Chip>
             <Chip size="md">Created: {project.createdAt}</Chip>
           </div>
-
-          <div className="flex gap-1 ml-auto">
+          <div className="flex gap-1 sm:ml-auto shrink-0">
             <Button
               variant="outline"
               size="sm"
