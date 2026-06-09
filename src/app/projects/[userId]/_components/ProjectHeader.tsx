@@ -245,6 +245,7 @@ export function ProjectHeader({
               <AddCollaboratorModal
                 projectId={projectId}
                 isDisabled={userId !== creatorId}
+                teamIds={[creatorId, ...team.map((m) => m.id)]}
               />
               <AlertDialog
                 isOpen={leaveState.isOpen}

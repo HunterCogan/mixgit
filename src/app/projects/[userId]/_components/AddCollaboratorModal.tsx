@@ -1,51 +1,50 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { UserPlusIcon } from "@heroicons/react/24/outline";
-import {
-  Button,
-  Description,
-  ErrorMessage,
-  FieldError,
-  Form,
-  Label,
-  Modal,
-  SearchField,
-  Spinner,
-  Tooltip,
-  useOverlayState,
-} from "@heroui/react";
-
-function SubmitButton({ isPending }: { isPending?: boolean }) {
-  return (
-    <Button type="submit" variant="primary" fullWidth isPending={isPending}>
-      {isPending && <Spinner size="sm" />}
-      {isPending ? "Adding..." : "Send Invitation"}
-    </Button>
-  );
-}
+import { Button, Modal, useOverlayState } from "@heroui/react";
+import UserSearch, { type UserResult } from "./UserSearch";
 
 interface Props {
   projectId: string;
   isDisabled: boolean;
+  teamIds: string[];
 }
 
-export default function AddCollaboratorModal({ projectId, isDisabled }: Props) {
+export default function AddCollaboratorModal({
+  projectId,
+  isDisabled,
+  teamIds,
+}: Props) {
+  const router = useRouter();
   const state = useOverlayState();
-  const [username, setUsername] = useState("");
-  const [submitted, setSubmitted] = useState(false);
+  const [addedIds, setAddedIds] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
 
-  async function handleSubmit(e: React.SyntheticEvent) {
-    e.preventDefault();
-    setSubmitted(true);
+  const allTeamIds = [...teamIds, ...addedIds];
 
-    setLoading(true);
+  async function handleAdd(user: UserResult) {
+    setError(null);
     try {
-      // TODO: implement when UPDATE route is ready
-    } finally {
-      setLoading(false);
+      const res = await fetch(`/api/projects/${projectId}/team`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: user.id }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(
+          typeof data.error === "string"
+            ? data.error
+            : "Failed to add collaborator",
+        );
+      }
+      setAddedIds((prev) => [...prev, user.id]);
+      router.refresh();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to add collaborator");
     }
   }
 
@@ -55,40 +54,17 @@ export default function AddCollaboratorModal({ projectId, isDisabled }: Props) {
         <UserPlusIcon />
       </Button>
       <Modal.Backdrop>
-        <Modal.Container>
+        <Modal.Container size="md">
           <Modal.Dialog>
             <Modal.CloseTrigger />
             <Modal.Header>
-              <Modal.Heading>Add Collaborator</Modal.Heading>
+              <Modal.Heading className="px-1">Add Collaborator</Modal.Heading>
             </Modal.Header>
             <Modal.Body>
-              <Form
-                className="flex flex-col gap-4 p-1"
-                validationBehavior="aria"
-                onSubmit={handleSubmit}
-              >
-                <SearchField
-                  isRequired
-                  name="username"
-                  value={username}
-                  onChange={setUsername}
-                  validate={(value) => {
-                    if (!submitted && !value) return null;
-                    if (!value) return "Username is required";
-                    return null;
-                  }}
-                >
-                  <Label>Username</Label>
-                  <SearchField.Group>
-                    <SearchField.SearchIcon />
-                    <SearchField.Input placeholder="Search users..." />
-                  </SearchField.Group>
-                  <Description>Search by username or email</Description>
-                  <FieldError />
-                </SearchField>
-                <ErrorMessage>{error}</ErrorMessage>
-                <SubmitButton isPending={loading} />
-              </Form>
+              <div className="max-h-96 overflow-y-auto">
+                <UserSearch teamIds={allTeamIds} onAdd={handleAdd} />
+              </div>
+              {error && <p className="text-sm text-red-500 mt-2">{error}</p>}
             </Modal.Body>
           </Modal.Dialog>
         </Modal.Container>
