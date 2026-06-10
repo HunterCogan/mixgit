@@ -63,7 +63,9 @@ export default async function ProjectPage({
     name: remix.name,
     uploaderName: remix.uploader?.name ?? "Unknown",
     uploaderColor: remix.uploader?.color ?? "#808080",
-    uploaderId: remix.uploader._id.toString(),
+    uploaderId: remix.uploader?._id.toString()
+      ? remix.uploader._id.toString()
+      : remix._id.toString(),
     description: remix.description,
     isMain: remix.isMain,
     projectJsonData:
