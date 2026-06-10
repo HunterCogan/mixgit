@@ -14,7 +14,7 @@ export async function PATCH(request: NextRequest) {
     const user = await User.findByIdAndUpdate(
       session.userId,
       {
-        avatarUrl: body.avatarUrl,
+        imagePath: body.imagePath,
       },
       {
         new: true,

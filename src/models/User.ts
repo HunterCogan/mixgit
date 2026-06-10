@@ -8,6 +8,7 @@ export interface IUser {
   email: string;
   color: string;
   about: string;
+  imagePath?: string | null;
 }
 
 const UserSchema = new mongoose.Schema<IUser>(
@@ -16,6 +17,10 @@ const UserSchema = new mongoose.Schema<IUser>(
     email: String,
     color: { type: String, default: "#808080" },
     about: { type: String, default: "" },
+    imagePath: {
+      type: String,
+      default: null,
+    },
   },
   { collection: "user" },
 );
