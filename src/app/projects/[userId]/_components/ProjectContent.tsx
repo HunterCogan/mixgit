@@ -23,7 +23,7 @@ export type RemixItem = {
 
 interface Props {
   creatorId: string;
-  userId: string;
+  userId: string | undefined;
   remixes: RemixItem[];
 }
 

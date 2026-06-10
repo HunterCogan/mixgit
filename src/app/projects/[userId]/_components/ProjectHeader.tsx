@@ -36,7 +36,7 @@ interface TeamMember {
 interface ProjectHeaderProps {
   projectId: string;
   creatorId: string;
-  userId: string;
+  userId: string | undefined;
   initialName: string;
   initialDescription: string;
   createdAt: string;

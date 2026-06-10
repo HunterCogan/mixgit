@@ -9,7 +9,7 @@ export default function ShellLayout({
   children,
 }: {
   header: React.ReactNode;
-  navbar: React.ReactNode;
+  navbar?: React.ReactNode;
   children: React.ReactNode;
 }) {
   const [open, setOpen] = useState(false);
@@ -18,7 +18,7 @@ export default function ShellLayout({
     <NavContext.Provider value={{ open, setOpen }}>
       {header}
 
-      {open && (
+      {open && navbar && (
         <>
           <aside className="flex flex-col fixed left-0 top-14 bottom-0 w-full sm:w-72 border-r border-nav-border bg-nav-surface z-30 overflow-y-auto">
             {navbar}
