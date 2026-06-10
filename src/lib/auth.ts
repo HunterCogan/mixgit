@@ -16,6 +16,10 @@ export const auth = betterAuth({
   database: mongodbAdapter(client.db()),
   secret: authSecret,
   user: {
+    deleteUser: {
+      enabled: true,
+    },
+
     additionalFields: {
       color: {
         type: "string",

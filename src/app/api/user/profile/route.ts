@@ -32,7 +32,7 @@ export async function PATCH(request: NextRequest) {
         color: result.data.color,
         about: result.data.about,
       },
-      { new: true },
+      { returnDocument: "after" },
     ).lean();
 
     if (!user) {
@@ -50,6 +50,7 @@ export async function PATCH(request: NextRequest) {
     });
   } catch (error) {
     console.error("Profile update error:", error);
+
     return NextResponse.json(
       { error: "Failed to update profile" },
       { status: 500 },

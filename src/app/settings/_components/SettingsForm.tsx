@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Avatar,
   Button,
@@ -12,6 +12,8 @@ import {
   Spinner,
   TextArea,
   TextField,
+  Modal,
+  useOverlayState,
 } from "@heroui/react";
 
 type SettingsFormProps = {
@@ -38,9 +40,31 @@ export default function SettingsForm({
   const [name, setName] = useState(initialName);
   const [color, setColor] = useState(initialColor);
   const [about, setAbout] = useState(initialAbout);
-  const [error, setError] = useState<string | null>(null);
+  const [profileError, setProfileError] = useState<string | null>(null);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
+  const passwordState = useOverlayState();
+  const deleteState = useOverlayState();
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
+  const [deletePassword, setDeletePassword] = useState("");
+
+  const [passwordLoading, setPasswordLoading] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+
+  useEffect(() => {
+    if (!success) return;
+
+    const timer = setTimeout(() => {
+      setSuccess(false);
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, [success]);
 
   const avatarInitial = useMemo(
     () => name.substring(0, 2).toUpperCase() || "??",
@@ -49,17 +73,17 @@ export default function SettingsForm({
 
   async function handleSubmit(e: React.SyntheticEvent) {
     e.preventDefault();
-    setError(null);
+    setProfileError(null);
     setSuccess(false);
 
     if (!name.trim()) {
-      setError("Name is required");
+      setProfileError("Name is required");
       return;
     }
 
     setLoading(true);
     try {
-      const res = await fetch("/api/users/me", {
+      const res = await fetch("/api/user/profile", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -75,11 +99,11 @@ export default function SettingsForm({
         const fieldErrors = data.error;
         if (fieldErrors && typeof fieldErrors === "object") {
           const first = Object.values(fieldErrors).flat()[0];
-          setError(
+          setProfileError(
             typeof first === "string" ? first : "Failed to save profile",
           );
         } else {
-          setError(
+          setProfileError(
             typeof data.error === "string"
               ? data.error
               : "Failed to save profile",
@@ -92,6 +116,101 @@ export default function SettingsForm({
       router.refresh();
     } finally {
       setLoading(false);
+    }
+  }
+
+  async function handleChangePassword() {
+    setPasswordError(null);
+
+    if (!currentPassword) {
+      setPasswordError("Current password is required");
+      return;
+    }
+
+    if (!newPassword) {
+      setPasswordError("New password is required");
+      return;
+    }
+
+    if (!confirmPassword) {
+      setPasswordError("Please confirm your password");
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setPasswordError("Passwords do not match");
+      return;
+    }
+
+    setPasswordLoading(true);
+
+    try {
+      const response = await fetch("/api/user/password", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          currentPassword,
+          newPassword,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to change password");
+      }
+
+      passwordState.close();
+
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+      setPasswordError(null);
+    } catch (err) {
+      setPasswordError(
+        err instanceof Error ? err.message : "Failed to change password",
+      );
+    } finally {
+      setPasswordLoading(false);
+    }
+  }
+
+  async function handleDeleteAccount() {
+    setDeleteError(null);
+
+    if (!deletePassword.trim()) {
+      setDeleteError("Password is required");
+      return;
+    }
+
+    setDeleteLoading(true);
+
+    try {
+      const response = await fetch("/api/user/delete", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          password: deletePassword,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to delete account");
+      }
+
+      window.location.href = "/login";
+    } catch (err) {
+      setDeleteError(
+        err instanceof Error ? err.message : "Failed to delete account",
+      );
+    } finally {
+      setDeleteLoading(false);
     }
   }
 
@@ -156,16 +275,192 @@ export default function SettingsForm({
           </p>
         </TextField>
 
-        {error && <p className="text-sm text-red-500">{error}</p>}
-        {success && (
-          <p className="text-sm text-green-600">Profile saved successfully.</p>
-        )}
+        <div className="flex flex-col gap-3 w-full">
+          <h3 className="text-lg font-semibold">Security</h3>
 
-        <Button type="submit" variant="primary" isDisabled={loading}>
+          <div className="flex gap-3">
+            <Button
+              variant="secondary"
+              onPress={() => {
+                setPasswordError(null);
+                setCurrentPassword("");
+                setNewPassword("");
+                setConfirmPassword("");
+                passwordState.open();
+              }}
+            >
+              Change Password
+            </Button>
+
+            <Button
+              variant="danger"
+              onPress={() => {
+                setDeleteError(null);
+                setDeletePassword("");
+                deleteState.open();
+              }}
+            >
+              Delete Account
+            </Button>
+          </div>
+        </div>
+
+        <div className="min-h-[24px]">
+          {profileError && (
+            <p className="text-sm text-red-500">{profileError}</p>
+          )}
+
+          {success && (
+            <p className="text-sm text-green-600">
+              Profile saved successfully.
+            </p>
+          )}
+        </div>
+
+        <Button
+          type="submit"
+          variant="primary"
+          isDisabled={loading}
+          className="self-start"
+        >
           {loading && <Spinner size="sm" />}
           {loading ? "Saving..." : "Save profile"}
         </Button>
       </Form>
+
+      <Modal state={passwordState}>
+        <Modal.Backdrop variant="blur">
+          <Modal.Container>
+            <Modal.Dialog>
+              <Modal.CloseTrigger />
+
+              <Modal.Header className="px-3">
+                <Modal.Heading>Change Password</Modal.Heading>
+              </Modal.Header>
+
+              <Modal.Body>
+                <div className="flex flex-col gap-3 px-2">
+                  <TextField
+                    value={currentPassword}
+                    onChange={(value) => {
+                      setCurrentPassword(value);
+                      setPasswordError(null);
+                    }}
+                    className="py-1"
+                  >
+                    <Input
+                      type="password"
+                      variant="secondary"
+                      placeholder="Current password"
+                    />
+                  </TextField>
+
+                  <TextField
+                    value={newPassword}
+                    onChange={(value) => {
+                      setNewPassword(value);
+                      setPasswordError(null);
+                    }}
+                    className="py-1"
+                  >
+                    <Input
+                      type="password"
+                      variant="secondary"
+                      placeholder="New password"
+                    />
+                  </TextField>
+
+                  <TextField
+                    value={confirmPassword}
+                    onChange={(value) => {
+                      setConfirmPassword(value);
+                      setPasswordError(null);
+                    }}
+                    className="py-1"
+                  >
+                    <Input
+                      type="password"
+                      variant="secondary"
+                      placeholder="Confirm new password"
+                    />
+                  </TextField>
+
+                  {passwordError && (
+                    <p className="text-sm text-red-500">{passwordError}</p>
+                  )}
+                </div>
+              </Modal.Body>
+
+              <Modal.Footer>
+                <Button variant="secondary" onPress={passwordState.close}>
+                  Cancel
+                </Button>
+
+                <Button
+                  variant="primary"
+                  isDisabled={passwordLoading}
+                  onPress={handleChangePassword}
+                >
+                  {passwordLoading ? "Updating..." : "Update Password"}
+                </Button>
+              </Modal.Footer>
+            </Modal.Dialog>
+          </Modal.Container>
+        </Modal.Backdrop>
+      </Modal>
+
+      <Modal state={deleteState}>
+        <Modal.Backdrop variant="blur">
+          <Modal.Container>
+            <Modal.Dialog>
+              <Modal.CloseTrigger />
+
+              <Modal.Header className="px-2">
+                <Modal.Heading>Delete Account</Modal.Heading>
+              </Modal.Header>
+
+              <Modal.Body>
+                <div className="flex flex-col gap-3 px-2">
+                  <p className="text-sm text-red-500">
+                    This action cannot be undone.
+                  </p>
+
+                  <TextField className="py-1">
+                    <Input
+                      type="password"
+                      variant="secondary"
+                      placeholder="Enter Password To Confirm"
+                      value={deletePassword}
+                      onChange={(e) => {
+                        setDeletePassword(e.target.value);
+                        setDeleteError(null);
+                      }}
+                    />
+                  </TextField>
+
+                  {deleteError && (
+                    <p className="text-sm text-red-500">{deleteError}</p>
+                  )}
+                </div>
+              </Modal.Body>
+
+              <Modal.Footer>
+                <Button variant="secondary" onPress={deleteState.close}>
+                  Cancel
+                </Button>
+
+                <Button
+                  variant="danger"
+                  isDisabled={deleteLoading}
+                  onPress={handleDeleteAccount}
+                >
+                  {deleteLoading ? "Deleting..." : "Delete Account"}
+                </Button>
+              </Modal.Footer>
+            </Modal.Dialog>
+          </Modal.Container>
+        </Modal.Backdrop>
+      </Modal>
     </div>
   );
 }

@@ -21,7 +21,7 @@ export default async function SettingsPage() {
 
   return (
     <div className="w-full font-sans">
-      <main className="max-w-3xl mx-auto px-6 py-8 flex flex-col gap-6 sm:px-6">
+      <main className="max-w-3xl mx-auto px-6 py-8 flex flex-col gap-6">
         <div>
           <h1 className="text-2xl font-bold">Settings</h1>
           <p className="text-sm text-default-500 mt-1">
