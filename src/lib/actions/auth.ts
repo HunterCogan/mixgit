@@ -16,5 +16,5 @@ export async function logout() {
     path: "/",
   });
 
-  redirect("/login");
+  redirect("/");
 }
