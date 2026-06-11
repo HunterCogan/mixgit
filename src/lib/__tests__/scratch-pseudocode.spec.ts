@@ -124,7 +124,7 @@ describe("rawToPseudocode", () => {
   );
 
   it("returns raw input unchanged when JSON is invalid", () => {
-    const bad = "if you're reading this, hi welcome to the repo!";
+    const bad = "if you're reading this, hi, welcome to the repo! - adonis";
     expect(rawToPseudocode(bad)).toBe(bad);
   });
 

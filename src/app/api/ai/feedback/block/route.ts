@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { verifySession } from "@/lib/dal";
 import type { AIFeedback } from "@/types";
 import { feedbackTool } from "@/lib/anthropic";
+import { rawToPseudocode } from "@/lib/scratch-pseudocode";
 
 const client = new Anthropic();
 
@@ -15,6 +16,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "No code provided" }, { status: 400 });
   }
 
+  let pseudocode: string;
+  try {
+    pseudocode = rawToPseudocode(projectJsonData);
+  } catch {
+    pseudocode = projectJsonData;
+  }
+  console.log(pseudocode);
+
   const message = await client.messages.create({
     model: "claude-sonnet-4-6",
     max_tokens: 700,
@@ -25,7 +34,7 @@ export async function POST(req: NextRequest) {
         type: "text",
         text: `
     You are an export Scratch mentor for young learners.
-    You are given the project.json file of a remix. 
+    You are given the pseudocode of a project.json file. 
     You provide constructive feedback that is friendly and enthusiastic.
     You can use markdown for code snippets, bold, italics, etc.
     Your language can be understood by young learners, and you keep sentences consise.
@@ -40,7 +49,7 @@ export async function POST(req: NextRequest) {
         content: `
         Remix Name: "${remixName}"
         Remix Description: "${remixDescription}"
-        project.json: ${projectJsonData}
+        project.json: ${pseudocode}
         `,
       },
     ],
