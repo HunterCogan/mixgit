@@ -47,6 +47,7 @@ export default function LoginPage({
     setLoading(false);
 
     if (res.ok) {
+      router.refresh();
       router.push("/dashboard");
     } else {
       let data;
