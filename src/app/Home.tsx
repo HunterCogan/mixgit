@@ -30,12 +30,12 @@ const FEATURES = [
 export default function Home() {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2">
-      <div className="flex flex-col items-center gap-8 pl-12 pt-12 pb-12 pr-12 sm:pr-0 bg-secondary">
+      <div className="flex flex-col items-center pl-12 pt-12 pb-12 pr-12 sm:pr-0 bg-secondary">
         <div className="flex flex-col flex-wrap items-center max-w-3xl w-full">
           <Label className="text-3xl font-semibold">
             Build games and programs with visual blocks
           </Label>
-          <p className="text-base sm:text-lg opacity-80">
+          <p className="opacity-80 mb-5">
             A collaborative coding playground where you remix projects, share
             scripts, and learn by doing.
           </p>
