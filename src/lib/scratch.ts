@@ -14,7 +14,7 @@ import {
  * number literal, `[12, "my var", "uid"]` is a variable reference).
  *
  * @param primitive - Raw primitive tuple from a block's `inputs` slot.
- * @returns - A `ResolvedInput`, identifying the primitive `type` and providing its value.
+ * @returns A `ResolvedInput`, identifying the primitive `type` and providing its value.
  */
 export function parsePrimitive(primitive: ScratchPrimitive): ResolvedInput {
   const code = primitive[0];
@@ -113,7 +113,7 @@ export function getFieldValue(block: Block, key: string): string | null {
  * ```
  *
  * @param block - The block whose inputs will be resolved.
- * @returns - A record mapping each input key to its resolved value.
+ * @returns A record mapping each input key to its resolved value.
  */
 export function getAllInputValues(block: Block): Record<string, ResolvedInput> {
   return Object.fromEntries(
@@ -134,7 +134,7 @@ export function getAllInputValues(block: Block): Record<string, ResolvedInput> {
  * ```
  *
  * @param block - The block whose fields will be resolved.
- * @returns - A record mapping each field key to its display string.
+ * @returns A record mapping each field key to its display string.
  */
 export function getAllFieldValues(block: Block): Record<string, string> {
   return Object.fromEntries(
