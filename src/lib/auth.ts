@@ -39,11 +39,16 @@ export const auth = betterAuth({
   // Email and password authentication configuration
   emailAndPassword: {
     enabled: true,
-    requireEmailVerification: false,
+    requireEmailVerification: true, // Set to true if you want to require email verification before allowing login
   },
 
   // If we want to verify the email, we need to add
   // "sendVerificationEmail" in "emailVerification" and set "requireEmailVerification" to true.
+  emailVerification: {
+    sendVerificationEmail: async ({ user, url }) => {
+      console.log(`Send verification email to ${user.email} with link ${url}`);
+    },
+  },
   // This is an optional thing that we will discuss in the future
 
   // Session configuration can set the session duration and cookie attributes.
