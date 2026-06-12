@@ -132,6 +132,7 @@ export function ProjectHeader({
   }
 
   async function handleLeaveProject() {
+    if (!userId) return;
     setLoading(true);
     setLeaveError(null);
     try {
