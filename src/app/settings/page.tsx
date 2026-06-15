@@ -33,6 +33,7 @@ export default async function SettingsPage() {
           initialName={user.name}
           initialColor={user.color ?? "#808080"}
           initialAbout={user.about ?? ""}
+          initialImagePath={user.imagePath ?? ""}
         />
       </main>
     </div>
