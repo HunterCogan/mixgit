@@ -2,10 +2,24 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Button, Form, Input, Label, TextField, Checkbox } from "@heroui/react";
+import {
+  Button,
+  Form,
+  Input,
+  Label,
+  TextField,
+  Checkbox,
+  Card,
+  InputGroup,
+} from "@heroui/react";
 import Link from "next/link";
+import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
 
-export default function LoginPage() {
+export default function LoginPage({
+  currentPage = "login",
+}: {
+  currentPage?: "login" | "home";
+}) {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -33,6 +47,7 @@ export default function LoginPage() {
     setLoading(false);
 
     if (res.ok) {
+      router.refresh();
       router.push("/dashboard");
     } else {
       let data;
@@ -68,74 +83,91 @@ export default function LoginPage() {
     return true;
   }
 
+  const pageStyles =
+    currentPage === "login" ? "h-screen place-items-center" : "";
+
   return (
-    <div className="min-h-screen flex items-center justify-center px-4">
+    <div className={`grid p-6 sm:p-12 ${pageStyles}`}>
       <div className="flex flex-col items-center w-full">
-        <Label className="text-3xl sm:text-5xl mb-5">Login</Label>
+        {currentPage === "home" ? (
+          <>
+            <Label className="text-3xl font-semibold">Welcome back</Label>
+            <p className="opacity-80 mb-5">Log in to your Scratchpad account</p>
+          </>
+        ) : (
+          <Label className="text-5xl mb-8">Login</Label>
+        )}
 
-        <Form
-          onSubmit={handleSubmit}
-          className="p-10 rounded-2xl justify-center shadow-xl w-full max-w-md gap-6 flex flex-col"
-        >
-          <TextField className=" flex flex-col gap-1" isRequired>
-            <Label className="">Email</Label>
-
-            <Input
-              type="email"
-              value={email}
-              placeholder="Enter your email"
-              onChange={(e) => setEmail(e.target.value)}
-              className="border rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
-            />
-          </TextField>
-
-          <TextField className="flex flex-col gap-1" isRequired>
-            <Label className="text-black">Password</Label>
-            <div className="relative w-full">
+        <Card variant="default" className="shadow-lg w-full max-w-md">
+          <Form
+            onSubmit={handleSubmit}
+            className="justify-center w-full max-w-md gap-6 flex flex-col p-1 sm:p-5"
+          >
+            <TextField className="flex flex-col gap-1" isRequired>
+              <Label>Email</Label>
               <Input
-                type={showPassword ? "text" : "password"}
-                placeholder="Enter your password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="border rounded-md px-4 py-2 pr-16 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
+                variant="secondary"
+                type="email"
+                value={email}
+                placeholder="Enter your email"
+                onChange={(e) => setEmail(e.target.value)}
               />
+            </TextField>
 
-              <Button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-sm z-10 shadow-none bg-transparent text-black"
-              >
-                {showPassword ? "Hide" : "Show"}
-              </Button>
-            </div>
-          </TextField>
+            <TextField className="flex flex-col gap-1" isRequired>
+              <Label>Password</Label>
+              <InputGroup variant="secondary">
+                <InputGroup.Input
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Enter your password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                />
+                <InputGroup.Suffix className="pr-0">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    excludeFromTabOrder
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? (
+                      <EyeIcon className="w-5 h-5" />
+                    ) : (
+                      <EyeSlashIcon className="w-5 h-5" />
+                    )}
+                  </Button>
+                </InputGroup.Suffix>
+              </InputGroup>
+            </TextField>
 
-          <Checkbox
-            id="rememberMe"
-            isSelected={rememberMe}
-            onChange={setRememberMe}
-          >
-            <Checkbox.Control>
-              <Checkbox.Indicator />
-            </Checkbox.Control>
-            <Checkbox.Content>
-              <Label htmlFor="rememberMe" className="text-sm text-black">
-                Remember Me
-              </Label>
-            </Checkbox.Content>
-          </Checkbox>
+            <Checkbox
+              id="rememberMe"
+              isSelected={rememberMe}
+              onChange={setRememberMe}
+              variant="secondary"
+            >
+              <Checkbox.Control>
+                <Checkbox.Indicator />
+              </Checkbox.Control>
+              <Checkbox.Content>
+                <Label htmlFor="rememberMe" className="text-sm">
+                  Remember Me
+                </Label>
+              </Checkbox.Content>
+            </Checkbox>
 
-          {error && <p className="text-red-600 text-sm">{error}</p>}
+            {error && <p className="text-red-600 text-sm">{error}</p>}
 
-          <Button
-            type="submit"
-            variant="primary"
-            fullWidth
-            isDisabled={loading}
-          >
-            {loading ? "Logging in..." : "Login"}
-          </Button>
-        </Form>
+            <Button
+              type="submit"
+              variant="primary"
+              fullWidth
+              isDisabled={loading}
+            >
+              {loading ? "Logging in..." : "Login"}
+            </Button>
+          </Form>
+        </Card>
 
         <div className="text-sm text-center mt-6">
           Don&apos;t have an account?{" "}

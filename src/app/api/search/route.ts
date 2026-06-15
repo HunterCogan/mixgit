@@ -1,4 +1,3 @@
-import { verifySession } from "@/lib/dal";
 import { NextRequest, NextResponse } from "next/server";
 import connectDB from "@/lib/db";
 import UserModel from "@/models/User";
@@ -23,7 +22,6 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Invalid category" }, { status: 400 });
     }
 
-    await verifySession();
     await connectDB();
 
     const regex = new RegExp(query, "i");

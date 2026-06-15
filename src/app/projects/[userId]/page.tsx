@@ -1,4 +1,5 @@
-import { verifySession } from "@/lib/dal";
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
 import connectDB from "@/lib/db";
 import ProjectModel from "@/models/Project";
 import RemixModel, { type IProgramFile } from "@/models/Remix";
@@ -31,7 +32,7 @@ export default async function ProjectPage({
   const { userId } = await params;
   const { projectId } = await searchParams;
 
-  const session = await verifySession();
+  const session = await auth.api.getSession({ headers: await headers() });
   await connectDB();
 
   // populate the "name" field from each User object in team for displaying Avatars
@@ -79,7 +80,7 @@ export default async function ProjectPage({
         <ProjectHeader
           projectId={project._id.toString()}
           creatorId={userId}
-          userId={session.userId}
+          userId={session?.user?.id}
           initialName={project.name}
           initialDescription={project.description ?? ""}
           createdAt={project.createdAt.toLocaleDateString("en-US", {
@@ -99,7 +100,7 @@ export default async function ProjectPage({
         <Separator />
         <ProjectContent
           creatorId={userId}
-          userId={session.userId}
+          userId={session?.user?.id}
           remixes={serializedRemixes}
         />
       </main>

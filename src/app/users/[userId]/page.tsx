@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
-import { verifySession } from "@/lib/dal";
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
 import connectDB from "@/lib/db";
 import ProjectModel from "@/models/Project";
 import UserModel from "@/models/User";
@@ -12,7 +13,7 @@ export default async function UserProfilePage({
   params: Promise<{ userId: string }>;
 }) {
   const { userId } = await params;
-  const session = await verifySession();
+  const session = await auth.api.getSession({ headers: await headers() });
 
   if (!mongoose.Types.ObjectId.isValid(userId)) {
     notFound();
@@ -47,7 +48,7 @@ export default async function UserProfilePage({
       name={user.name}
       color={user.color ?? "#808080"}
       about={user.about ?? ""}
-      isOwner={session.userId === userId}
+      isOwner={session?.user?.id === userId}
       userId={userId}
       projects={serializedProjects}
     />

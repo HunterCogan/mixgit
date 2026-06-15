@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { Button, SearchField, Separator, Spinner, Text } from "@heroui/react";
-import { CheckIcon, PlusIcon } from "@heroicons/react/24/outline";
+import { MinusIcon, PlusIcon } from "@heroicons/react/24/outline";
 
 export type UserResult = {
   id: string;
@@ -13,14 +13,22 @@ export type UserResult = {
 
 interface Props {
   teamIds: string[];
+  creatorId: string;
   onAdd: (user: UserResult) => Promise<void>;
+  onRemove: (user: UserResult) => Promise<void>;
 }
 
-export default function UserSearch({ teamIds, onAdd }: Props) {
+export default function UserSearch({
+  teamIds,
+  creatorId,
+  onAdd,
+  onRemove,
+}: Props) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<UserResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [addingId, setAddingId] = useState<string | null>(null);
+  const [removingId, setRemovingId] = useState<string | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -48,7 +56,9 @@ export default function UserSearch({ teamIds, onAdd }: Props) {
     };
   }, [query]);
 
-  const displayResults = query.trim() ? results : [];
+  const displayResults = query.trim()
+    ? results.filter((u) => u.id !== creatorId)
+    : [];
 
   async function handleAdd(user: UserResult) {
     setAddingId(user.id);
@@ -56,6 +66,15 @@ export default function UserSearch({ teamIds, onAdd }: Props) {
       await onAdd(user);
     } finally {
       setAddingId(null);
+    }
+  }
+
+  async function handleRemove(user: UserResult) {
+    setRemovingId(user.id);
+    try {
+      await onRemove(user);
+    } finally {
+      setRemovingId(null);
     }
   }
 
@@ -87,6 +106,7 @@ export default function UserSearch({ teamIds, onAdd }: Props) {
           {displayResults.map((user, index) => {
             const isAdded = teamIds.includes(user.id);
             const isAdding = addingId === user.id;
+            const isRemoving = removingId === user.id;
             return (
               <div key={user.id}>
                 <div className="flex items-center justify-between gap-3 px-1 py-2">
@@ -104,17 +124,22 @@ export default function UserSearch({ teamIds, onAdd }: Props) {
                   {isAdded ? (
                     <Button
                       size="sm"
-                      variant="secondary"
-                      isDisabled
+                      variant="danger-soft"
+                      isDisabled={isRemoving}
+                      onPress={() => handleRemove(user)}
                       className="shrink-0"
                     >
-                      <CheckIcon className="h-4 w-4" />
-                      Added
+                      {isRemoving ? (
+                        <Spinner size="sm" />
+                      ) : (
+                        <MinusIcon className="h-4 w-4" />
+                      )}
+                      {isRemoving ? "Removing..." : "Remove"}
                     </Button>
                   ) : (
                     <Button
                       size="sm"
-                      variant="primary"
+                      variant="secondary"
                       isDisabled={isAdding}
                       onPress={() => handleAdd(user)}
                       className="shrink-0"

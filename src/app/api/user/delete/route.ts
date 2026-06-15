@@ -1,5 +1,6 @@
 import { auth } from "@/lib/auth";
 import { NextRequest, NextResponse } from "next/server";
+import { cookies } from "next/headers";
 
 export async function POST(request: NextRequest) {
   try {
@@ -12,6 +13,16 @@ export async function POST(request: NextRequest) {
       body: {
         password,
       },
+    });
+
+    const cookieStore = await cookies();
+
+    cookieStore.delete("better-auth.session_token");
+    cookieStore.delete({
+      name: "__Secure-better-auth.session_token",
+      secure: true,
+      sameSite: "lax",
+      path: "/",
     });
 
     return NextResponse.json({

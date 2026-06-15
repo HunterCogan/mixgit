@@ -1,9 +1,18 @@
 "use client";
 
 import Link from "next/link";
-import { Button, Form, Input, Label, TextField } from "@heroui/react";
+import {
+  Button,
+  Card,
+  Form,
+  Input,
+  InputGroup,
+  Label,
+  TextField,
+} from "@heroui/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
 
 export default function Signup() {
   const router = useRouter();
@@ -79,76 +88,82 @@ export default function Signup() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4">
+    <div className="grid h-screen place-items-center p-12">
       <div className="flex flex-col items-center w-full">
-        <Label className="text-3xl sm:text-5xl mb-5"> Sign Up </Label>
+        <div className="flex flex-col items-center w-full">
+          <Label className="text-5xl mb-8">Sign Up</Label>
+          <Card variant="default" className="shadow-lg w-full max-w-md">
+            <Form
+              onSubmit={handleSubmit}
+              className="justify-center w-full max-w-md gap-6 flex flex-col p-1 sm:p-5"
+            >
+              <TextField className="flex flex-col gap-1" isRequired>
+                <Label>Email</Label>
+                <Input
+                  variant="secondary"
+                  type="email"
+                  value={email}
+                  placeholder="Enter your email"
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+              </TextField>
 
-        <Form
-          onSubmit={handleSubmit}
-          className="p-10 rounded-2xl justify-center shadow-xl w-full max-w-md gap-6 flex flex-col"
-        >
-          <TextField className="flex flex-col gap-1" isRequired>
-            <Label>Email</Label>
+              <TextField className="flex flex-col gap-1" isRequired>
+                <Label>Password</Label>
+                <InputGroup variant="secondary">
+                  <InputGroup.Input
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Enter your password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                  <InputGroup.Suffix className="pr-0">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      excludeFromTabOrder
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      {showPassword ? (
+                        <EyeIcon className="w-5 h-5" />
+                      ) : (
+                        <EyeSlashIcon className="w-5 h-5" />
+                      )}
+                    </Button>
+                  </InputGroup.Suffix>
+                </InputGroup>
+              </TextField>
 
-            <Input
-              type="email"
-              value={email}
-              placeholder="Enter your email"
-              onChange={(e) => setEmail(e.target.value)}
-              className="border rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
-            />
-          </TextField>
+              <TextField className="flex flex-col gap-1" isRequired>
+                <Label>Confirm Password</Label>
+                <Input
+                  variant="secondary"
+                  type="password"
+                  placeholder="Confirm your password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                />
+              </TextField>
 
-          <TextField className="flex flex-col gap-1" isRequired>
-            <Label>Password</Label>
-            <div className="relative w-full">
-              <Input
-                type={showPassword ? "text" : "password"}
-                placeholder="Enter your password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="border rounded-md px-4 py-2 pr-16 w-full focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
-              />
+              {error && <p className="text-red-600 text-sm">{error}</p>}
 
               <Button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-sm z-10 shadow-none bg-transparent text-black"
+                type="submit"
+                variant="primary"
+                fullWidth
+                isDisabled={loading}
               >
-                {showPassword ? "Hide" : "Show"}
+                {loading ? "Signing up..." : "Sign Up"}
               </Button>
-            </div>
-          </TextField>
+            </Form>
+          </Card>
 
-          <TextField className="flex flex-col gap-1" isRequired>
-            <Label>Confirm Password</Label>
-
-            <Input
-              type="password"
-              placeholder="Confirm your password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              className="border rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
-            />
-          </TextField>
-
-          {error && <p className="text-red-600 text-sm">{error}</p>}
-
-          <Button
-            type="submit"
-            variant="primary"
-            fullWidth
-            isDisabled={loading}
-          >
-            {loading ? "Signing up..." : "Sign Up"}
-          </Button>
-        </Form>
-
-        <div className="text-sm text-center mt-6">
-          Already have an account?{" "}
-          <Link className="text-blue-500" href="/login">
-            Login
-          </Link>
+          <div className="text-sm text-center mt-6">
+            Already have an account?{" "}
+            <Link className="text-blue-500" href="/login">
+              Login
+            </Link>
+          </div>
         </div>
       </div>
     </div>

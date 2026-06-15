@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   AlertDialog,
   Avatar,
@@ -36,7 +37,7 @@ interface TeamMember {
 interface ProjectHeaderProps {
   projectId: string;
   creatorId: string;
-  userId: string;
+  userId: string | undefined;
   initialName: string;
   initialDescription: string;
   createdAt: string;
@@ -63,20 +64,29 @@ export function ProjectHeader({
   const [loading, setLoading] = useState(false);
   const [leaveError, setLeaveError] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const router = useRouter();
   const savedRef = useRef({
     name: initialName,
     description: initialDescription,
   });
+  const [addedMembers, setAddedMembers] = useState<TeamMember[]>([]);
+  const [removedMemberIds, setRemovedMemberIds] = useState<string[]>([]);
 
   const leaveState = useOverlayState();
+
+  const liveTeam = [
+    ...team.filter((m) => !removedMemberIds.includes(m.id)),
+    ...addedMembers.filter((m) => !team.some((t) => t.id === m.id)),
+  ];
 
   // Creates a copy of team where project creator is sortedTeam[0] and session user is sortedTeam[1]
   const sortedTeam = [
     { id: creatorId, name: creatorName, color: creatorColor },
-    ...[...team]
+    ...[...liveTeam]
       .filter((m) => m.id !== creatorId)
       .sort((a) => (a.id === userId ? -1 : 0)),
   ];
+
   const isVisitor = !sortedTeam.some((m) => m.id === userId);
 
   async function handleSave() {
@@ -111,10 +121,39 @@ export function ProjectHeader({
     }
   }
 
+  function handleMemberAdded(member: TeamMember) {
+    setAddedMembers((prev) => [...prev, member]);
+    setRemovedMemberIds((prev) => prev.filter((id) => id !== member.id));
+  }
+
+  function handleMemberRemoved(memberId: string) {
+    setRemovedMemberIds((prev) => [...prev, memberId]);
+    setAddedMembers((prev) => prev.filter((m) => m.id !== memberId));
+  }
+
   async function handleLeaveProject() {
+    if (!userId) return;
     setLoading(true);
+    setLeaveError(null);
     try {
-      // TODO: implement when UPDATE route is ready
+      const res = await fetch(`/api/projects/${projectId}/team/leave`, {
+        method: "DELETE",
+      });
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(
+          typeof data.error === "string"
+            ? data.error
+            : "Failed to leave project",
+        );
+      }
+
+      handleMemberRemoved(userId);
+      leaveState.setOpen(false);
+      router.refresh();
+    } catch (e) {
+      setLeaveError(e instanceof Error ? e.message : "Failed to leave project");
     } finally {
       setLoading(false);
     }
@@ -244,8 +283,11 @@ export function ProjectHeader({
             <ButtonGroup>
               <AddCollaboratorModal
                 projectId={projectId}
+                creatorId={creatorId}
                 isDisabled={userId !== creatorId}
-                teamIds={[creatorId, ...team.map((m) => m.id)]}
+                teamIds={[creatorId, ...liveTeam.map((m) => m.id)]}
+                onMemberAdded={handleMemberAdded}
+                onMemberRemoved={handleMemberRemoved}
               />
               <AlertDialog
                 isOpen={leaveState.isOpen}
@@ -256,6 +298,7 @@ export function ProjectHeader({
                   onPress={leaveState.open}
                   variant="secondary"
                   size="sm"
+                  isDisabled={userId === creatorId}
                 >
                   <ButtonGroup.Separator />
                   <UserMinusIcon />
