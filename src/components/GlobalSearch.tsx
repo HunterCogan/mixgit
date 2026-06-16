@@ -297,10 +297,11 @@ export default function GlobalSearch() {
           <SearchField.Group className="border border-nav-border rounded-lg">
             {CategorySelect}
             <SearchField.Input
-              placeholder={
+              placeholder="Search..."
+              title={
                 category === "users"
-                  ? "Search by Name or Email..."
-                  : "Search by Project name..."
+                  ? "Search for a User by name or email"
+                  : "Search for Projects by name"
               }
               className="min-w-0 w-full text-xs"
             />
