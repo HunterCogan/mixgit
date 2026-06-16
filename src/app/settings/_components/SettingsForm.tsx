@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
+import EmailVerification from "../../verify-email/EmailVerification";
 import {
   Avatar,
   Button,
@@ -21,6 +22,7 @@ type SettingsFormProps = {
   initialName: string;
   initialColor: string;
   initialAbout: string;
+  email: string;
 };
 
 function normalizeHexColor(value: string) {
@@ -35,6 +37,7 @@ export default function SettingsForm({
   initialName,
   initialColor,
   initialAbout,
+  email,
 }: SettingsFormProps) {
   const router = useRouter();
   const [name, setName] = useState(initialName);
@@ -50,6 +53,7 @@ export default function SettingsForm({
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showVerification, setShowVerification] = useState(false);
 
   const [deletePassword, setDeletePassword] = useState("");
 
@@ -302,6 +306,24 @@ export default function SettingsForm({
             >
               Delete Account
             </Button>
+
+            <Button
+              variant="tertiary"
+              onPress={() => setShowVerification(!showVerification)}
+            >
+              Verify Email
+            </Button>
+
+            {showVerification && (
+              <div className="fixed inset-0 z-50">
+                <div className="absolute inset-0 bg-black/30 backdrop-blur-[1px]" />
+
+                {/* dropdown panel */}
+                <div className="relative w-full bg-transparent animate-slideDown">
+                  <EmailVerification email={email} />
+                </div>
+              </div>
+            )}
           </div>
         </div>
 

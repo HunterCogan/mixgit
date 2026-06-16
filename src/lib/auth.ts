@@ -44,7 +44,7 @@ export const auth = betterAuth({
   // Email and password authentication configuration
   emailAndPassword: {
     enabled: true,
-    requireEmailVerification: true, // Set to true if you want to require email verification before allowing login
+    requireEmailVerification: false, // Optional to the user in the user profile page
   },
 
   // the email verification configuration, which includes the function to send the verification email.

@@ -22,7 +22,6 @@ export default function Signup() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const [verifyEmail, setVerifyEmail] = useState(false);
 
   async function handleSubmit(e: React.SyntheticEvent) {
     e.preventDefault();
@@ -54,10 +53,6 @@ export default function Signup() {
       }
 
       setError(data.error || "Failed to sign up");
-    }
-
-    if (res.ok) {
-      setVerifyEmail(true);
     }
   }
 
