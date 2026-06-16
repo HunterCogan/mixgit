@@ -15,8 +15,7 @@ const ERROR_MESSAGES: Record<string, { title: string; description: string }> = {
   },
   "project-not-found": {
     title: "Project not found",
-    description:
-      "This project may have been deleted or you may not have access.",
+    description: "This project may have been privated or deleted.",
   },
 };
 
@@ -34,7 +33,7 @@ export default function FlashToast() {
       description: msg?.description,
     });
 
-    // Replace url to remove error parameter.
+    // Replace url to remove toast parameter.
     const params = new URLSearchParams(searchParams.toString());
     params.delete("error");
     const newUrl = params.size ? `${pathname}?${params}` : pathname;

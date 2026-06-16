@@ -35,11 +35,13 @@ export default async function ProjectPage({
   const session = await auth.api.getSession({ headers: await headers() });
   await connectDB();
 
+  const homePage = session?.session.userId ? "dashboard" : "";
+
   if (!mongoose.isValidObjectId(userId))
-    redirect("/dashboard?error=invalid-user");
+    redirect(`/${homePage}?error=invalid-user`);
 
   if (!mongoose.isValidObjectId(projectId))
-    redirect("/dashboard?error=invalid-project");
+    redirect(`/${homePage}?error=invalid-project`);
 
   // populate the "name" field from each User object in team for displaying Avatars
   const project = await ProjectModel.findOne({
@@ -51,7 +53,7 @@ export default async function ProjectPage({
     }>("team", "name color")
     .lean();
 
-  if (!project) redirect("/dashboard?error=project-not-found");
+  if (!project) redirect(`/${homePage}?error=project-not-found`);
 
   const creator = await UserModel.findById(userId).lean();
 
