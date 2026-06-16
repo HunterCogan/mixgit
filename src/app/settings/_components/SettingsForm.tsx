@@ -305,13 +305,18 @@ export default function SettingsForm({
         <div className="flex flex-col items-start gap-3">
           <Button
             type="button"
-            onPress={() => setImageModalOpen(true)}
+            onPress={() => {
+              if (imagePath) setImageModalOpen(true);
+            }}
             variant="primary"
-            className="h-auto min-w-0 p-0 bg-transparent hover:bg-transparent"
+            className={`h-auto min-w-0 p-0 bg-transparent hover:bg-transparent ${!imagePath ? "cursor-default" : "cursor-pointer"}`}
           >
             <Avatar size="lg" className="h-28 w-28 rounded-3xl">
-              {imagePath && <Avatar.Image src={imageUrl!} alt={name} />}
-              <Avatar.Fallback style={{ backgroundColor: color }}>
+              <Avatar.Image src={imageUrl} alt={name} />
+              <Avatar.Fallback
+                style={{ backgroundColor: color }}
+                className="text-2xl"
+              >
                 {avatarInitial}
               </Avatar.Fallback>
             </Avatar>

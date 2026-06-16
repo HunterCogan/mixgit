@@ -24,7 +24,7 @@ export default function UserMenu({
       <Dropdown>
         <Dropdown.Trigger>
           <Avatar className="cursor-pointer">
-            {imagePath && <Avatar.Image src={imageUrl!} alt={name} />}
+            <Avatar.Image src={imageUrl} alt={name} />
             <Avatar.Fallback style={{ backgroundColor: color }}>
               {initial}
             </Avatar.Fallback>
