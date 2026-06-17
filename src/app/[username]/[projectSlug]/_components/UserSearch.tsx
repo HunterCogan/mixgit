@@ -89,7 +89,7 @@ export default function UserSearch({
         >
           <SearchField.Group className="border border-nav-border rounded-lg">
             <SearchField.Input
-              placeholder="Search by name or email..."
+              placeholder="Search..."
               className="w-full text-sm"
             />
             {loading ? (

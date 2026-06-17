@@ -233,7 +233,7 @@ export function ProjectHeader({
                 href={`/${member.username ?? member.id}`}
               >
                 <Tooltip delay={0}>
-                  <Tooltip.Trigger>
+                  <Tooltip.Trigger tabIndex={0}>
                     <Avatar className="ring-2 ring-white">
                       {member.imagePath && (
                         <Avatar.Image
