@@ -258,7 +258,7 @@ export function ProjectHeader({
             ))}
             {sortedTeam.length - 3 > 0 && (
               <Dropdown>
-                <Dropdown.Trigger>
+                <Dropdown.Trigger className="flex">
                   <Avatar className="ring-2 ring-white">
                     <Avatar.Fallback className="text-xs select-none">
                       +{sortedTeam.length - 3}
