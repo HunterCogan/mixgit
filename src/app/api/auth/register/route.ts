@@ -1,5 +1,22 @@
 import { auth } from "@/lib/auth";
 import { NextRequest, NextResponse } from "next/server";
+import connectDB from "@/lib/db";
+import ProjectModel from "@/models/Project";
+import mongoose from "mongoose";
+
+const ONBOARDING_PROJECT_ID = "6a32deb0d811a1a70783102e";
+const ONBOARDING_PROJECT_CREATOR_ID = "6a179622ed55953a60a86130";
+
+async function addToOnboardingProject(userId: string) {
+  await connectDB();
+  await ProjectModel.updateOne(
+    {
+      _id: new mongoose.Types.ObjectId(ONBOARDING_PROJECT_ID),
+      creator: new mongoose.Types.ObjectId(ONBOARDING_PROJECT_CREATOR_ID),
+    },
+    { $addToSet: { team: userId } },
+  );
+}
 
 // Register/Sign Up a new user with email and password for now.
 // We can add more fields in the future (name, icon, etc).
@@ -32,6 +49,16 @@ export async function POST(request: NextRequest) {
       },
       asResponse: true,
     });
+
+    const data = await response
+      .clone()
+      .json()
+      .catch(() => null);
+    if (data?.user?.id) {
+      addToOnboardingProject(data.user.id).catch((err) =>
+        console.error("Failed to add user to onboarding project:", err),
+      );
+    }
 
     return response;
   } catch (error) {
