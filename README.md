@@ -8,6 +8,8 @@ Mixgit is a full-stack web app that brings collaboration, version history, and b
 
 > Built with Next.js, React, TypeScript, MongoDB, Better Auth, and the Anthropic Claude API.
 
+---
+
 ## Features
 
 - **Projects & Remixes:** every project starts from a `main` remix. Students upload new versions as Remixes, a student-friendly abstraction of branches and pull requests.
@@ -19,26 +21,58 @@ Mixgit is a full-stack web app that brings collaboration, version history, and b
 - **Search:** find users and projects, and view remix/project counts.
 - **Privacy-conscious uploads:** device-identifiable metadata is stripped from uploaded projects before storage.
 
+---
+
+## Tech stack
+
+| Layer      | Technology                                                         |
+| ---------- | ------------------------------------------------------------------ |
+| Framework  | Next.js 16, React 19                                               |
+| Language   | TypeScript                                                         |
+| UI         | Tailwind CSS v4, HeroUI                                            |
+| Database   | MongoDB (Atlas) via Mongoose                                       |
+| Auth       | Better Auth (email/password, sessions)                             |
+| Validation | Zod (mirrors the Mongoose models)                                  |
+| AI         | Anthropic Claude API (`@anthropic-ai/sdk`)                         |
+| Testing    | Vitest + jsdom                                                     |
+| Tooling    | ESLint, Prettier, Husky + lint-staged                              |
+| Deployment | Vercel                                                             |
+
+---
+
 ## Getting Started ( Dev )
 
-1. Install the project's dependancies.
+### Prerequisites
+- **Node.js** 18+ and npm
+- A **MongoDB** connection string (e.g. a free [MongoDB Atlas](https://www.mongodb.com/atlas) cluster)
+- An **Anthropic API key** ([console.anthropic.com](https://console.anthropic.com/))
+
+### 1. Clone and install
 
 ```bash
+git clone https://github.com/HunterCogan/scratchpad.git
+cd scratchpad
 npm install
 ```
 
-2. Make a copy of `.env.example` as `.env` or `.env.local`.
+### 2. Configure environment
+
+Copy the example env file and fill in your values:
 
 ```bash
 cp .env.example .env
 ```
 
-Then acquire the required keys/values to your `.env`.
+Generate a `BETTER_AUTH_SECRET`:
 
-3. Then run the development server:
+```bash
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+```
+
+### 3. Run the dev server
 
 ```bash
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000). Create an account, make a project, and upload a Scratch project's `project.json` as a Remix to see AI feedback.
