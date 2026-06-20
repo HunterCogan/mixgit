@@ -7,6 +7,7 @@ import { AIFeedbackSchema } from "@/lib/schemas/ai.zod";
 import { rawToPseudocode } from "@/lib/scratch-pseudocode";
 import connectDB from "@/lib/db";
 import RemixModel from "@/models/Remix";
+import { logFeedback } from "@/lib/feedback-log";
 
 const FEEDBACK_SYSTEM = `You are an expert Scratch mentor for young learners (5th–8th grade). You give constructive, friendly, encouraging feedback on remixes. Keep sentences short and the language simple. Only use markdown for code references — wrap block names in backticks, e.g. \`move (10) steps\`.
 
@@ -100,6 +101,8 @@ export async function POST(req: NextRequest) {
     pseudocode = projectJsonData;
   }
 
+  const started = Date.now();
+
   let message;
   try {
     message = await client.messages.parse({
@@ -161,7 +164,17 @@ export async function POST(req: NextRequest) {
     logic_issues: parsed.logic_issues,
   };
 
-  console.log(parsed.analysis);
+  await logFeedback({
+    remixId,
+    remixName: remix.name,
+    model: "claude-sonnet-4-6",
+    pseudocode,
+    analysis: parsed.analysis,
+    feedback,
+    stopReason: message.stop_reason,
+    usage: message.usage, // input/output token counts
+    latencyMs: Date.now() - started,
+  });
 
   return NextResponse.json({ feedback });
 }
