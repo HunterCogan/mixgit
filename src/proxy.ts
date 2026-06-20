@@ -37,10 +37,9 @@ export async function proxy(request: NextRequest) {
   const isAuthenticated = !!session?.user?.id;
 
   if (!isAuthenticated) {
-    const response = NextResponse.redirect(new URL("/", request.nextUrl));
-    response.cookies.delete("better-auth.session_token");
-    response.cookies.delete("__Secure-better-auth.session_token");
-    return response;
+    return NextResponse.redirect(
+      new URL("/api/auth/clear-session", request.nextUrl),
+    );
   }
 
   if (isProtectedRoute && !isAuthenticated) {
