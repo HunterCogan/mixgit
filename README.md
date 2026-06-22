@@ -25,24 +25,25 @@ Mixgit is a full-stack web app that brings collaboration, version history, and b
 
 ## Tech stack
 
-| Layer      | Technology                                                         |
-| ---------- | ------------------------------------------------------------------ |
-| Framework  | Next.js 16, React 19                                               |
-| Language   | TypeScript                                                         |
-| UI         | Tailwind CSS v4, HeroUI                                            |
-| Database   | MongoDB (Atlas) via Mongoose                                       |
-| Auth       | Better Auth (email/password, sessions)                             |
-| Validation | Zod (mirrors the Mongoose models)                                  |
-| AI         | Anthropic Claude API (`@anthropic-ai/sdk`)                         |
-| Testing    | Vitest + jsdom                                                     |
-| Tooling    | ESLint, Prettier, Husky + lint-staged                              |
-| Deployment | Vercel                                                             |
+| Layer      | Technology                                 |
+| ---------- | ------------------------------------------ |
+| Framework  | Next.js 16, React 19                       |
+| Language   | TypeScript                                 |
+| UI         | Tailwind CSS v4, HeroUI                    |
+| Database   | MongoDB (Atlas) via Mongoose               |
+| Auth       | Better Auth (email/password, sessions)     |
+| Validation | Zod (mirrors the Mongoose models)          |
+| AI         | Anthropic Claude API (`@anthropic-ai/sdk`) |
+| Testing    | Vitest + jsdom                             |
+| Tooling    | ESLint, Prettier, Husky + lint-staged      |
+| Deployment | Vercel                                     |
 
 ---
 
 ## Getting Started ( Dev )
 
 ### Prerequisites
+
 - **Node.js** 18+ and npm
 - A **MongoDB** connection string (e.g. a free [MongoDB Atlas](https://www.mongodb.com/atlas) cluster)
 - An **Anthropic API key** ([console.anthropic.com](https://console.anthropic.com/))

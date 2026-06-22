@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
+import EmailVerification from "./verify-email/EmailVerification";
 import {
   Avatar,
   Button,
@@ -22,6 +23,8 @@ type SettingsFormProps = {
   initialName: string;
   initialColor: string;
   initialAbout: string;
+  email: string;
+  emailVerified: boolean;
   initialImagePath: string;
 };
 
@@ -37,25 +40,34 @@ export default function SettingsForm({
   initialName,
   initialColor,
   initialAbout,
+  email,
+  emailVerified,
   initialImagePath,
 }: SettingsFormProps) {
   const router = useRouter();
   const [name, setName] = useState(initialName);
   const [color, setColor] = useState(initialColor);
   const [about, setAbout] = useState(initialAbout);
+
   const [profileError, setProfileError] = useState<string | null>(null);
   const [passwordError, setPasswordError] = useState<string | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
+
   const passwordState = useOverlayState();
   const deleteState = useOverlayState();
+  const verifyEmailState = useOverlayState();
+
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [deletePassword, setDeletePassword] = useState("");
+
   const [passwordLoading, setPasswordLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
+
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [imagePath, setImagePath] = useState(initialImagePath);
@@ -431,6 +443,19 @@ export default function SettingsForm({
             >
               Change Password
             </Button>
+
+            {!emailVerified && (
+              <>
+                <Button
+                  variant="tertiary"
+                  onPress={() => verifyEmailState.open()}
+                >
+                  Verify Email
+                </Button>
+
+                <EmailVerification email={email} state={verifyEmailState} />
+              </>
+            )}
 
             <Button
               variant="danger"

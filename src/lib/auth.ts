@@ -2,6 +2,7 @@ import { betterAuth } from "better-auth";
 import { username } from "better-auth/plugins";
 import { mongodbAdapter } from "better-auth/adapters/mongodb";
 import connectDB from "./db";
+import { resend } from "@/lib/resend";
 import ProjectModel from "@/models/Project";
 import mongoose from "mongoose";
 
@@ -46,12 +47,24 @@ export const auth = betterAuth({
   // Email and password authentication configuration
   emailAndPassword: {
     enabled: true,
-    requireEmailVerification: false,
+    requireEmailVerification: false, // Optional to the user in the user profile page
   },
 
-  // If we want to verify the email, we need to add
-  // "sendVerificationEmail" in "emailVerification" and set "requireEmailVerification" to true.
-  // This is an optional thing that we will discuss in the future
+  // the email verification configuration, which includes the function to send the verification email.
+  emailVerification: {
+    sendVerificationEmail: async ({ user, url }) => {
+      await resend.emails.send({
+        from: "MixGit <noreply@mixgit.tech>",
+        to: [user.email],
+        subject: "Verify your email",
+        html: `
+    <h3>Hello ${user.email},</h3>
+    <p>Click the link below to verify your account:</p>
+    <a href="${url}">Verify Email</a>
+  `,
+      });
+    },
+  },
 
   // Session configuration can set the session duration and cookie attributes.
   session: {
