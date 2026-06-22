@@ -18,9 +18,7 @@ export async function proxy(request: NextRequest) {
   );
 
   const isAuthRoute =
-    pathname === "/" ||
-    pathname.startsWith("/login") ||
-    pathname.startsWith("/signup");
+    pathname === "/" || pathname === "/login" || pathname === "/signup";
 
   const sessionCookie =
     request.cookies.get("better-auth.session_token") ??

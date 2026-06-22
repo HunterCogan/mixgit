@@ -74,6 +74,14 @@ export const auth = betterAuth({
   databaseHooks: {
     user: {
       create: {
+        before: async (user) => {
+          const { getReservedUsernames } = await import("./reservedUsernames");
+          const reserved = getReservedUsernames();
+          const uname = (user as { username?: string }).username ?? "";
+          if (reserved.includes(uname.toLowerCase())) {
+            throw new Error("Username is not available");
+          }
+        },
         after: async (user) => {
           try {
             await connectDB();

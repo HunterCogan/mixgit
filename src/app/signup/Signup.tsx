@@ -11,7 +11,7 @@ import {
   TextField,
 } from "@heroui/react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { EyeIcon, EyeSlashIcon } from "@heroicons/react/24/outline";
 import { authClient } from "@/lib/auth-client";
 
@@ -26,12 +26,25 @@ export default function Signup() {
   const [usernameError, setUsernameError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [reservedUsernames, setReservedUsernames] = useState<string[]>([]);
+
+  useEffect(() => {
+    fetch("/api/reserved-usernames")
+      .then((res) => res.json())
+      .then(({ reserved }) => setReservedUsernames(reserved));
+  }, []);
 
   async function checkUsername(value: string) {
     if (!value.trim()) {
       setUsernameError("");
       return;
     }
+
+    if (reservedUsernames.includes(value.toLowerCase())) {
+      setUsernameError("Username is not available");
+      return;
+    }
+
     const { data } = await authClient.isUsernameAvailable({ username: value });
     if (data?.available === false) {
       setUsernameError("Username is already taken");

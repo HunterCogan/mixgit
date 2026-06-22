@@ -30,7 +30,14 @@ export default async function Header() {
       <div className="flex items-center gap-3 sm:gap-5">
         {userId && <NavToggleButton />}
         <Link href="/dashboard" className="flex items-center gap-2">
-          <Image src="/mixgit_img.png" alt="" width={60} height={60} />
+          <Image
+            src="/mixgit_img.png"
+            alt=""
+            width={60}
+            height={60}
+            loading="eager"
+            priority
+          />
           <div className="flex flex-col leading-none">
             <span className="text-[26px] sm:text-[30px] font-bold tracking-tight mb-0 pb-0 text-[#0f172a]">
               MixGit
