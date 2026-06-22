@@ -73,15 +73,15 @@ export default function EmailVerification({
               <div className="flex flex-col gap-6 justify-center items-center text-center p-4 w-full text-black">
                 <p>Email: {email}</p>
 
-                {isVerified ? (
-                  <Button isDisabled>Email Verified</Button>
-                ) : (
+                {!isVerified ? (
                   <Button
                     isDisabled={loading}
                     onPress={handleResendVerification}
                   >
-                    {loading ? "Sending..." : "Verify Email"}
+                    Verify Email
                   </Button>
+                ) : (
+                  <p className="text-green-600 font-medium">Email Verified</p>
                 )}
 
                 {message && (

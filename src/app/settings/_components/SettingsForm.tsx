@@ -24,6 +24,7 @@ type SettingsFormProps = {
   initialColor: string;
   initialAbout: string;
   email: string;
+  emailVerified: boolean;
   initialImagePath: string;
 };
 
@@ -40,6 +41,7 @@ export default function SettingsForm({
   initialColor,
   initialAbout,
   email,
+  emailVerified,
   initialImagePath,
 }: SettingsFormProps) {
   const router = useRouter();
@@ -442,6 +444,19 @@ export default function SettingsForm({
               Change Password
             </Button>
 
+            {!emailVerified && (
+              <>
+                <Button
+                  variant="tertiary"
+                  onPress={() => verifyEmailState.open()}
+                >
+                  Verify Email
+                </Button>
+
+                <EmailVerification email={email} state={verifyEmailState} />
+              </>
+            )}
+
             <Button
               variant="danger"
               onPress={() => {
@@ -452,12 +467,6 @@ export default function SettingsForm({
             >
               Delete Account
             </Button>
-
-            <Button variant="tertiary" onPress={() => verifyEmailState.open()}>
-              Verify Email
-            </Button>
-
-            <EmailVerification email={email} state={verifyEmailState} />
           </div>
         </div>
 
