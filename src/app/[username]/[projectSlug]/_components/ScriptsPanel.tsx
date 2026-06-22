@@ -28,6 +28,7 @@ import {
   LightBulbIcon,
   SparklesIcon,
   TrashIcon,
+  EyeIcon,
 } from "@heroicons/react/24/outline";
 import ReactMarkdown from "react-markdown";
 import { ScriptStack } from "./ScriptStack";
@@ -45,6 +46,7 @@ interface Props {
   remixDescription: string | null;
   feedbackTimestamp: string | null;
   canDelete: boolean;
+  visibility: string | undefined;
 }
 
 export function ScriptsPanel({
@@ -59,6 +61,7 @@ export function ScriptsPanel({
   remixDescription,
   feedbackTimestamp,
   canDelete,
+  visibility,
 }: Props) {
   // isEmpty overrides the toggle, as empty projects should be viewed raw.
   const isEmpty = Object.keys(scripts).length === 0;
@@ -69,6 +72,7 @@ export function ScriptsPanel({
   const targetScripts = scripts[selectedTarget] ?? [];
 
   const deleteState = useOverlayState();
+  const visibilityState = useOverlayState();
   const [loading, setLoading] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
@@ -83,6 +87,10 @@ export function ScriptsPanel({
     } finally {
       setLoading(false);
     }
+  }
+
+  async function handleVisibilityChange() {
+    // API routing later "Backend code"
   }
 
   return (
@@ -303,6 +311,46 @@ export function ScriptsPanel({
             Download
           </Button>
         )}
+
+        <AlertDialog
+          isOpen={visibilityState.isOpen}
+          onOpenChange={visibilityState.setOpen}
+        >
+          <Button variant="primary" size="sm" onPress={visibilityState.open}>
+            <EyeIcon className="h-4 w-4" />
+            Change Visibility
+          </Button>
+
+          <AlertDialog.Backdrop>
+            <AlertDialog.Container>
+              <AlertDialog.Dialog>
+                <AlertDialog.CloseTrigger className="m-3" />
+
+                <AlertDialog.Header>
+                  <AlertDialog.Heading>Change Visibility</AlertDialog.Heading>
+                </AlertDialog.Header>
+
+                <AlertDialog.Body>
+                  Current visibility:
+                  <strong className="ml-1">
+                    {visibility === "private" ? "Private" : "Public"}
+                  </strong>
+                </AlertDialog.Body>
+
+                <AlertDialog.Footer>
+                  <Button variant="outline" onPress={visibilityState.close}>
+                    Cancel
+                  </Button>
+
+                  <Button variant="primary" onPress={handleVisibilityChange}>
+                    Make {visibility === "private" ? "Public" : "Private"}
+                  </Button>
+                </AlertDialog.Footer>
+              </AlertDialog.Dialog>
+            </AlertDialog.Container>
+          </AlertDialog.Backdrop>
+        </AlertDialog>
+
         {hasSelectedRemix && (
           <AlertDialog
             isOpen={deleteState.isOpen}

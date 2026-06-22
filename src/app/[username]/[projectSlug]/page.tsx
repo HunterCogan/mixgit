@@ -118,6 +118,7 @@ export default async function ProjectPage({
           creatorId={creatorId}
           userId={session?.user?.id}
           remixes={serializedRemixes}
+          visibility={project.visibility}
         />
       </main>
     </div>

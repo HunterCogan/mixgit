@@ -27,9 +27,15 @@ interface Props {
   creatorId: string;
   userId: string | undefined;
   remixes: RemixItem[];
+  visibility: "public" | "private";
 }
 
-export function ProjectContent({ creatorId, userId, remixes }: Props) {
+export function ProjectContent({
+  creatorId,
+  userId,
+  remixes,
+  visibility,
+}: Props) {
   const router = useRouter();
   const defaultId = (remixes.find((r) => r.isMain) ?? remixes[0])?.id ?? null;
   const [selectedId, setSelectedId] = useState<string | null>(defaultId);
@@ -214,6 +220,7 @@ export function ProjectContent({ creatorId, userId, remixes }: Props) {
             remixName={selectedRemix?.name ?? null}
             remixDescription={selectedRemix?.description ?? null}
             feedbackTimestamp={feedbackTimestamp}
+            visibility={visibility}
             canDelete={
               selectedRemix !== null &&
               (userId === creatorId || userId === selectedRemix.uploaderId)

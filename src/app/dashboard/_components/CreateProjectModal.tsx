@@ -38,6 +38,7 @@ export default function CreateProjectModal() {
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [visibility, setVisibility] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -49,7 +50,11 @@ export default function CreateProjectModal() {
       const res = await fetch("/api/projects", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, description }),
+        body: JSON.stringify({
+          name,
+          description,
+          visibility: visibility ? "private" : "public",
+        }),
       });
 
       if (res.ok) {
@@ -144,6 +149,21 @@ export default function CreateProjectModal() {
                   </Description>
                   <FieldError />
                 </TextField>
+
+                <Label>Visibility</Label>
+
+                <Button
+                  variant={visibility ? "primary" : "secondary"}
+                  onPress={() => setVisibility(!visibility)}
+                >
+                  {visibility ? "Private Project" : "Public Project"}
+                </Button>
+
+                <Description>
+                  {visibility
+                    ? "Only you can view this project."
+                    : "Anyone can view this project."}
+                </Description>
 
                 {error && <p className="text-sm text-red-500">{error}</p>}
                 <SubmitButton isPending={loading} />

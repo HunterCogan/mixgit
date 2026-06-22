@@ -24,6 +24,7 @@ export default async function DashboardPage() {
     name: p.name,
     slug: p.slug,
     description: p.description ?? "",
+    visibility: p.visibility,
     createdAt: new Date(p.createdAt).toLocaleDateString("en-US", {
       month: "short",
       day: "numeric",
