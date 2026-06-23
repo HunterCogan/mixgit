@@ -50,19 +50,9 @@ export default function NavbarClient({
       >
         Shared Projects
       </Link>
-      <Link
-        href="/favorites"
-        className={`px-3 py-2 mb-2 rounded-md text-sm font-medium transition-colors ${
-          pathname === "/favorites"
-            ? "bg-nav-item-active text-nav-text"
-            : "text-nav-text hover:bg-nav-item-hover hover:text-nav-text"
-        }`}
-      >
-        Favorites
-      </Link>
 
       {projects.length > 0 && (
-        <div className="mt-10 border-t border-nav-border pt-4">
+        <div className="border-t border-nav-border pt-4">
           <p className="px-3 mb-1 text-xs font-semibold text-nav-text-subtle uppercase tracking-wider">
             Recent Projects
           </p>
