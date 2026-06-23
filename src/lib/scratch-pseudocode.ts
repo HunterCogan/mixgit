@@ -10,6 +10,8 @@ import {
   getAllInputValues,
   getInputValue,
   getScripts,
+  parseMutationArray,
+  parseProcedureCode,
 } from "@/lib/scratch";
 
 /**
@@ -50,13 +52,24 @@ export function computeIndents(blocks: Script["blocks"]): number[] {
   return blocks.map(depth);
 }
 
+function formatListItems(items: (string | number | boolean)[]): string {
+  const CAP = 10;
+  if (items.length > CAP) {
+    return `[${items.slice(0, CAP).join(", ")}, ... (${items.length} items)]`;
+  }
+  return `[${items.join(", ")}]`;
+}
+
 /**
  * Converts a resolved input value to its inline representation.
  *
  * @param input - A `ResolvedInput` produced by `getInputValue` or `getAllInputValues`.
  * @returns The inline label string, or `null` if the input type has no textual representation.
  */
-export function inputLabel(input: ResolvedInput): string | null {
+export function inputLabel(
+  input: ResolvedInput,
+  idToName?: Map<string, string>,
+): string | null {
   switch (input.type) {
     case "number":
       return String(input.value);
@@ -70,7 +83,7 @@ export function inputLabel(input: ResolvedInput): string | null {
       return `@${input.name}`;
     case "variable":
     case "list":
-      return `(${input.name})`;
+      return `(${idToName?.get(input.id) ?? input.name})`;
     case "block":
       return `[ ]`;
     default:
@@ -78,12 +91,78 @@ export function inputLabel(input: ResolvedInput): string | null {
   }
 }
 
-function blockToLine(block: Block, blockMap: BlockMap): string {
+function renderInputValue(
+  input: ResolvedInput,
+  blockMap: BlockMap,
+  idToName: Map<string, string>,
+): string {
+  if (input.type === "block") {
+    const nested = blockMap[input.blockId];
+    if (!nested) return "[ ]";
+    if (nested.shadow) {
+      // Shadow blocks are dropdown menus so return their field value directly
+      // e.g. returns Cat Flying1 instead of touchingobjectmenu(TOUCHINGOBJECTMENU=Cat1 Flying)
+      const values = Object.values(nested.fields).map((field) => field[0]);
+      return values.join(" ") || "[ ]";
+    }
+    if (
+      nested.opcode === "argument_reporter_string_number" ||
+      nested.opcode === "argument_reporter_boolean"
+    ) {
+      // Function/procedure parameters can be simplified to their field value without losing comprehension.
+      const values = Object.values(nested.fields).map(
+        (field) => `(${field[0]})`,
+      );
+      return values.join(" ") || "[ ]";
+    }
+    return blockToLine(nested, blockMap, idToName);
+  }
+  if (input.type === "empty") return "[ ]";
+  return inputLabel(input, idToName) ?? "[ ]";
+}
+
+function blockToLine(
+  block: Block,
+  blockMap: BlockMap,
+  idToName: Map<string, string>,
+): string {
+  // For function/procedure calls, the name is in block.mutation.proccode and the arguments are in block.mutation.argumentids
+  if (block.opcode === "procedures_call" && block.mutation) {
+    const args = parseMutationArray(block.mutation.argumentids).map((id) =>
+      renderInputValue(getInputValue(block, id), blockMap, idToName),
+    );
+    return `procedures_call(${parseProcedureCode(block.mutation.proccode, args)})`;
+  }
+
+  // For function/procedure definitions, the reference to the function is in the "custom_block" input
+  // e.g. "inputs":{"custom_block":[1,"`77As(9Gc,DG|eE19BtA"]}
+  if (block.opcode === "procedures_definition") {
+    const procedureRef = getInputValue(block, "custom_block");
+    const procedure =
+      procedureRef.type === "block"
+        ? blockMap[procedureRef.blockId]
+        : undefined;
+    if (procedure?.mutation) {
+      const names = parseMutationArray(procedure.mutation.argumentnames).map(
+        (name) => `(${name})`,
+      );
+      return `procedures_definition(${parseProcedureCode(
+        procedure.mutation.proccode,
+        names,
+      )})`;
+    }
+  }
+
   const f = getAllFieldValues(block);
   const i = getAllInputValues(block);
 
-  const fieldParts = Object.entries(f).map(([key, value]) => `${key}=${value}`);
-  // Inline inputs are rendered as key=value pairs, with nested blocks recursively rendered in place
+  const fieldParts = Object.entries(f).map(([key, value]) => {
+    if (key === "VARIABLE" || key === "LIST") {
+      const id = block.fields[key]?.[1];
+      if (id) return `${key}=${idToName.get(id) ?? value}`;
+    }
+    return `${key}=${value}`;
+  });
   const inputParts = Object.entries(i)
     .filter(([key, input]) => {
       // Filter out empty and SUBSTACK inputs from inline inputs
@@ -91,20 +170,9 @@ function blockToLine(block: Block, blockMap: BlockMap): string {
       if (input.type === "block" && key.startsWith("SUBSTACK")) return false;
       return true;
     })
-    .map(([key, input]) => {
-      if (input.type === "block") {
-        const nested = blockMap[input.blockId];
-        if (!nested) return `${key}=[ ]`;
-        if (nested.shadow) {
-          // Shadow blocks are dropdown menus so return their field value directly
-          // e.g. returns Cat Flying1 instead of touchingobjectmenu(TOUCHINGOBJECTMENU=Cat1 Flying)
-          const values = Object.values(nested.fields).map((f) => f[0]);
-          return `${key}=${values.join(" ") || "[ ]"}`;
-        }
-        return `${key}=${blockToLine(nested, blockMap)}`;
-      }
-      return `${key}=${inputLabel(input)}`;
-    });
+    .map(
+      ([key, input]) => `${key}=${renderInputValue(input, blockMap, idToName)}`,
+    );
 
   const hasSubstack = Object.entries(i).some(
     ([key, input]) => input.type === "block" && key.startsWith("SUBSTACK"),
@@ -131,6 +199,17 @@ export function rawToPseudocode(raw: string, targets?: string[]): string {
     const blockMaps = Object.fromEntries(
       project.targets.map((t) => [t.name, t.blocks]),
     );
+    // Create a full id-to-name map for every variable and list for consistency.
+    // Relying on name is fragile (e.g. stale variable names), so inputLabel prioritizes id.
+    const idToName = new Map<string, string>();
+    for (const t of project.targets) {
+      for (const [id, [name]] of Object.entries(t.variables)) {
+        idToName.set(id, name);
+      }
+      for (const [id, [name]] of Object.entries(t.lists)) {
+        idToName.set(id, name);
+      }
+    }
     const scripts = getScripts(project, true);
     let pseudocode = "";
     for (const [targetName, targetScripts] of Object.entries(scripts)) {
@@ -147,13 +226,20 @@ export function rawToPseudocode(raw: string, targets?: string[]): string {
           if (elseInput.type === "block") elseIds.add(elseInput.blockId);
         }
 
-        // Target header (name, variables, costumes)
+        // Target header (name, variables, lists, costumes)
         pseudocode += `Target: ${targetName}\n`;
         if (target?.variables && Object.values(target.variables).length > 0) {
           pseudocode += `${target?.isStage ? "Global" : "Local"} variables: [${Object.values(
             target.variables,
           )
             .map((v) => `${v[0]}=${v[1]}`)
+            .join(", ")}]\n`;
+        }
+        if (target?.lists && Object.values(target.lists).length > 0) {
+          pseudocode += `${target?.isStage ? "Global" : "Local"} lists: [${Object.values(
+            target.lists,
+          )
+            .map(([name, items]) => `${name}=${formatListItems(items)}`)
             .join(", ")}]\n`;
         }
         if (target?.costumes && Object.values(target.costumes).length > 0) {
@@ -173,7 +259,7 @@ export function rawToPseudocode(raw: string, targets?: string[]): string {
               if (i !== 0 && elseIds.has(block.id)) {
                 pseudocode += `${"\t".repeat(indents[i])}else:\n`;
               }
-              const line = blockToLine(block, blockMap);
+              const line = blockToLine(block, blockMap, idToName);
               pseudocode +=
                 i === 0
                   ? `${line}${!line.endsWith(":") && block.next ? ":" : ""}\n`
