@@ -1,15 +1,18 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
+import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
 import EmailVerification from "./verify-email/EmailVerification";
 import {
+  Alert,
   Avatar,
   Button,
+  Card,
   Form,
   Input,
   Label,
+  Separator,
   Spinner,
   TextArea,
   TextField,
@@ -311,187 +314,212 @@ export default function SettingsForm({
   }
 
   return (
-    <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-2">
-        <Label>Profile Picture</Label>
-
-        <div className="flex flex-col items-start gap-3">
+    <div className="flex flex-col gap-8">
+      <div className="flex flex-col gap-8 md:flex-row">
+        <Card
+          variant="transparent"
+          render={(props) => <aside {...props} />}
+          className="flex flex-col gap-4 p-0 rounded-none overflow-visible md:w-64 shrink-0 items-center"
+        >
           <Button
             type="button"
             onPress={() => {
               if (imagePath) setImageModalOpen(true);
             }}
             variant="primary"
-            className={`h-auto min-w-0 p-0 bg-transparent hover:bg-transparent ${!imagePath ? "cursor-default" : "cursor-pointer"}`}
+            className={`h-auto min-w-0 p-0 bg-transparent hover:bg-transparent self-center ${!imagePath ? "cursor-default" : "cursor-pointer"}`}
           >
-            <Avatar size="lg" className="h-28 w-28 rounded-3xl">
+            <Avatar size="lg" className="h-48 w-48 rounded-full">
               <Avatar.Image src={imageUrl} alt={name} />
               <Avatar.Fallback
                 style={{ backgroundColor: color }}
-                className="text-2xl"
+                className="text-4xl"
               >
                 {avatarInitial}
               </Avatar.Fallback>
             </Avatar>
           </Button>
 
-          <div className="flex gap-2">
-            <Button
-              variant="secondary"
-              size="sm"
-              onPress={() => {
-                document.getElementById("avatar-upload")?.click();
-              }}
-            >
-              Change Picture
-            </Button>
-
-            <Link href={`/${username}`}>
-              <Button variant="secondary" size="sm">
-                View Profile
-              </Button>
-            </Link>
+          <div className="flex flex-col text-center">
+            <h2 className="text-2xl font-bold">{name || "Your name"}</h2>
+            <p className="text-lg text-default-500">@{username}</p>
           </div>
-        </div>
 
-        <Input
-          id="avatar-upload"
-          type="file"
-          accept="image/*"
-          className="hidden"
-          onChange={(e) => {
-            const file = e.target.files?.[0];
+          <Button
+            variant="secondary"
+            size="sm"
+            onPress={() => {
+              document.getElementById("avatar-upload")?.click();
+            }}
+          >
+            Change Picture
+          </Button>
 
-            if (file) {
-              setSelectedFile(file);
-            }
-          }}
+          <Input
+            id="avatar-upload"
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+
+              if (file) {
+                setSelectedFile(file);
+              }
+            }}
+          />
+
+          {selectedFile && (
+            <div className="flex items-center gap-3">
+              <p className="text-sm">{selectedFile.name}</p>
+
+              <Button
+                variant="primary"
+                onPress={handleAvatarUpload}
+                isDisabled={uploadingImage}
+              >
+                {uploadingImage ? "Uploading..." : "Upload"}
+              </Button>
+            </div>
+          )}
+
+          {!imagePath && (
+            <div className="w-full">
+              <Label>Avatar color</Label>
+              <div className="flex items-center gap-3">
+                <Input
+                  type="color"
+                  value={color}
+                  onChange={(e) => setColor(e.target.value)}
+                  style={{ width: "2.25rem", height: "2.25rem", padding: 0 }}
+                  className="shrink-0 cursor-pointer rounded border border-default-200 bg-transparent"
+                  aria-label="Pick avatar color"
+                />
+                <Input
+                  value={color}
+                  onChange={(e) => setColor(e.target.value)}
+                  placeholder="#808080"
+                  className="flex-1 min-w-0"
+                />
+              </div>
+            </div>
+          )}
+        </Card>
+
+        <Separator
+          orientation="vertical"
+          className="hidden md:block self-stretch"
         />
 
-        {selectedFile && (
-          <div className="flex items-center gap-3">
-            <p className="text-sm">{selectedFile.name}</p>
+        <Form onSubmit={handleSubmit} className="flex-1 flex flex-col gap-5">
+          <TextField>
+            <Label>Display name</Label>
+            <Input
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Your name"
+            />
+          </TextField>
 
-            <Button
-              variant="primary"
-              onPress={handleAvatarUpload}
-              isDisabled={uploadingImage}
-            >
-              {uploadingImage ? "Uploading..." : "Upload"}
-            </Button>
-          </div>
-        )}
-      </div>
+          <TextField isDisabled>
+            <Label>Email</Label>
+            <Input value={email} variant="secondary" />
+          </TextField>
 
-      <Form onSubmit={handleSubmit} className="flex flex-col gap-5">
-        <TextField isRequired>
-          <Label>Display name</Label>
-          <Input
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Your name"
-          />
-        </TextField>
+          {!emailVerified && (
+            <Alert status="warning" className="items-center">
+              <Alert.Indicator>
+                <ExclamationTriangleIcon className="h-5 w-5" />
+              </Alert.Indicator>
 
-        {!imagePath && (
-          <div>
-            <Label>Avatar color</Label>
-            <div className="flex items-center gap-3">
-              <Input
-                type="color"
-                value={color}
-                onChange={(e) => setColor(e.target.value)}
-                className="h-9 w-9 p-0 cursor-pointer rounded border border-default-200 bg-transparent"
-                aria-label="Pick avatar color"
-              />
-              <Input
-                value={color}
-                onChange={(e) => setColor(e.target.value)}
-                placeholder="#808080"
-                className="flex-1"
-              />
-            </div>
-          </div>
-        )}
+              <Alert.Content className="flex-row items-center justify-between gap-3 flex-1">
+                <div>
+                  <Alert.Title>Email not verified</Alert.Title>
+                  <Alert.Description>
+                    Verify your email to help secure your account.
+                  </Alert.Description>
+                </div>
 
-        <TextField>
-          <Label>About me</Label>
-          <TextArea
-            value={about}
-            onChange={(e) => setAbout(e.target.value)}
-            placeholder="Tell others a little about yourself"
-            rows={4}
-          />
-          <p className="text-xs text-default-400 mt-1">
-            {about.length}/500 characters
-          </p>
-        </TextField>
-
-        <div className="flex flex-col gap-3 w-full">
-          <h3 className="text-lg font-semibold">Security</h3>
-
-          <div className="flex gap-3">
-            <Button
-              variant="secondary"
-              onPress={() => {
-                setPasswordError(null);
-                setCurrentPassword("");
-                setNewPassword("");
-                setConfirmPassword("");
-                passwordState.open();
-              }}
-            >
-              Change Password
-            </Button>
-
-            {!emailVerified && (
-              <>
                 <Button
-                  variant="tertiary"
+                  variant="secondary"
+                  size="sm"
+                  className="shrink-0"
                   onPress={() => verifyEmailState.open()}
                 >
                   Verify Email
                 </Button>
+              </Alert.Content>
 
-                <EmailVerification email={email} state={verifyEmailState} />
-              </>
+              <EmailVerification email={email} state={verifyEmailState} />
+            </Alert>
+          )}
+
+          <TextField>
+            <Label>About me</Label>
+            <TextArea
+              value={about}
+              onChange={(e) => setAbout(e.target.value)}
+              placeholder="Tell others a little about yourself"
+              rows={4}
+            />
+            <p className="text-xs text-default-400 mt-1">
+              {about.length}/500 characters
+            </p>
+          </TextField>
+
+          <div className="flex flex-col gap-3 w-full">
+            <h3 className="text-lg font-semibold">Security</h3>
+
+            <div className="flex gap-3">
+              <Button
+                variant="secondary"
+                onPress={() => {
+                  setPasswordError(null);
+                  setCurrentPassword("");
+                  setNewPassword("");
+                  setConfirmPassword("");
+                  passwordState.open();
+                }}
+              >
+                Change Password
+              </Button>
+
+              <Button
+                variant="danger"
+                onPress={() => {
+                  setDeleteError(null);
+                  setDeletePassword("");
+                  deleteState.open();
+                }}
+              >
+                Delete Account
+              </Button>
+            </div>
+          </div>
+
+          <div className="min-h-6">
+            {profileError && (
+              <p className="text-sm text-red-500">{profileError}</p>
             )}
 
-            <Button
-              variant="danger"
-              onPress={() => {
-                setDeleteError(null);
-                setDeletePassword("");
-                deleteState.open();
-              }}
-            >
-              Delete Account
-            </Button>
+            {success && (
+              <p className="text-sm text-green-600">
+                Profile saved successfully.
+              </p>
+            )}
           </div>
-        </div>
 
-        <div className="min-h-6">
-          {profileError && (
-            <p className="text-sm text-red-500">{profileError}</p>
-          )}
-
-          {success && (
-            <p className="text-sm text-green-600">
-              Profile saved successfully.
-            </p>
-          )}
-        </div>
-
-        <Button
-          type="submit"
-          variant="primary"
-          isDisabled={loading}
-          className="self-start"
-        >
-          {loading && <Spinner size="sm" />}
-          {loading ? "Saving..." : "Save profile"}
-        </Button>
-      </Form>
+          <Button
+            type="submit"
+            variant="primary"
+            isDisabled={loading}
+            className="self-start"
+          >
+            {loading && <Spinner size="sm" />}
+            {loading ? "Saving..." : "Save profile"}
+          </Button>
+        </Form>
+      </div>
 
       <Modal isOpen={imageModalOpen} onOpenChange={setImageModalOpen}>
         <Modal.Trigger className="sr-only" tabIndex={-1} />

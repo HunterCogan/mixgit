@@ -1,5 +1,7 @@
+"use client";
+
 import Link from "next/link";
-import { Avatar, Button, Card, Separator } from "@heroui/react";
+import { Accordion, Avatar, Button, Card, Separator } from "@heroui/react";
 import { PencilSquareIcon } from "@heroicons/react/24/outline";
 import UserProjectsList, { type UserProject } from "./UserProjectsList";
 
@@ -9,16 +11,20 @@ export default function UserProfile({
   color,
   imagePath,
   about,
+  email,
   isOwner,
   projects,
+  collaboratingProjects,
 }: {
   name: string;
   username: string;
   color: string;
   imagePath: string | undefined;
   about: string;
+  email: string | undefined;
   isOwner: boolean;
   projects: UserProject[];
+  collaboratingProjects: UserProject[];
 }) {
   const imageUrl = imagePath
     ? `https://scratchpad-profile-images.s3.us-east-1.amazonaws.com/${imagePath}`
@@ -27,53 +33,103 @@ export default function UserProfile({
   const aboutText = about.trim();
 
   return (
-    <div className="w-full font-sans">
-      <main className="max-w-3xl mx-auto px-3 sm:px-6 py-8 flex flex-col gap-6">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-          <div className="flex items-center gap-4">
-            <Avatar size="lg">
-              <Avatar.Image src={imageUrl} alt={name} />
-              <Avatar.Fallback style={{ backgroundColor: color }}>
-                {initial}
-              </Avatar.Fallback>
-            </Avatar>
-            <div className="flex flex-col">
-              <h1 className="text-2xl font-bold">{name}</h1>
-              <p className="text-sm text-default-500">@{username}</p>
-            </div>
+    <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 py-8 font-sans">
+      <div className="flex flex-col gap-8 md:flex-row">
+        <Card
+          variant="transparent"
+          render={(props) => <aside {...props} />}
+          className="flex flex-col gap-4 p-0 rounded-none overflow-visible md:w-72 w-full shrink-0 items-center"
+        >
+          <Avatar size="lg" className="h-48 w-48 rounded-full">
+            <Avatar.Image src={imageUrl} alt={name} />
+            <Avatar.Fallback
+              style={{ backgroundColor: color }}
+              className="text-4xl"
+            >
+              {initial}
+            </Avatar.Fallback>
+          </Avatar>
+
+          <div className="flex flex-col text-center w-full max-w-full">
+            <h1 className="text-2xl font-bold wrap-break-word">{name}</h1>
+            <p className="text-lg text-default-500 wrap-break-word">
+              @{username}
+            </p>
+            {email && (
+              <p className="text-sm text-default-500 wrap-break-word">
+                {email}
+              </p>
+            )}
           </div>
+
+          {aboutText.length > 0 && (
+            <p className="text-sm text-default-600 whitespace-pre-wrap">
+              {aboutText}
+            </p>
+          )}
+
           {isOwner && (
-            <Link href="/settings" className="shrink-0">
-              <Button variant="outline" size="sm">
+            <Link href="/settings">
+              <Button variant="outline" size="sm" className="w-full">
                 <PencilSquareIcon className="h-4 w-4" />
-                Edit
+                Edit profile
               </Button>
             </Link>
           )}
-        </div>
-
-        <Card>
-          <Card.Header>
-            <Card.Title className="text-lg font-semibold">About me</Card.Title>
-          </Card.Header>
-          <Card.Content>
-            <p className="text-sm text-default-500 whitespace-pre-wrap">
-              {aboutText.length > 0 ? aboutText : "No bio yet."}
-            </p>
-          </Card.Content>
         </Card>
 
-        <Separator />
+        <Separator
+          orientation="vertical"
+          className="hidden md:block self-stretch"
+        />
 
-        <section className="flex flex-col gap-3">
-          <h2 className="text-lg font-semibold">Projects</h2>
-          <UserProjectsList
-            projects={projects}
-            username={username}
-            isOwner={isOwner}
-          />
-        </section>
-      </main>
+        <div className="flex-1">
+          <Accordion
+            allowsMultipleExpanded
+            defaultExpandedKeys={["projects", "collaborating"]}
+            hideSeparator
+            className="flex flex-col gap-3"
+          >
+            <Accordion.Item id="projects">
+              <Accordion.Heading>
+                <Accordion.Trigger className="text-lg font-semibold rounded-lg px-3 py-2 -mx-3">
+                  Projects ({projects.length})
+                  <Accordion.Indicator />
+                </Accordion.Trigger>
+              </Accordion.Heading>
+              <Accordion.Panel>
+                <Accordion.Body className="px-0">
+                  <UserProjectsList
+                    projects={projects}
+                    username={username}
+                    isOwner={isOwner}
+                  />
+                </Accordion.Body>
+              </Accordion.Panel>
+            </Accordion.Item>
+
+            <Accordion.Item id="collaborating">
+              <Accordion.Heading>
+                <Accordion.Trigger className="text-lg font-semibold rounded-lg px-3 py-2 -mx-3">
+                  Collaborating on ({collaboratingProjects.length})
+                  <Accordion.Indicator />
+                </Accordion.Trigger>
+              </Accordion.Heading>
+              <Accordion.Panel>
+                <Accordion.Body className="px-0">
+                  <UserProjectsList
+                    projects={collaboratingProjects}
+                    username={username}
+                    isOwner={isOwner}
+                    emptyOwnerMessage="You're not collaborating on any projects yet. Ask a project owner to add you as a collaborator."
+                    emptyMessage="Not a collaborator on any projects."
+                  />
+                </Accordion.Body>
+              </Accordion.Panel>
+            </Accordion.Item>
+          </Accordion>
+        </div>
+      </div>
     </div>
   );
 }
