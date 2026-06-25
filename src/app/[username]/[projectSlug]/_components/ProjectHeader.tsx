@@ -25,6 +25,7 @@ import CreateRemixModal from "./CreateRemixModal";
 import {
   InformationCircleIcon,
   UserMinusIcon,
+  PencilIcon,
 } from "@heroicons/react/24/outline";
 import Link from "next/link";
 import { ProjectSchema } from "@/lib/schemas/project.zod";
@@ -51,7 +52,7 @@ interface ProjectHeaderProps {
   creatorName: string;
   creatorColor: string;
   creatorImagePath?: string;
-  visibility: string;
+  initialVisibility: "public" | "private";
 }
 
 export function ProjectHeader({
@@ -62,17 +63,19 @@ export function ProjectHeader({
   userId,
   initialName,
   initialDescription,
+  initialVisibility,
   createdAt,
   lastUpdated,
   team,
   creatorName,
   creatorColor,
   creatorImagePath,
-  visibility,
 }: ProjectHeaderProps) {
   const [name, setName] = useState(initialName);
   const [description, setDescription] = useState(initialDescription);
-  const [projectVisibility, setProjectVisibility] = useState(visibility);
+  const visibilityState = useOverlayState();
+  const [visibility, setVisibility] = useState(initialVisibility);
+  const [updatingVisibility, setUpdatingVisibility] = useState(false);
   const [loading, setLoading] = useState(false);
   const [leaveError, setLeaveError] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -183,6 +186,32 @@ export function ProjectHeader({
     }
   }
 
+  async function handleVisibilityChange() {
+    const newVisibility = visibility === "private" ? "public" : "private";
+
+    setUpdatingVisibility(true);
+
+    try {
+      const res = await fetch(`/api/projects/${projectId}/visibility`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          visibility: newVisibility,
+        }),
+      });
+
+      if (res.ok) {
+        setVisibility(newVisibility);
+        visibilityState.close();
+        router.refresh();
+      }
+    } finally {
+      setUpdatingVisibility(false);
+    }
+  }
+
   return (
     <Surface className="flex flex-col sm:flex-row sm:justify-between rounded-2xl sm:rounded-3xl p-4 sm:p-6 gap-4">
       <div className="flex flex-row flex-1 gap-4 sm:gap-6">
@@ -228,11 +257,10 @@ export function ProjectHeader({
 
           <div className="flex items-center gap-2 px-1 mt-1">
             <Chip
-              size="sm"
               variant="secondary"
-              color={projectVisibility === "private" ? "warning" : "success"}
+              color={visibility === "private" ? "warning" : "success"}
             >
-              {projectVisibility === "private" ? "Private" : "Public"}
+              {visibility === "private" ? "Private" : "Public"}
             </Chip>
           </div>
         </div>
@@ -398,6 +426,65 @@ export function ProjectHeader({
                 </AlertDialog>
               )}
             </ButtonGroup>
+
+            {userId === creatorId && (
+              <ButtonGroup>
+                <AlertDialog
+                  isOpen={visibilityState.isOpen}
+                  onOpenChange={visibilityState.setOpen}
+                >
+                  <Button
+                    isIconOnly
+                    variant="secondary"
+                    size="sm"
+                    onPress={visibilityState.open}
+                  >
+                    <PencilIcon className="h-4 w-4" />
+                  </Button>
+
+                  <AlertDialog.Backdrop>
+                    <AlertDialog.Container>
+                      <AlertDialog.Dialog>
+                        <AlertDialog.CloseTrigger className="m-3" />
+
+                        <AlertDialog.Header>
+                          <AlertDialog.Heading className="flex items-center gap-2 text-2xl mb-3">
+                            <AlertDialog.Icon />
+                            Change Visibility
+                          </AlertDialog.Heading>
+                        </AlertDialog.Header>
+
+                        <AlertDialog.Body>
+                          Current visibility:
+                          <strong className="ml-1">
+                            {visibility === "private" ? "Private" : "Public"}
+                          </strong>
+                        </AlertDialog.Body>
+
+                        <AlertDialog.Footer>
+                          <Button
+                            variant="outline"
+                            onPress={visibilityState.close}
+                          >
+                            Cancel
+                          </Button>
+
+                          <Button
+                            variant="primary"
+                            isDisabled={updatingVisibility}
+                            onPress={handleVisibilityChange}
+                          >
+                            {updatingVisibility && <Spinner size="sm" />}
+                            Make{" "}
+                            {visibility === "private" ? "Public" : "Private"}
+                          </Button>
+                        </AlertDialog.Footer>
+                      </AlertDialog.Dialog>
+                    </AlertDialog.Container>
+                  </AlertDialog.Backdrop>
+                </AlertDialog>
+              </ButtonGroup>
+            )}
           </div>
         )}
       </div>
