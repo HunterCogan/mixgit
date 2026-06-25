@@ -9,6 +9,8 @@ import {
   getAllFieldValues,
   getScripts,
   parseScripts,
+  parseMutationArray,
+  parseProcedureCode,
 } from "../scratch";
 import type { Block } from "@/types";
 
@@ -263,6 +265,30 @@ describe("getScripts", () => {
         full[target].length,
       );
     });
+  });
+});
+
+// parseMutationArray
+describe("parseMutationArray", () => {
+  it("parses a valid JSON string array", () => {
+    expect(parseMutationArray('["x","y","z"]')).toEqual(["x", "y", "z"]);
+  });
+
+  it("returns [] for undefined input", () => {
+    expect(parseMutationArray(undefined)).toEqual([]);
+  });
+});
+
+// parseProcedureCode
+describe("parseProcedureCode", () => {
+  it("replaces %s/%n/%b placeholders with labeled args", () => {
+    expect(
+      parseProcedureCode("move %n steps in %s direction %b", [
+        "10",
+        "right",
+        "fast",
+      ]),
+    ).toBe("move (10) steps in (right) direction (fast)");
   });
 });
 

@@ -51,6 +51,35 @@ export function parsePrimitive(primitive: ScratchPrimitive): ResolvedInput {
 }
 
 /**
+ * Parses a mutation's JSON-encoded string array (e.g. `argumentids`,
+ * `argumentnames`) into a plain `string[]`.
+ *
+ * @param json - The raw JSON string from the mutation attribute.
+ * @returns The parsed string array, or `[]` if the input is absent or malformed.
+ */
+export function parseMutationArray(json: string | undefined): string[] {
+  if (!json) return [];
+  try {
+    const parsed = JSON.parse(json);
+    return Array.isArray(parsed) ? parsed.map(String) : [];
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Fills a custom-block `proccode` signature by replacing its `%s`/`%n`/`%b`
+ * argument placeholders with the supplied labels.
+ * @param proccode - The raw procedure code string.
+ * @param args - Ordered argument labels to substitute into each placeholder.
+ * @returns The formatted signature.
+ */
+export function parseProcedureCode(proccode: string, args: string[]): string {
+  let i = 0;
+  return proccode.replace(/%[snb]/g, () => `(${args[i++] ?? "[ ]"})`);
+}
+
+/**
  * Resolves a named input slot on a block into a `ResolvedInput`.
  *
  * ```ts
