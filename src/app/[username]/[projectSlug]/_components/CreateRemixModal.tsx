@@ -165,7 +165,8 @@ export default function CreateRemixModal({
                     <SearchField.Input placeholder='"https://scratch.mit.edu/projects/322341152"' />
                   </SearchField.Group>
                   <Description>
-                    Paste a Scratch project link to autofill the data below
+                    Search for a Scratch project by link to autofill the data
+                    below. Press enter to search.
                   </Description>
                   <ErrorMessage>{searchError}</ErrorMessage>
                 </SearchField>
