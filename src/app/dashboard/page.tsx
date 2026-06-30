@@ -16,9 +16,8 @@ export default async function DashboardPage() {
   const user = await UserModel.findById(userId).lean();
 
   const projects = await ProjectModel.find({
-    $or: [{ creator: userObjectId }, { team: userObjectId }],
+    creator: userObjectId,
   })
-    .populate<{ creator: { username: string } }>("creator", "username")
     .sort({ createdAt: -1 })
     .lean();
 
@@ -28,7 +27,6 @@ export default async function DashboardPage() {
     slug: p.slug,
     description: p.description ?? "",
     visibility: p.visibility,
-    ownerUsername: p.creator.username,
     createdAt: new Date(p.createdAt).toLocaleDateString("en-US", {
       month: "short",
       day: "numeric",

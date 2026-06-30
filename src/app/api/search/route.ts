@@ -3,9 +3,14 @@ import connectDB from "@/lib/db";
 import UserModel from "@/models/User";
 import ProjectModel from "@/models/Project";
 import RemixModel from "@/models/Remix";
+import { verifySession } from "@/lib/dal";
+import mongoose from "mongoose";
 
 export async function GET(request: NextRequest) {
   try {
+    const session = await verifySession();
+    const userObjectId = new mongoose.Types.ObjectId(session.userId);
+
     const { searchParams } = new URL(request.url);
     const query = searchParams.get("q")?.trim();
     const category = searchParams.get("category") ?? "projects";
@@ -66,12 +71,15 @@ export async function GET(request: NextRequest) {
 
     const projects = await ProjectModel.find({
       name: regex,
-      visibility: "public",
+      $or: [
+        { visibility: "public" },
+        { creator: userObjectId },
+        { team: userObjectId },
+      ],
     })
       .select("_id name slug creator")
       .limit(8)
       .lean();
-
     const projectIds = projects.map((p) => p._id);
     const remixCounts = await RemixModel.aggregate([
       { $match: { project: { $in: projectIds } } },

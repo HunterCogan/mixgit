@@ -32,6 +32,13 @@ export async function GET(
       return NextResponse.json({ error: "Project not found" }, { status: 404 });
     }
 
+    if (!canViewProject(session.userId, project)) {
+      return NextResponse.json(
+        { error: "Project is private or you don't have access" },
+        { status: 403 },
+      );
+    }
+
     const allowed = canViewProject(session.userId, project);
 
     if (!allowed) {

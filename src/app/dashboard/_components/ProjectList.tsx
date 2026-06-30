@@ -19,12 +19,18 @@ type Project = {
   description: string;
   createdAt: string;
   createdAtRaw: string;
-  visibility: string;
-  ownerUsername: string;
+  visibility: "public" | "private";
+  ownerUsername?: string;
 };
 // A List of all the projects for a user. Has View button which goes to the project page,
 // and Delete button which opens a confirmation dialog before deleting the project.
-function ProjectRow({ project }: { project: Project; username: string }) {
+function ProjectRow({
+  project,
+  username,
+}: {
+  project: Project;
+  username: string;
+}) {
   const router = useRouter();
   const deleteState = useOverlayState();
   const [loading, setLoading] = useState(false);
@@ -83,9 +89,7 @@ function ProjectRow({ project }: { project: Project; username: string }) {
             <Button
               variant="outline"
               size="sm"
-              onPress={() =>
-                router.push(`/${project.ownerUsername}/${project.slug}`)
-              }
+              onPress={() => router.push(`/${username}/${project.slug}`)}
             >
               <EyeIcon className="h-4 w-4" />
               View

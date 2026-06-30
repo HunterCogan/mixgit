@@ -256,12 +256,18 @@ export function ProjectHeader({
           )}
 
           <div className="flex items-center gap-2 px-1 mt-1">
-            <Chip
+            <Button
               variant="secondary"
-              color={visibility === "private" ? "warning" : "success"}
+              onPress={visibilityState.open}
+              className={
+                visibility === "private"
+                  ? "bg-gray-200 text-orange-400 hover:bg-gray-300"
+                  : "bg-gray-200 text-green-400 hover:bg-gray-300"
+              }
             >
+              <PencilIcon className="h-4 w-4" />
               {visibility === "private" ? "Private" : "Public"}
-            </Chip>
+            </Button>
           </div>
         </div>
       </div>
@@ -433,15 +439,6 @@ export function ProjectHeader({
                   isOpen={visibilityState.isOpen}
                   onOpenChange={visibilityState.setOpen}
                 >
-                  <Button
-                    isIconOnly
-                    variant="secondary"
-                    size="sm"
-                    onPress={visibilityState.open}
-                  >
-                    <PencilIcon className="h-4 w-4" />
-                  </Button>
-
                   <AlertDialog.Backdrop>
                     <AlertDialog.Container>
                       <AlertDialog.Dialog>
