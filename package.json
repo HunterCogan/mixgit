@@ -17,6 +17,7 @@
     "@heroicons/react": "^2.2.0",
     "@heroui/react": "^3.0.3",
     "@heroui/styles": "^3.0.3",
+    "@monaco-editor/react": "^4.7.0",
     "better-auth": "^1.6.9",
     "mongodb": "^7.2.0",
     "mongoose": "^9.6.1",

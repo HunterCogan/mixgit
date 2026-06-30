@@ -66,24 +66,36 @@ export default async function ProjectPage({
     }>("uploader", "name username color imagePath")
     .lean();
 
-  const serializedRemixes: RemixItem[] = remixes.map((remix) => ({
-    id: remix._id.toString(),
-    name: remix.name,
-    uploaderName: remix.uploader?.name ?? "Unknown",
-    uploaderUsername: remix.uploader?.username ?? "",
-    uploaderColor: remix.uploader?.color ?? "#808080",
-    uploaderImagePath: remix.uploader?.imagePath ?? undefined,
-    uploaderId: remix.uploader?._id.toString()
-      ? remix.uploader._id.toString()
-      : remix._id.toString(),
-    description: remix.description,
-    isMain: remix.isMain,
-    projectJsonData:
-      remix.files.find((f: IProgramFile) => f.fileType === "logic")?.data ?? "",
-    createdAt: formatTimestamp(remix.createdAt),
-  }));
+  const serializedRemixes: RemixItem[] = remixes.map((remix) => {
+    const logicFile = remix.files.find(
+      (f: IProgramFile) => f.fileType === "logic",
+    );
+    return {
+      id: remix._id.toString(),
+      name: remix.name,
+      uploaderName: remix.uploader?.name ?? "Unknown",
+      uploaderUsername: remix.uploader?.username ?? "",
+      uploaderColor: remix.uploader?.color ?? "#808080",
+      uploaderImagePath: remix.uploader?.imagePath ?? undefined,
+      uploaderId: remix.uploader?._id.toString()
+        ? remix.uploader._id.toString()
+        : remix._id.toString(),
+      description: remix.description,
+      isMain: remix.isMain,
+      projectJsonData: logicFile?.data ?? "",
+      createdAt: formatTimestamp(remix.createdAt),
+      remixType: (remix.remixType ?? "blockcode") as "blockcode" | "raw",
+      fileName: logicFile?.name ?? "project.json",
+    };
+  });
 
   const creatorId = creator._id.toString();
+  const sessionUserId = session?.user?.id;
+  const isCollaborator = !!(
+    sessionUserId &&
+    (creatorId === sessionUserId ||
+      project.team.some((m) => m._id.toString() === sessionUserId))
+  );
 
   return (
     <div className="font-sans h-[calc(100vh-3.5rem)] flex flex-col overflow-hidden">
@@ -116,8 +128,10 @@ export default async function ProjectPage({
         />
         <Separator />
         <ProjectContent
+          projectId={project._id.toString()}
           creatorId={creatorId}
-          userId={session?.user?.id}
+          userId={sessionUserId}
+          isCollaborator={isCollaborator}
           remixes={serializedRemixes}
         />
       </main>
