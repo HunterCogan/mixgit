@@ -257,26 +257,23 @@ export function ProjectHeader({
 
           <div className="flex flex-wrap gap-1 px-1 mt-1">
             {tags.map((tag) => (
-              <Chip key={tag} size="md" variant="secondary" className="group">
+              <Chip key={tag} size="md" variant="secondary" className="px-2">
                 <div className="flex items-center gap-1">
                   <span>{tag}</span>
 
                   {userId === creatorId && (
-                    <button
-                      type="button"
-                      onClick={() =>
+                    <Button
+                      isIconOnly
+                      variant="secondary"
+                      size="sm"
+                      className="!h-5 !w-5 !min-w-5 !p-0"
+                      onPress={() =>
                         void updateTags(tags.filter((t) => t !== tag))
                       }
-                      className="
-                        opacity-0
-                        group-hover:opacity-100
-                        transition-opacity
-                        duration-150
-                      "
                       aria-label={`Remove ${tag}`}
                     >
-                      <MinusCircleIcon className="h-3.5 w-3.5" />
-                    </button>
+                      <MinusCircleIcon className="h-4 w-4 stroke-[2.5]" />
+                    </Button>
                   )}
                 </div>
               </Chip>
@@ -288,11 +285,12 @@ export function ProjectHeader({
                   <Chip
                     size="md"
                     variant="secondary"
-                    className="cursor-pointer"
+                    className="cursor-pointer h-8"
                   >
-                    <div className="flex items-center gap-1">
-                      <TagIcon className="h-3.5 w-3.5" />
+                    <div className="flex items-center gap-1.5">
+                      <TagIcon className="h-3.5 w-3.5 shrink-0" />
                       <span>Add Tag</span>
+                      <span className="w-5" />
                     </div>
                   </Chip>
                 </Dropdown.Trigger>
