@@ -22,8 +22,7 @@ type Project = {
   visibility: "public" | "private";
   ownerUsername?: string;
 };
-// A List of all the projects for a user. Has View button which goes to the project page,
-// and Delete button which opens a confirmation dialog before deleting the project.
+
 function ProjectRow({
   project,
   username,
@@ -35,7 +34,6 @@ function ProjectRow({
   const deleteState = useOverlayState();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [visibility] = useState(project.visibility);
 
   async function handleDelete() {
     setLoading(true);
@@ -69,22 +67,24 @@ function ProjectRow({
 
             <Chip
               variant="secondary"
-              color={visibility === "private" ? "warning" : "success"}
+              color={project.visibility === "private" ? "warning" : "success"}
             >
-              {visibility === "private" ? "Private" : "Public"}
+              {project.visibility === "private" ? "Private" : "Public"}
             </Chip>
           </div>
 
           <Card.Description>
-            {project.description.length > 0
+            {project.description?.length > 0
               ? project.description
               : "No description"}
           </Card.Description>
         </Card.Header>
+
         <Card.Footer className="flex-col items-start gap-2 sm:flex-row sm:items-center">
           <div className="flex gap-1 flex-wrap">
             <Chip size="md">Created: {project.createdAt}</Chip>
           </div>
+
           <div className="flex gap-1 sm:ml-auto shrink-0">
             <Button
               variant="outline"
@@ -95,33 +95,41 @@ function ProjectRow({
               View
             </Button>
 
+            {/* Trigger button */}
+            <Button variant="danger" size="sm" onPress={deleteState.open}>
+              <TrashIcon className="h-4 w-4" />
+              Delete
+            </Button>
+
+            {/* SINGLE AlertDialog ONLY */}
             <AlertDialog
               isOpen={deleteState.isOpen}
               onOpenChange={deleteState.setOpen}
             >
-              <Button variant="danger" size="sm" onPress={deleteState.open}>
-                <TrashIcon className="h-4 w-4" />
-                Delete
-              </Button>
               <AlertDialog.Backdrop>
                 <AlertDialog.Container>
                   <AlertDialog.Dialog>
                     <AlertDialog.CloseTrigger className="m-3" />
+
                     <AlertDialog.Header>
                       <AlertDialog.Heading className="flex items-center gap-2 text-2xl mb-3">
                         <AlertDialog.Icon />
                         Delete Project?
                       </AlertDialog.Heading>
                     </AlertDialog.Header>
+
                     <AlertDialog.Body>
                       <strong>{project.name}</strong> will be permanently
                       deleted. This cannot be undone.
                     </AlertDialog.Body>
+
                     <AlertDialog.Footer>
                       {error && <p className="text-sm text-red-500">{error}</p>}
+
                       <Button variant="outline" onPress={deleteState.close}>
                         Cancel
                       </Button>
+
                       <Button
                         variant="danger"
                         isDisabled={loading}
