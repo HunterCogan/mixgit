@@ -255,43 +255,38 @@ export function ProjectHeader({
             <p className="text-xs text-red-500 px-1">{saveError}</p>
           )}
 
-          <div className="flex flex-wrap gap-1 px-1 mt-1">
+          <div className="flex flex-wrap gap-1 px-1">
             {tags.map((tag) => (
-              <Chip key={tag} size="md" variant="secondary" className="px-2">
-                <div className="flex items-center gap-1">
-                  <span>{tag}</span>
+              <Chip key={tag} size="md" variant="secondary">
+                <Chip.Label>{tag}</Chip.Label>
 
-                  {userId === creatorId && (
-                    <Button
-                      isIconOnly
-                      variant="secondary"
-                      size="sm"
-                      className="!h-5 !w-5 !min-w-5 !p-0"
-                      onPress={() =>
-                        void updateTags(tags.filter((t) => t !== tag))
-                      }
-                      aria-label={`Remove ${tag}`}
-                    >
-                      <MinusCircleIcon className="h-4 w-4 stroke-[2.5]" />
-                    </Button>
-                  )}
-                </div>
+                {userId === creatorId && (
+                  <Button
+                    isIconOnly
+                    variant="tertiary"
+                    size="md"
+                    className="h-4! w-4! min-h-0! my-0"
+                    onPress={() =>
+                      void updateTags(tags.filter((t) => t !== tag))
+                    }
+                    aria-label={`Remove ${tag}`}
+                  >
+                    <MinusCircleIcon className="h-4 w-4 text-gray-600" />
+                  </Button>
+                )}
               </Chip>
             ))}
 
             {userId === creatorId && tags.length < 3 && (
               <Dropdown isOpen={isTagMenuOpen} onOpenChange={setIsTagMenuOpen}>
-                <Dropdown.Trigger>
+                <Dropdown.Trigger className="flex items-center">
                   <Chip
                     size="md"
                     variant="secondary"
-                    className="cursor-pointer h-8"
+                    className="cursor-pointer h-6"
                   >
-                    <div className="flex items-center gap-1.5">
-                      <TagIcon className="h-3.5 w-3.5 shrink-0" />
-                      <span>Add Tag</span>
-                      <span className="w-5" />
-                    </div>
+                    <Chip.Label>Add Tag</Chip.Label>
+                    <TagIcon width={16} />
                   </Chip>
                 </Dropdown.Trigger>
 
