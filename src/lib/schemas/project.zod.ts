@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+export const PROJECT_TAGS = ["Game", "Tool", "Art", "Music", "Story"] as const;
+
 export const ProjectSchema = z.object({
   creator: z.string(),
 
@@ -14,8 +16,9 @@ export const ProjectSchema = z.object({
     .trim()
     .max(500, "Project description cannot exceed 500 characters")
     .optional(),
-
   team: z.array(z.string()).optional(),
 
   visibility: z.enum(["public", "private"]).default("public"),
+
+  tags: z.array(z.enum(PROJECT_TAGS)).max(3).optional(),
 });

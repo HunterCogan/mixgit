@@ -107,6 +107,7 @@ export default async function ProjectPage({
           userId={session?.user?.id}
           initialName={project.name}
           initialDescription={project.description ?? ""}
+          tags={project.tags ?? []}
           createdAt={project.createdAt.toLocaleDateString("en-US", {
             month: "short",
             day: "numeric",

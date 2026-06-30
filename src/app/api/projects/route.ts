@@ -17,6 +17,7 @@ export async function POST(request: NextRequest) {
       name: body.name,
       description: body.description || undefined,
       visibility: body.visibility,
+      tags: body.tags || [],
     });
 
     if (!result.success) {

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { PlusIcon } from "@heroicons/react/24/outline";
 import {
   Button,
+  Checkbox,
   Description,
   FieldError,
   Form,
@@ -39,6 +40,20 @@ export default function CreateProjectModal() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [visibility, setVisibility] = useState<"public" | "private">("public");
+  const [tags, setTags] = useState<string[]>([]);
+
+  function toggleTag(tag: string) {
+    if (tags.includes(tag)) {
+      setTags(tags.filter((t) => t !== tag));
+      return;
+    }
+
+    if (tags.length >= 3) {
+      return;
+    }
+
+    setTags([...tags, tag]);
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -54,6 +69,7 @@ export default function CreateProjectModal() {
           name,
           description,
           visibility,
+          tags,
         }),
       });
 
@@ -170,6 +186,32 @@ export default function CreateProjectModal() {
                     ? "Only you can view this project."
                     : "Anyone can view this project."}
                 </Description>
+                <div className="flex flex-col gap-2 w-full">
+                  <Label>Categories (max 3)</Label>
+
+                  <div className="flex flex-wrap gap-3">
+                    {["Game", "Tool", "Art", "Music", "Story"].map((tag) => (
+                      <Checkbox
+                        key={tag}
+                        isSelected={tags.includes(tag)}
+                        onChange={() => toggleTag(tag)}
+                        variant="secondary"
+                      >
+                        <Checkbox.Control>
+                          <Checkbox.Indicator />
+                        </Checkbox.Control>
+
+                        <Checkbox.Content>
+                          <Label>{tag}</Label>
+                        </Checkbox.Content>
+                      </Checkbox>
+                    ))}
+                  </div>
+
+                  <Description>
+                    Select up to 3 categories for your project
+                  </Description>
+                </div>
 
                 {error && <p className="text-sm text-red-500">{error}</p>}
                 <SubmitButton isPending={loading} />

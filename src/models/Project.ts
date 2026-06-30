@@ -7,6 +7,7 @@ export interface IProject {
   slug: string;
   description?: string;
   visibility: "public" | "private";
+  tags?: string[];
   team: mongoose.Types.ObjectId[];
   createdAt: Date;
   updatedAt: Date;
@@ -42,6 +43,12 @@ const ProjectSchema = new mongoose.Schema<IProject>(
       default: "public",
       required: true,
     },
+    tags: [
+      {
+        type: String,
+        enum: ["Game", "Tool", "Art", "Music", "Story"],
+      },
+    ],
     team: [
       {
         type: mongoose.Schema.Types.ObjectId,

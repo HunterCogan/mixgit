@@ -10,6 +10,7 @@ type CollaboratingResult = {
   name: string;
   description?: string;
   slug: string;
+  tags?: string[];
   creator: mongoose.Types.ObjectId | string;
   team: (mongoose.Types.ObjectId | string)[];
   createdAt: Date;
@@ -64,6 +65,7 @@ export default async function SharedProjectsPage() {
     name: p.name,
     slug: p.slug,
     description: p.description ?? "",
+    tags: p.tags ?? [],
     createdAt: new Date(p.createdAt).toLocaleDateString("en-US", {
       month: "short",
       day: "numeric",
@@ -78,6 +80,7 @@ export default async function SharedProjectsPage() {
     name: p.name,
     slug: p.slug,
     description: p.description ?? "",
+    tags: p.tags ?? [],
     createdAt: new Date(p.createdAt).toLocaleDateString("en-US", {
       month: "short",
       day: "numeric",

@@ -12,6 +12,7 @@ type CollaboratingProject = {
   ownerName: string;
   ownerUsername: string;
   slug: string;
+  tags?: string[];
 };
 
 type SharingProject = {
@@ -21,6 +22,7 @@ type SharingProject = {
   createdAt: string;
   teamCount: number;
   slug: string;
+  tags?: string[];
 };
 
 function CollaboratingRow({ project }: { project: CollaboratingProject }) {
@@ -41,6 +43,12 @@ function CollaboratingRow({ project }: { project: CollaboratingProject }) {
           <div className="flex gap-1 flex-wrap">
             <Chip size="md">Owner: {project.ownerName}</Chip>
             <Chip size="md">Added: {project.createdAt}</Chip>
+
+            {project.tags?.map((tag) => (
+              <Chip key={tag} size="md" variant="secondary">
+                {tag}
+              </Chip>
+            ))}
           </div>
           <div className="flex gap-1 ml-auto shrink-0">
             <Button
@@ -88,6 +96,12 @@ function SharingRow({
               {project.teamCount !== 1 ? "s" : ""}
             </Chip>
             <Chip size="md">Created: {project.createdAt}</Chip>
+
+            {project.tags?.map((tag) => (
+              <Chip key={tag} size="md" variant="secondary">
+                {tag}
+              </Chip>
+            ))}
           </div>
           <div className="flex gap-1 ml-auto shrink-0">
             <Button
