@@ -27,6 +27,8 @@ interface Props {
   creatorId: string;
   userId: string | undefined;
   remixes: RemixItem[];
+  visibility: "public" | "private";
+  projectId: string;
 }
 
 export function ProjectContent({ creatorId, userId, remixes }: Props) {

@@ -6,6 +6,7 @@ export interface IProject {
   name: string;
   slug: string;
   description?: string;
+  visibility: "public" | "private";
   tags?: string[];
   team: mongoose.Types.ObjectId[];
   createdAt: Date;
@@ -35,6 +36,12 @@ const ProjectSchema = new mongoose.Schema<IProject>(
       type: String,
       trim: true,
       maxlength: [500, "Project description cannot exceed 500 characters"],
+    },
+    visibility: {
+      type: String,
+      enum: ["public", "private"],
+      default: "public",
+      required: true,
     },
     tags: [
       {

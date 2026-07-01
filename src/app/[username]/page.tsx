@@ -22,10 +22,27 @@ export default async function UserProfilePage({
   }
 
   const userId = user._id.toString();
+  const viewerId = session?.user?.id;
+  const isOwner = viewerId === userId;
 
   const [projects, collaboratingProjects] = await Promise.all([
-    ProjectModel.find({ creator: user._id }).sort({ createdAt: -1 }).lean(),
-    ProjectModel.find({ team: user._id, creator: { $ne: user._id } })
+    ProjectModel.find(
+      isOwner
+        ? {
+            creator: user._id,
+          }
+        : {
+            creator: user._id,
+            visibility: "public",
+          },
+    )
+      .sort({ createdAt: -1 })
+      .lean(),
+
+    ProjectModel.find({
+      team: user._id,
+      creator: { $ne: user._id },
+    })
       .sort({ createdAt: -1 })
       .populate<{ creator: { username: string } }>("creator", "username")
       .lean(),
@@ -43,6 +60,7 @@ export default async function UserProfilePage({
     name: p.name,
     slug: p.slug,
     description: p.description ?? "",
+    visibility: p.visibility,
     tags: p.tags ?? [],
     createdAt: formatDate(p.createdAt),
     createdAtRaw: p.createdAt.toISOString(),
@@ -53,12 +71,11 @@ export default async function UserProfilePage({
     name: p.name,
     slug: p.slug,
     description: p.description ?? "",
+    visibility: p.visibility,
     createdAt: formatDate(p.createdAt),
     createdAtRaw: p.createdAt.toISOString(),
     ownerUsername: p.creator.username,
   }));
-
-  const isOwner = session?.user?.id === userId;
 
   return (
     <UserProfile
