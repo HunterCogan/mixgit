@@ -102,17 +102,15 @@ function ProjectRow({
               View
             </Button>
 
-            {/* Trigger button */}
-            <Button variant="danger" size="sm" onPress={deleteState.open}>
-              <TrashIcon className="h-4 w-4" />
-              Delete
-            </Button>
-
-            {/* SINGLE AlertDialog ONLY */}
             <AlertDialog
               isOpen={deleteState.isOpen}
               onOpenChange={deleteState.setOpen}
             >
+              <Button variant="danger" size="sm" onPress={deleteState.open}>
+                <TrashIcon className="h-4 w-4" />
+                Delete
+              </Button>
+
               <AlertDialog.Backdrop>
                 <AlertDialog.Container>
                   <AlertDialog.Dialog>

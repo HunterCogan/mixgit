@@ -8,8 +8,14 @@ import mongoose from "mongoose";
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await verifySession();
-    const userObjectId = new mongoose.Types.ObjectId(session.userId);
+    let userObjectId: mongoose.Types.ObjectId | null = null;
+
+    try {
+      const session = await verifySession();
+      userObjectId = new mongoose.Types.ObjectId(session.userId);
+    } catch (error) {
+      console.log("No valid session found. Proceeding as guest.");
+    }
 
     const { searchParams } = new URL(request.url);
     const query = searchParams.get("q")?.trim();
@@ -40,6 +46,7 @@ export async function GET(request: NextRequest) {
         .lean();
 
       const userIds = users.map((u) => u._id);
+
       const projectCounts = await ProjectModel.aggregate([
         {
           $match: {
@@ -54,6 +61,7 @@ export async function GET(request: NextRequest) {
           },
         },
       ]);
+
       const countMap = new Map(
         projectCounts.map((p) => [p._id.toString(), p.count]),
       );
@@ -69,21 +77,39 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ results });
     }
 
-    const projects = await ProjectModel.find({
+    const projectQuery: Record<string, unknown> = {
       name: regex,
-      $or: [
+    };
+
+    if (userObjectId) {
+      projectQuery.$or = [
         { visibility: "public" },
         { creator: userObjectId },
         { team: userObjectId },
-      ],
-    })
+      ];
+    } else {
+      projectQuery.visibility = "public";
+    }
+
+    const projects = await ProjectModel.find(projectQuery)
       .select("_id name slug creator")
       .limit(8)
       .lean();
+
     const projectIds = projects.map((p) => p._id);
+
     const remixCounts = await RemixModel.aggregate([
-      { $match: { project: { $in: projectIds } } },
-      { $group: { _id: "$project", count: { $sum: 1 } } },
+      {
+        $match: {
+          project: { $in: projectIds },
+        },
+      },
+      {
+        $group: {
+          _id: "$project",
+          count: { $sum: 1 },
+        },
+      },
     ]);
 
     const countMap = new Map(
@@ -91,6 +117,7 @@ export async function GET(request: NextRequest) {
     );
 
     const creatorIds = [...new Set(projects.map((p) => p.creator.toString()))];
+
     const creators = await UserModel.find({
       _id: { $in: creatorIds },
     })

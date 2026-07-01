@@ -31,13 +31,7 @@ interface Props {
   projectId: string;
 }
 
-export function ProjectContent({
-  creatorId,
-  userId,
-  remixes,
-  visibility,
-  projectId,
-}: Props) {
+export function ProjectContent({ creatorId, userId, remixes }: Props) {
   const router = useRouter();
   const defaultId = (remixes.find((r) => r.isMain) ?? remixes[0])?.id ?? null;
   const [selectedId, setSelectedId] = useState<string | null>(defaultId);

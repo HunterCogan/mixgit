@@ -127,6 +127,7 @@ export default async function ProjectPage({
           creatorColor={creator.color ?? ""}
           creatorImagePath={creator.imagePath ?? undefined}
           initialVisibility={project.visibility}
+          isOwner={isOwner ? userId : undefined}
         />
         <Separator />
         <ProjectContent

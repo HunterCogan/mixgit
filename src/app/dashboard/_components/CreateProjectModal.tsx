@@ -93,19 +93,24 @@ export default function CreateProjectModal() {
 
   return (
     <Modal state={state}>
-      <Button variant="primary">
-        <PlusIcon className="h-4 w-4" />
-        Create New Project
-      </Button>
+      <Modal.Trigger>
+        <Button variant="primary">
+          <PlusIcon className="h-4 w-4" />
+          Create New Project
+        </Button>
+      </Modal.Trigger>
+
       <Modal.Backdrop>
         <Modal.Container size="md">
           <Modal.Dialog>
             <Modal.CloseTrigger className="m-2" />
+
             <Modal.Header>
               <Modal.Heading className="text-2xl">
                 New MixGit Project
               </Modal.Heading>
             </Modal.Header>
+
             <Modal.Body>
               <Form
                 className="flex flex-col gap-4 p-1"
@@ -127,14 +132,17 @@ export default function CreateProjectModal() {
                   }}
                 >
                   <Label>Title</Label>
+
                   <Input
                     variant="secondary"
                     placeholder='"My Awesome MixGit Project!"'
                     aria-label="Project title"
                   />
+
                   {name.trim() && (
                     <Description>URL: /{generateSlug(name)}</Description>
                   )}
+
                   <FieldError />
                 </TextField>
 
@@ -146,12 +154,14 @@ export default function CreateProjectModal() {
                     if (!value) return null;
                     const result =
                       ProjectSchema.shape.description.safeParse(value);
+
                     return result.success
                       ? null
                       : (result.error.issues[0]?.message ?? null);
                   }}
                 >
                   <Label>Description</Label>
+
                   <TextArea
                     variant="secondary"
                     aria-label="Project description"
@@ -160,9 +170,11 @@ export default function CreateProjectModal() {
                     className="resize-y max-h-65"
                     maxLength={500}
                   />
+
                   <Description>
                     Write a short description for your project
                   </Description>
+
                   <FieldError />
                 </TextField>
 
@@ -186,6 +198,7 @@ export default function CreateProjectModal() {
                     ? "Only you can view this project."
                     : "Anyone can view this project."}
                 </Description>
+
                 <div className="flex flex-col gap-2 w-full">
                   <Label>Categories (max 3)</Label>
 
@@ -214,6 +227,7 @@ export default function CreateProjectModal() {
                 </div>
 
                 {error && <p className="text-sm text-red-500">{error}</p>}
+
                 <SubmitButton isPending={loading} />
               </Form>
             </Modal.Body>
