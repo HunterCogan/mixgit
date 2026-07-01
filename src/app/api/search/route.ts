@@ -13,8 +13,10 @@ export async function GET(request: NextRequest) {
     try {
       const session = await verifySession();
       userObjectId = new mongoose.Types.ObjectId(session.userId);
-    } catch (error) {
-      console.log("No valid session found. Proceeding as guest.");
+    } catch {
+      console.log(
+        "No valid session found, proceeding as unauthenticated user.",
+      );
     }
 
     const { searchParams } = new URL(request.url);
