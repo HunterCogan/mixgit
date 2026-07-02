@@ -5,6 +5,7 @@ import connectDB from "@/lib/db";
 import ProjectModel from "@/models/Project";
 import UserModel from "@/models/User";
 import UserProfile from "./_components/UserProfile";
+import mongoose from "mongoose";
 
 export default async function UserProfilePage({
   params,
@@ -24,19 +25,21 @@ export default async function UserProfilePage({
   const userId = user._id.toString();
   const viewerId = session?.user?.id;
   const isOwner = viewerId === userId;
+  const viewerObjectId = viewerId
+    ? new mongoose.Types.ObjectId(viewerId)
+    : undefined;
 
   const [projects, collaboratingProjects] = await Promise.all([
     ProjectModel.find(
       isOwner
-        ? {
-            creator: user._id,
-          }
+        ? { creator: user._id }
         : {
+            creator: user._id,
             $or: [
               { visibility: "public" },
               {
                 visibility: "private",
-                team: viewerId,
+                team: viewerObjectId,
               },
             ],
           },
