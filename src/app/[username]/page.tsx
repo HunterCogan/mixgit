@@ -23,39 +23,20 @@ export default async function UserProfilePage({
   }
 
   const userId = user._id.toString();
-  const viewerId = session?.user?.id;
-  const isOwner = viewerId === userId;
-  const viewerObjectId = viewerId
-    ? new mongoose.Types.ObjectId(viewerId)
-    : undefined;
+  const isOwner = session?.user?.id === userId;
 
   const [projects, collaboratingProjects] = await Promise.all([
-    ProjectModel.find(
-      isOwner
-        ? { creator: user._id }
-        : viewerObjectId
-          ? {
-              creator: user._id,
-              $or: [
-                { visibility: "public" },
-                {
-                  visibility: "private",
-                  team: viewerObjectId,
-                },
-              ],
-            }
-          : {
-              creator: user._id,
-              visibility: "public",
-            },
-    )
+    ProjectModel.find({
+      creator: user._id,
+      $or: [{ visibility: "public" }, { visibility: { $exists: false } }],
+    })
       .sort({ createdAt: -1 })
       .lean(),
 
     ProjectModel.find({
-      team: user._id,
       creator: { $ne: user._id },
-      visibility: "public",
+      team: user._id,
+      $or: [{ visibility: "public" }, { visibility: { $exists: false } }],
     })
       .sort({ createdAt: -1 })
       .populate<{ creator: { username: string } }>("creator", "username")
