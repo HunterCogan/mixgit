@@ -32,8 +32,13 @@ export default async function UserProfilePage({
             creator: user._id,
           }
         : {
-            creator: user._id,
-            visibility: "public",
+            $or: [
+              { visibility: "public" },
+              {
+                visibility: "private",
+                team: viewerId,
+              },
+            ],
           },
     )
       .sort({ createdAt: -1 })

@@ -127,12 +127,10 @@ export async function PUT(
       project.description = body.description;
     }
 
-    // Update visibility (FIXED)
     if (body.visibility !== undefined) {
       project.visibility = body.visibility;
     }
 
-    // Update tags (FIXED)
     if (body.tags !== undefined) {
       project.tags = body.tags;
     }
