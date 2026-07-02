@@ -33,16 +33,21 @@ export default async function UserProfilePage({
     ProjectModel.find(
       isOwner
         ? { creator: user._id }
-        : {
-            creator: user._id,
-            $or: [
-              { visibility: "public" },
-              {
-                visibility: "private",
-                team: viewerObjectId,
-              },
-            ],
-          },
+        : viewerObjectId
+          ? {
+              creator: user._id,
+              $or: [
+                { visibility: "public" },
+                {
+                  visibility: "private",
+                  team: viewerObjectId,
+                },
+              ],
+            }
+          : {
+              creator: user._id,
+              visibility: "public",
+            },
     )
       .sort({ createdAt: -1 })
       .lean(),
@@ -50,6 +55,7 @@ export default async function UserProfilePage({
     ProjectModel.find({
       team: user._id,
       creator: { $ne: user._id },
+      visibility: "public",
     })
       .sort({ createdAt: -1 })
       .populate<{ creator: { username: string } }>("creator", "username")
