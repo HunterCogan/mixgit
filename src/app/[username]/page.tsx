@@ -25,24 +25,31 @@ export default async function UserProfilePage({
   const isOwner = session?.user?.id === userId;
   const viewerObjectId = session?.user?.id;
 
+  const viewerId = viewerObjectId;
+
+  const visibilityFilter = (userId: string) => ({
+    $or: [
+      { visibility: "public" as const },
+      { visibility: { $exists: false } },
+      {
+        visibility: "private" as const,
+        $or: [{ creator: userId }, { team: userId }],
+      },
+    ],
+  });
+
   const [projects, collaboratingProjects] = await Promise.all([
+    // user's own projects
+
     ProjectModel.find(
       isOwner
         ? {
             creator: user._id,
           }
-        : viewerObjectId
+        : viewerId
           ? {
               creator: user._id,
-              $or: [
-                { visibility: "public" as const },
-                { visibility: { $exists: false } },
-
-                {
-                  visibility: "private" as const,
-                  team: viewerObjectId,
-                },
-              ],
+              ...visibilityFilter(viewerId),
             }
           : {
               creator: user._id,
@@ -55,25 +62,28 @@ export default async function UserProfilePage({
       .sort({ createdAt: -1 })
       .lean(),
 
+    // collaborating projects
+
     ProjectModel.find(
       isOwner
         ? {
-            creator: { $ne: user._id },
             team: user._id,
+            creator: { $ne: user._id },
           }
-        : {
-            creator: { $ne: user._id },
-            team: user._id,
-            $or: [
-              { visibility: "public" as const },
-              { visibility: { $exists: false } },
-
-              {
-                visibility: "private" as const,
-                team: viewerObjectId,
-              },
-            ],
-          },
+        : viewerId
+          ? {
+              team: user._id,
+              creator: { $ne: user._id },
+              ...visibilityFilter(viewerId),
+            }
+          : {
+              team: user._id,
+              creator: { $ne: user._id },
+              $or: [
+                { visibility: "public" as const },
+                { visibility: { $exists: false } },
+              ],
+            },
     )
       .sort({ createdAt: -1 })
       .populate<{ creator: { username: string } }>("creator", "username")

@@ -26,13 +26,13 @@ export async function GET(
     const session = await verifySession();
     await connectDB();
 
-    const project = await ProjectModel.findById(id).lean();
+    const result = await ProjectModel.findById(id).lean();
 
-    if (!project) {
+    if (!result) {
       return NextResponse.json({ error: "Project not found" }, { status: 404 });
     }
 
-    const allowed = canViewProject(session.userId, project);
+    const allowed = canViewProject(session.userId, result);
 
     if (!allowed) {
       return NextResponse.json(
@@ -41,11 +41,11 @@ export async function GET(
       );
     }
 
-    const remixes = await RemixModel.find({ project: project._id })
+    const remixes = await RemixModel.find({ project: result._id })
       .sort({ createdAt: -1 })
       .lean();
 
-    return NextResponse.json({ project, remixes }, { status: 200 });
+    return NextResponse.json({ project: result, remixes }, { status: 200 });
   } catch (error) {
     console.error("Get project error:", error);
     return NextResponse.json(
@@ -87,7 +87,10 @@ export async function PUT(
       );
     }
 
-    const project = await ProjectModel.findById(id);
+    const project = await ProjectModel.findOne({
+      _id: new mongoose.Types.ObjectId(id),
+      creator: new mongoose.Types.ObjectId(session.userId),
+    });
 
     if (!project) {
       return NextResponse.json({ error: "Project not found" }, { status: 404 });
@@ -100,7 +103,6 @@ export async function PUT(
       );
     }
 
-    // Update name + slug
     if (body.name !== undefined) {
       project.name = body.name;
 

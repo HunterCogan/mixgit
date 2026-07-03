@@ -7,6 +7,7 @@ import {
   Avatar,
   Button,
   ButtonGroup,
+  Chip,
   Dropdown,
   FieldError,
   Header,
@@ -16,7 +17,6 @@ import {
   Surface,
   TextArea,
   TextField,
-  Chip,
   Tooltip,
   useOverlayState,
 } from "@heroui/react";
