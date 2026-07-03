@@ -36,9 +36,37 @@ export async function GET(request: NextRequest) {
         .lean();
 
       const userIds = users.map((u) => u._id);
+      const session = await verifySession().catch(() => null);
+      const userId = session?.userId;
+
       const projectCounts = await ProjectModel.aggregate([
-        { $match: { creator: { $in: userIds } } },
-        { $group: { _id: "$creator", count: { $sum: 1 } } },
+        {
+          $match: {
+            creator: { $in: userIds },
+            $or: [
+              { visibility: "public" },
+              { visibility: { $exists: false } },
+              ...(userId
+                ? [
+                    {
+                      visibility: "private",
+                      creator: userId,
+                    },
+                    {
+                      visibility: "private",
+                      team: userId,
+                    },
+                  ]
+                : []),
+            ],
+          },
+        },
+        {
+          $group: {
+            _id: "$creator",
+            count: { $sum: 1 },
+          },
+        },
       ]);
 
       const countMap = new Map(

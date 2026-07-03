@@ -24,6 +24,7 @@ export default async function UserProfilePage({
 
   const userId = user._id.toString();
   const isOwner = session?.user?.id === userId;
+  const viewerObjectId = session?.user?.id;
 
   const [projects, collaboratingProjects] = await Promise.all([
     ProjectModel.find(
@@ -31,10 +32,21 @@ export default async function UserProfilePage({
         ? {
             creator: user._id,
           }
-        : {
-            creator: user._id,
-            $or: [{ visibility: "public" }, { visibility: { $exists: false } }],
-          },
+        : viewerObjectId
+          ? {
+              creator: user._id,
+              $or: [
+                { visibility: "public" },
+                {
+                  visibility: "private",
+                  team: viewerObjectId,
+                },
+              ],
+            }
+          : {
+              creator: user._id,
+              visibility: "public",
+            },
     )
       .sort({ createdAt: -1 })
       .lean(),
