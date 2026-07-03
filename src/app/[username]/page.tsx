@@ -26,18 +26,31 @@ export default async function UserProfilePage({
   const isOwner = session?.user?.id === userId;
 
   const [projects, collaboratingProjects] = await Promise.all([
-    ProjectModel.find({
-      creator: user._id,
-      $or: [{ visibility: "public" }, { visibility: { $exists: false } }],
-    })
+    ProjectModel.find(
+      isOwner
+        ? {
+            creator: user._id,
+          }
+        : {
+            creator: user._id,
+            $or: [{ visibility: "public" }, { visibility: { $exists: false } }],
+          },
+    )
       .sort({ createdAt: -1 })
       .lean(),
 
-    ProjectModel.find({
-      creator: { $ne: user._id },
-      team: user._id,
-      $or: [{ visibility: "public" }, { visibility: { $exists: false } }],
-    })
+    ProjectModel.find(
+      isOwner
+        ? {
+            creator: { $ne: user._id },
+            team: user._id,
+          }
+        : {
+            creator: { $ne: user._id },
+            team: user._id,
+            $or: [{ visibility: "public" }, { visibility: { $exists: false } }],
+          },
+    )
       .sort({ createdAt: -1 })
       .populate<{ creator: { username: string } }>("creator", "username")
       .lean(),
