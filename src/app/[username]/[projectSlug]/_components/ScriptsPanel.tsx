@@ -21,6 +21,7 @@ import {
   ToggleButton,
   useOverlayState,
 } from "@heroui/react";
+import RawCodeEditor from "./RawCodeEditor";
 import {
   ArrowDownTrayIcon,
   ExclamationTriangleIcon,
@@ -46,6 +47,12 @@ interface Props {
   remixDescription: string | null;
   feedbackTimestamp: string | null;
   canDelete: boolean;
+  remixType: "blockcode" | "raw";
+  fileName: string;
+  remixId: string | null;
+  onCodeSaved: (remixId: string, code: string) => void;
+  canEdit: boolean;
+  language: string;
 }
 
 export function ScriptsPanel({
@@ -61,11 +68,49 @@ export function ScriptsPanel({
   remixDescription,
   feedbackTimestamp,
   canDelete,
+  remixType,
+  fileName,
+  remixId,
+  onCodeSaved,
+  canEdit,
+  language,
 }: Props) {
   const isLoadingFeedback = feedbackStatus === "loading";
   // isEmpty overrides the toggle, as empty projects should be viewed raw.
   const isEmpty = Object.keys(scripts).length === 0;
   const [isRawToggled, setIsRawToggled] = useState(false);
+  const [editableCode, setEditableCode] = useState(raw ?? "");
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [savedSuccessfully, setSavedSuccessfully] = useState(false);
+
+  async function handleSaveCode() {
+    if (!remixId) return;
+    setSaving(true);
+    setSaveError(null);
+    setSavedSuccessfully(false);
+    try {
+      const res = await fetch(`/api/remixes/${remixId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: editableCode }),
+      });
+      if (res.ok) {
+        onCodeSaved(remixId, editableCode);
+        setSavedSuccessfully(true);
+        setTimeout(() => setSavedSuccessfully(false), 2000);
+      } else {
+        const data = await res.json();
+        setSaveError(
+          typeof data.error === "string" ? data.error : "Failed to save",
+        );
+      }
+    } catch {
+      setSaveError("Network error");
+    } finally {
+      setSaving(false);
+    }
+  }
   const [selectedTarget, setSelectedTarget] = useState(
     Object.keys(scripts).find((name) => scripts[name].length > 0) ?? "",
   );
@@ -91,7 +136,23 @@ export function ScriptsPanel({
   return (
     <div className="flex flex-col gap-4 flex-1 min-h-0">
       <div className="flex flex-wrap gap-2 items-center">
-        {hasSelectedRemix && !isEmpty && (
+        {remixType === "raw" && canEdit && (
+          <>
+            <Button
+              size="sm"
+              onPress={handleSaveCode}
+              isDisabled={saving || editableCode === (raw ?? "")}
+              isPending={saving}
+            >
+              {saving ? "Saving..." : "Save"}
+            </Button>
+            {saveError && <p className="text-xs text-red-500">{saveError}</p>}
+            {savedSuccessfully && (
+              <p className="text-xs text-green-500">Saved!</p>
+            )}
+          </>
+        )}
+        {hasSelectedRemix && !isEmpty && remixType === "blockcode" && (
           <Modal>
             <Modal.Trigger>
               <Button size="sm">
@@ -162,7 +223,7 @@ export function ScriptsPanel({
                                           >
                                             <div className="flex min-w-0 flex-1 items-center justify-start gap-2">
                                               <ExclamationTriangleIcon className="size-5 shrink-0" />
-                                              <span className="min-w-0 whitespace-normal break-words text-left">
+                                              <span className="min-w-0 whitespace-normal wrap-break-word text-left">
                                                 {issue.title}
                                               </span>
                                             </div>
@@ -202,7 +263,7 @@ export function ScriptsPanel({
                                           >
                                             <div className="flex min-w-0 flex-1 items-center justify-start gap-2">
                                               <LightBulbIcon className="size-5 shrink-0" />
-                                              <span className="min-w-0 whitespace-normal break-words text-left">
+                                              <span className="min-w-0 whitespace-normal wrap-break-word text-left">
                                                 {suggestion.title}
                                               </span>
                                             </div>
@@ -304,7 +365,7 @@ export function ScriptsPanel({
               const a = document.createElement("a");
 
               a.href = url;
-              a.download = "project.json";
+              a.download = fileName;
               a.click();
 
               URL.revokeObjectURL(url);
@@ -370,9 +431,19 @@ export function ScriptsPanel({
         )}
       </div>
       {isEmpty || isRawToggled ? (
-        <Surface className="flex flex-1 overflow-auto whitespace-pre-wrap p-3 min-h-0 border rounded-lg">
-          <code className="text-sm">{raw}</code>
-        </Surface>
+        remixType === "raw" && canEdit ? (
+          <Surface className="flex flex-1 min-h-0 border rounded-lg overflow-hidden">
+            <RawCodeEditor
+              value={editableCode}
+              onChange={setEditableCode}
+              language={language}
+            />
+          </Surface>
+        ) : (
+          <Surface className="flex flex-1 min-h-0 border rounded-lg overflow-hidden">
+            <RawCodeEditor value={raw ?? ""} language={language} readOnly />
+          </Surface>
+        )
       ) : (
         <Surface className="flex-1 min-h-0 bg-grid bg-local border rounded-lg overflow-auto">
           <div className="sticky top-0 z-10 p-3">
@@ -411,7 +482,7 @@ export function ScriptsPanel({
               </ComboBox.Popover>
             </ComboBox>
           </div>
-          <div className="columns-[320px] gap-3 p-3">
+          <div className="columns-xs gap-3 p-3">
             {targetScripts.map((script) => (
               <div key={script.hatBlockId} className="break-inside-avoid mb-3">
                 <ScriptStack script={script} />

@@ -14,6 +14,7 @@ export interface IRemix {
   name: string;
   description: string;
   isMain: boolean;
+  remixType: "blockcode" | "raw";
   parents: mongoose.Types.ObjectId[];
   files: IProgramFile[];
   createdAt: Date;
@@ -71,6 +72,11 @@ const RemixSchema = new mongoose.Schema<IRemix>(
       type: Boolean,
       required: true,
       default: false,
+    },
+    remixType: {
+      type: String,
+      enum: ["blockcode", "raw"],
+      default: "blockcode",
     },
     parents: [
       {

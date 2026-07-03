@@ -68,15 +68,35 @@ export async function POST(
       );
     }
 
+    const rawData: string = body.projectData ?? body.code ?? "";
+
+    const LANGUAGE_FILE_NAMES: Record<string, string> = {
+      python: "main.py",
+      javascript: "main.js",
+      typescript: "main.ts",
+      html: "index.html",
+      css: "styles.css",
+    };
+
+    let remixType: "blockcode" | "raw";
+    let fileName: string;
+    try {
+      JSON.parse(rawData);
+      remixType = "blockcode";
+      fileName = "project.json";
+    } catch {
+      remixType = "raw";
+      fileName = LANGUAGE_FILE_NAMES[body.language as string] ?? "main.txt";
+    }
+
     // TODO: a Remix is created with the "project.json" ProgramFile
     // when backend implements image/sound storage, a ProgramFile with fileType: "asset" should be created to point to each asset.
     const remix = await RemixModel.create({
       project: project._id,
       uploader: new mongoose.Types.ObjectId(session.userId),
       ...result.data,
-      files: [
-        { name: "project.json", fileType: "logic", data: body.projectData },
-      ],
+      remixType,
+      files: [{ name: fileName, fileType: "logic", data: rawData }],
     });
 
     return NextResponse.json({ remix }, { status: 201 });
