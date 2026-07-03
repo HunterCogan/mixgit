@@ -5,7 +5,6 @@ import connectDB from "@/lib/db";
 import ProjectModel from "@/models/Project";
 import UserModel from "@/models/User";
 import UserProfile from "./_components/UserProfile";
-import mongoose from "mongoose";
 
 export default async function UserProfilePage({
   params,
@@ -36,16 +35,21 @@ export default async function UserProfilePage({
           ? {
               creator: user._id,
               $or: [
-                { visibility: "public" },
+                { visibility: "public" as const },
+                { visibility: { $exists: false } },
+
                 {
-                  visibility: "private",
+                  visibility: "private" as const,
                   team: viewerObjectId,
                 },
               ],
             }
           : {
               creator: user._id,
-              visibility: "public",
+              $or: [
+                { visibility: "public" as const },
+                { visibility: { $exists: false } },
+              ],
             },
     )
       .sort({ createdAt: -1 })
@@ -60,7 +64,15 @@ export default async function UserProfilePage({
         : {
             creator: { $ne: user._id },
             team: user._id,
-            $or: [{ visibility: "public" }, { visibility: { $exists: false } }],
+            $or: [
+              { visibility: "public" as const },
+              { visibility: { $exists: false } },
+
+              {
+                visibility: "private" as const,
+                team: viewerObjectId,
+              },
+            ],
           },
     )
       .sort({ createdAt: -1 })

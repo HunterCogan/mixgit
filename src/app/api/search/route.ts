@@ -4,6 +4,7 @@ import UserModel from "@/models/User";
 import ProjectModel from "@/models/Project";
 import RemixModel from "@/models/Remix";
 import { verifySession } from "@/lib/dal";
+import mongoose from "mongoose";
 
 export async function GET(request: NextRequest) {
   try {
@@ -38,6 +39,9 @@ export async function GET(request: NextRequest) {
       const userIds = users.map((u) => u._id);
       const session = await verifySession().catch(() => null);
       const userId = session?.userId;
+      const viewerObjectId = userId
+        ? new mongoose.Types.ObjectId(userId)
+        : null;
 
       const projectCounts = await ProjectModel.aggregate([
         {
@@ -46,15 +50,16 @@ export async function GET(request: NextRequest) {
             $or: [
               { visibility: "public" },
               { visibility: { $exists: false } },
-              ...(userId
+
+              ...(viewerObjectId
                 ? [
                     {
                       visibility: "private",
-                      creator: userId,
+                      creator: viewerObjectId,
                     },
                     {
                       visibility: "private",
-                      team: userId,
+                      team: viewerObjectId,
                     },
                   ]
                 : []),
@@ -132,11 +137,14 @@ export async function GET(request: NextRequest) {
     const creators = await UserModel.find({
       _id: { $in: creatorIds },
     })
-      .select("_id username")
+      .select("_id username name")
       .lean();
 
-    const creatorUsernameMap = new Map(
-      creators.map((c) => [c._id.toString(), c.username]),
+    const creatorMap = new Map(
+      creators.map((c) => [
+        c._id.toString(),
+        { username: c.username, name: c.name },
+      ]),
     );
 
     const results = projects.map((p) => ({
@@ -144,7 +152,8 @@ export async function GET(request: NextRequest) {
       name: p.name,
       slug: p.slug,
       creatorId: p.creator.toString(),
-      creatorUsername: creatorUsernameMap.get(p.creator.toString()) ?? "",
+      creatorUsername: creatorMap.get(p.creator.toString())?.username ?? "",
+      creatorName: creatorMap.get(p.creator.toString())?.name ?? "",
       remixCount: countMap.get(p._id.toString()) ?? 0,
     }));
 
