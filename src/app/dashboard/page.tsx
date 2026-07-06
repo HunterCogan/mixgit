@@ -11,12 +11,10 @@ export default async function DashboardPage() {
   await connectDB();
 
   const userId = session.userId;
-  const userObjectId = new mongoose.Types.ObjectId(userId);
-
   const user = await UserModel.findById(userId).lean();
 
   const projects = await ProjectModel.find({
-    creator: userObjectId,
+    creator: new mongoose.Types.ObjectId(session.userId),
   })
     .sort({ createdAt: -1 })
     .lean();
@@ -52,7 +50,7 @@ export default async function DashboardPage() {
 
         <ProjectList
           projects={serialized}
-          username={user?.username ?? userId}
+          username={user?.username ?? session.userId}
         />
       </main>
     </div>

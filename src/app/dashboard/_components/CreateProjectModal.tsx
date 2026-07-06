@@ -12,6 +12,7 @@ import {
   Label,
   Modal,
   Spinner,
+  Switch,
   TextArea,
   TextField,
   useOverlayState,
@@ -93,13 +94,10 @@ export default function CreateProjectModal() {
 
   return (
     <Modal state={state}>
-      <Modal.Trigger>
-        <Button variant="primary">
-          <PlusIcon className="h-4 w-4" />
-          Create New Project
-        </Button>
-      </Modal.Trigger>
-
+      <Button variant="primary">
+        <PlusIcon className="h-4 w-4" />
+        Create New Project
+      </Button>
       <Modal.Backdrop>
         <Modal.Container size="md">
           <Modal.Dialog>
@@ -188,9 +186,7 @@ export default function CreateProjectModal() {
                     )
                   }
                 >
-                  {visibility === "private"
-                    ? "Private Project"
-                    : "Public Project"}
+                  {visibility === "private" ? "Private" : "Public"}
                 </Button>
 
                 <Description>

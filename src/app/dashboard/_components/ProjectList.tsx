@@ -26,7 +26,8 @@ type Project = {
   visibility: "public" | "private";
   ownerUsername?: string;
 };
-
+// A List of all the projects for a user. Has View button which goes to the project page,
+// and Delete button which opens a confirmation dialog before deleting the project.
 function ProjectRow({
   project,
   username,
@@ -78,7 +79,7 @@ function ProjectRow({
           </div>
 
           <Card.Description>
-            {project.description?.length > 0
+            {project.description.length > 0
               ? project.description
               : "No description"}
           </Card.Description>
