@@ -22,10 +22,69 @@ export default async function UserProfilePage({
   }
 
   const userId = user._id.toString();
+  const isOwner = session?.user?.id === userId;
+  const viewerObjectId = session?.user?.id;
+
+  const viewerId = viewerObjectId;
+
+  const visibilityFilter = (userId: string) => ({
+    $or: [
+      { visibility: "public" as const },
+      { visibility: { $exists: false } },
+      {
+        visibility: "private" as const,
+        $or: [{ creator: userId }, { team: userId }],
+      },
+    ],
+  });
 
   const [projects, collaboratingProjects] = await Promise.all([
-    ProjectModel.find({ creator: user._id }).sort({ createdAt: -1 }).lean(),
-    ProjectModel.find({ team: user._id, creator: { $ne: user._id } })
+    // user's own projects
+
+    ProjectModel.find(
+      isOwner
+        ? {
+            creator: user._id,
+          }
+        : viewerId
+          ? {
+              creator: user._id,
+              ...visibilityFilter(viewerId),
+            }
+          : {
+              creator: user._id,
+              $or: [
+                { visibility: "public" as const },
+                { visibility: { $exists: false } },
+              ],
+            },
+    )
+      .sort({ createdAt: -1 })
+      .lean(),
+
+    // collaborating projects
+
+    ProjectModel.find(
+      isOwner
+        ? {
+            team: user._id,
+            creator: { $ne: user._id },
+          }
+        : viewerId
+          ? {
+              team: user._id,
+              creator: { $ne: user._id },
+              ...visibilityFilter(viewerId),
+            }
+          : {
+              team: user._id,
+              creator: { $ne: user._id },
+              $or: [
+                { visibility: "public" as const },
+                { visibility: { $exists: false } },
+              ],
+            },
+    )
       .sort({ createdAt: -1 })
       .populate<{ creator: { username: string } }>("creator", "username")
       .lean(),
@@ -43,6 +102,7 @@ export default async function UserProfilePage({
     name: p.name,
     slug: p.slug,
     description: p.description ?? "",
+    visibility: p.visibility,
     tags: p.tags ?? [],
     createdAt: formatDate(p.createdAt),
     createdAtRaw: p.createdAt.toISOString(),
@@ -53,12 +113,11 @@ export default async function UserProfilePage({
     name: p.name,
     slug: p.slug,
     description: p.description ?? "",
+    visibility: p.visibility,
     createdAt: formatDate(p.createdAt),
     createdAtRaw: p.createdAt.toISOString(),
     ownerUsername: p.creator.username,
   }));
-
-  const isOwner = session?.user?.id === userId;
 
   return (
     <UserProfile

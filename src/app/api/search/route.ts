@@ -3,6 +3,8 @@ import connectDB from "@/lib/db";
 import UserModel from "@/models/User";
 import ProjectModel from "@/models/Project";
 import RemixModel from "@/models/Remix";
+import { verifySession } from "@/lib/dal";
+import mongoose from "mongoose";
 
 export async function GET(request: NextRequest) {
   try {
@@ -35,9 +37,41 @@ export async function GET(request: NextRequest) {
         .lean();
 
       const userIds = users.map((u) => u._id);
+      const session = await verifySession().catch(() => null);
+      const userId = session?.userId;
+      const viewerObjectId = userId
+        ? new mongoose.Types.ObjectId(userId)
+        : null;
+
       const projectCounts = await ProjectModel.aggregate([
-        { $match: { creator: { $in: userIds } } },
-        { $group: { _id: "$creator", count: { $sum: 1 } } },
+        {
+          $match: {
+            creator: { $in: userIds },
+            $or: [
+              { visibility: "public" },
+              { visibility: { $exists: false } },
+
+              ...(viewerObjectId
+                ? [
+                    {
+                      visibility: "private",
+                      creator: viewerObjectId,
+                    },
+                    {
+                      visibility: "private",
+                      team: viewerObjectId,
+                    },
+                  ]
+                : []),
+            ],
+          },
+        },
+        {
+          $group: {
+            _id: "$creator",
+            count: { $sum: 1 },
+          },
+        },
       ]);
 
       const countMap = new Map(
@@ -55,8 +89,37 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ results });
     }
 
-    const projects = await ProjectModel.find({ name: regex })
-      .select("_id name slug creator")
+    const session = await verifySession().catch(() => null);
+    const userId = session?.userId;
+
+    const projects = await ProjectModel.find({
+      $and: [
+        {
+          $or: [
+            { visibility: "public" },
+            { visibility: { $exists: false } },
+            ...(userId
+              ? [
+                  {
+                    visibility: "private" as const,
+                    creator: userId,
+                  },
+                  {
+                    visibility: "private" as const,
+                    team: userId,
+                  },
+                  {
+                    visibility: "public" as const,
+                  },
+                ]
+              : []),
+          ],
+        },
+        {
+          $or: [{ name: regex }, { slug: regex }, { description: regex }],
+        },
+      ],
+    })
       .limit(8)
       .lean();
 
@@ -74,11 +137,14 @@ export async function GET(request: NextRequest) {
     const creators = await UserModel.find({
       _id: { $in: creatorIds },
     })
-      .select("_id username")
+      .select("_id username name")
       .lean();
 
-    const creatorUsernameMap = new Map(
-      creators.map((c) => [c._id.toString(), c.username]),
+    const creatorMap = new Map(
+      creators.map((c) => [
+        c._id.toString(),
+        { username: c.username, name: c.name },
+      ]),
     );
 
     const results = projects.map((p) => ({
@@ -86,7 +152,8 @@ export async function GET(request: NextRequest) {
       name: p.name,
       slug: p.slug,
       creatorId: p.creator.toString(),
-      creatorUsername: creatorUsernameMap.get(p.creator.toString()) ?? "",
+      creatorUsername: creatorMap.get(p.creator.toString())?.username ?? "",
+      creatorName: creatorMap.get(p.creator.toString())?.name ?? "",
       remixCount: countMap.get(p._id.toString()) ?? 0,
     }));
 

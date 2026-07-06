@@ -84,8 +84,8 @@ const ResultsList = ({
               <Text className="text-sm font-medium">{result.name}</Text>
               <Text className="text-xs text-nav-text-subtle">
                 {result.remixCount === 1
-                  ? "1 remix"
-                  : `${result.remixCount} remixes`}
+                  ? `1 remix by ${result.creatorUsername}`
+                  : `${result.remixCount} remixes by ${result.creatorUsername}`}
               </Text>
             </div>
           </ListBox.Item>

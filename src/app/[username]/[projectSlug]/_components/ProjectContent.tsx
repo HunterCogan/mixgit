@@ -68,6 +68,8 @@ interface Props {
   userId: string | undefined;
   isCollaborator: boolean;
   remixes: RemixItem[];
+  visibility: "public" | "private";
+  projectId: string;
 }
 
 export function ProjectContent({
