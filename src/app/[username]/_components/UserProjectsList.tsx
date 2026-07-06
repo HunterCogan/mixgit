@@ -19,7 +19,6 @@ export type UserProject = {
   tags?: string[];
   createdAt: string;
   createdAtRaw: string;
-  visibility: "public" | "private";
   ownerUsername?: string;
 };
 
@@ -62,24 +61,12 @@ function ProjectRow({
     <Card className="w-full items-stretch flex-row">
       <div className="flex flex-1 flex-col gap-3">
         <Card.Header>
-          <div className="flex items-start justify-between w-full gap-3">
-            <div className="min-w-0 flex-1">
-              <Card.Title>{project.name}</Card.Title>
-              <Card.Description>
-                {project.description.length > 0
-                  ? project.description
-                  : "No description"}
-              </Card.Description>
-            </div>
-
-            <Chip
-              variant="secondary"
-              color={project.visibility === "private" ? "warning" : "success"}
-              className="shrink-0"
-            >
-              {project.visibility === "private" ? "Private" : "Public"}
-            </Chip>
-          </div>
+          <Card.Title>{project.name}</Card.Title>
+          <Card.Description>
+            {project.description.length > 0
+              ? project.description
+              : "No description"}
+          </Card.Description>
         </Card.Header>
         <Card.Footer>
           <div className="flex gap-1 flex-wrap">

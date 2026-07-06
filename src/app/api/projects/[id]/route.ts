@@ -1,6 +1,5 @@
 import { verifySession } from "@/lib/dal";
 import { NextRequest, NextResponse } from "next/server";
-import { canViewProject } from "@/lib/permissions/canViewProject";
 import connectDB from "@/lib/db";
 import ProjectModel from "@/models/Project";
 import RemixModel from "@/models/Remix";
@@ -26,26 +25,20 @@ export async function GET(
     const session = await verifySession();
     await connectDB();
 
-    const result = await ProjectModel.findById(id).lean();
+    const project = await ProjectModel.findOne({
+      _id: new mongoose.Types.ObjectId(id),
+      creator: new mongoose.Types.ObjectId(session.userId),
+    });
 
-    if (!result) {
+    if (!project) {
       return NextResponse.json({ error: "Project not found" }, { status: 404 });
     }
 
-    const allowed = canViewProject(session.userId, result);
-
-    if (!allowed) {
-      return NextResponse.json(
-        { error: "Project is private or you don't have access" },
-        { status: 403 },
-      );
-    }
-
-    const remixes = await RemixModel.find({ project: result._id })
+    const remixes = await RemixModel.find({ project: project._id })
       .sort({ createdAt: -1 })
       .lean();
 
-    return NextResponse.json({ project: result, remixes }, { status: 200 });
+    return NextResponse.json({ project, remixes }, { status: 200 });
   } catch (error) {
     console.error("Get project error:", error);
     return NextResponse.json(
@@ -82,24 +75,36 @@ export async function PUT(
 
     if (!id) {
       return NextResponse.json(
-        { error: "Project ID is required" },
-        { status: 400 },
+        {
+          error: "Project ID is required",
+        },
+        {
+          status: 400,
+        },
       );
     }
 
-    const project = await ProjectModel.findOne({
-      _id: new mongoose.Types.ObjectId(id),
-      creator: new mongoose.Types.ObjectId(session.userId),
-    });
+    const project = await ProjectModel.findById(id);
 
     if (!project) {
-      return NextResponse.json({ error: "Project not found" }, { status: 404 });
+      return NextResponse.json(
+        {
+          error: "Project not found",
+        },
+        {
+          status: 404,
+        },
+      );
     }
 
     if (project.creator.toString() !== session.userId) {
       return NextResponse.json(
-        { error: "User does not own this project" },
-        { status: 403 },
+        {
+          error: "User does not own this project",
+        },
+        {
+          status: 403,
+        },
       );
     }
 
@@ -107,7 +112,6 @@ export async function PUT(
       project.name = body.name;
 
       const newSlug = generateSlug(body.name);
-
       const conflict = await ProjectModel.findOne({
         creator: project.creator,
         slug: newSlug,
@@ -124,13 +128,8 @@ export async function PUT(
       project.slug = newSlug;
     }
 
-    // Update description
     if (body.description !== undefined) {
       project.description = body.description;
-    }
-
-    if (body.visibility !== undefined) {
-      project.visibility = body.visibility;
     }
 
     if (body.tags !== undefined) {
@@ -145,14 +144,20 @@ export async function PUT(
         project,
         slug: project.slug,
       },
-      { status: 200 },
+      {
+        status: 200,
+      },
     );
   } catch (error) {
     console.error("Update project error:", error);
 
     return NextResponse.json(
-      { error: "Failed to update project" },
-      { status: 500 },
+      {
+        error: "Failed to update project",
+      },
+      {
+        status: 500,
+      },
     );
   }
 }
@@ -174,17 +179,17 @@ export async function DELETE(
     const session = await verifySession();
     await connectDB();
 
-    const project = await ProjectModel.findOne({
+    const result = await ProjectModel.findOne({
       _id: new mongoose.Types.ObjectId(id),
       creator: new mongoose.Types.ObjectId(session.userId),
     });
 
-    if (!project) {
+    if (!result) {
       return NextResponse.json({ error: "Project not found" }, { status: 404 });
     }
 
-    await RemixModel.deleteMany({ project: project._id });
-    await ProjectModel.deleteOne({ _id: project._id });
+    await RemixModel.deleteMany({ project: result._id });
+    await ProjectModel.deleteOne({ _id: result._id });
 
     return NextResponse.json({ success: true }, { status: 200 });
   } catch (error) {
