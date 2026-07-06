@@ -57,15 +57,6 @@ export default async function ProjectPage({
 
   const isOwner = userId && project.creator.toString() === userId;
 
-  const isCollaborator =
-    userId && project.team.some((member) => member._id.toString() === userId);
-
-  const canView = project.visibility === "public" || isOwner || isCollaborator;
-
-  if (!canView) {
-    redirect(`/${homePage}?error=access-denied`);
-  }
-
   const remixes = await RemixModel.find({ project: project._id })
     .sort({ createdAt: -1 })
     .populate<{
@@ -110,6 +101,12 @@ export default async function ProjectPage({
       project.team.some((m) => m._id.toString() === sessionUserId))
   );
 
+  const canView = project.visibility === "public" || isOwner || isCollaborator;
+
+  if (!canView) {
+    redirect(`/${homePage}?error=access-denied`);
+  }
+
   return (
     <div className="font-sans h-[calc(100vh-3.5rem)] flex flex-col overflow-hidden">
       <main className="px-3 sm:px-6 py-4 sm:py-8 flex flex-col gap-6 flex-1 min-h-0">
@@ -149,7 +146,6 @@ export default async function ProjectPage({
           isCollaborator={isCollaborator}
           remixes={serializedRemixes}
           visibility={project.visibility}
-          projectId={project._id.toString()}
         />
       </main>
     </div>
