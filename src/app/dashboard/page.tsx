@@ -8,10 +8,10 @@ import CreateProjectModal from "./_components/CreateProjectModal";
 
 export default async function DashboardPage() {
   const session = await verifySession();
+
   await connectDB();
 
-  const userId = session.userId;
-  const user = await UserModel.findById(userId).lean();
+  const user = await UserModel.findById(session.userId).lean();
 
   const projects = await ProjectModel.find({
     creator: new mongoose.Types.ObjectId(session.userId),
@@ -24,7 +24,6 @@ export default async function DashboardPage() {
     name: p.name,
     slug: p.slug,
     description: p.description ?? "",
-    visibility: p.visibility,
     tags: p.tags ?? [],
     createdAt: new Date(p.createdAt).toLocaleDateString("en-US", {
       month: "short",
@@ -44,10 +43,8 @@ export default async function DashboardPage() {
             </h1>
             <p className="text-sm mt-1">Create and manage your Projects</p>
           </div>
-
           <CreateProjectModal />
         </div>
-
         <ProjectList
           projects={serialized}
           username={user?.username ?? session.userId}

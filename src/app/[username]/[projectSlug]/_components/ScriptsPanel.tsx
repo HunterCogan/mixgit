@@ -375,7 +375,6 @@ export function ScriptsPanel({
             Download
           </Button>
         )}
-
         {hasSelectedRemix && (
           <AlertDialog
             isOpen={deleteState.isOpen}
