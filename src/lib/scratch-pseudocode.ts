@@ -84,8 +84,6 @@ export function inputLabel(
     case "variable":
     case "list":
       return `(${idToName?.get(input.id) ?? input.name})`;
-    case "block":
-      return `[ ]`;
     default:
       return null;
   }
