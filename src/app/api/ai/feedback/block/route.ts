@@ -129,9 +129,11 @@ export async function POST(req: NextRequest) {
   let message;
   try {
     message = await client.messages.create({
-      model: "claude-sonnet-4-6",
+      model: "claude-sonnet-5",
       max_tokens: 3500,
-      temperature: 0,
+      output_config: {
+        effort: "low",
+      },
       system: FEEDBACK_SYSTEM,
       tools: [SUBMIT_FEEDBACK_TOOL],
       tool_choice: { type: "auto" },

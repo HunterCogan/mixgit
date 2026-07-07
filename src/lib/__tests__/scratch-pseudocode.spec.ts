@@ -107,8 +107,8 @@ describe("inputLabel", () => {
     );
   });
 
-  it("block → [ ]", () => {
-    expect(inputLabel({ type: "block", blockId: "some-id" })).toBe("[ ]");
+  it("block → null", () => {
+    expect(inputLabel({ type: "block", blockId: "some-id" })).toBeNull();
   });
 
   it("empty → null", () => {
