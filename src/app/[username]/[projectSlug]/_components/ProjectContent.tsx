@@ -6,32 +6,7 @@ import { Badge, Button, Label, Popover, ToggleButton } from "@heroui/react";
 import { Avatar, Card, Chip, ScrollShadow, Link } from "@heroui/react";
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
 import { parseScripts } from "@/lib/scratch";
-
-const EXT_TO_LANGUAGE: Record<string, string> = {
-  py: "python",
-  js: "javascript",
-  ts: "typescript",
-  html: "html",
-  css: "css",
-};
-
-function fileNameToLanguage(fileName: string): string {
-  const ext = fileName.split(".").pop() ?? "";
-  return EXT_TO_LANGUAGE[ext] ?? "plaintext";
-}
-
-const LANGUAGE_DISPLAY_NAMES: Record<string, string> = {
-  python: "Python",
-  javascript: "JavaScript",
-  typescript: "TypeScript",
-  html: "HTML",
-  css: "CSS",
-  plaintext: "Plain Text",
-};
-
-function languageDisplayName(language: string): string {
-  return LANGUAGE_DISPLAY_NAMES[language] ?? language;
-}
+import { fileNameToLanguage } from "@/lib/language";
 import { ScriptsPanel } from "./ScriptsPanel";
 import CreateRawRemixModal from "./CreateRawRemixModal";
 import type { AIFeedback, FeedbackStatus } from "@/types";
@@ -46,6 +21,12 @@ const getDesktopSnapshot = () =>
   window.matchMedia("(min-width: 640px)").matches;
 const getDesktopServerSnapshot = () => false;
 
+export type RemixFile = {
+  name: string;
+  fileType: "asset" | "logic";
+  data?: string;
+};
+
 export type RemixItem = {
   id: string;
   name: string;
@@ -56,10 +37,9 @@ export type RemixItem = {
   uploaderImagePath?: string;
   description: string;
   isMain: boolean;
-  projectJsonData: string;
   createdAt: string;
   remixType: "blockcode" | "raw";
-  fileName: string;
+  files: RemixFile[];
 };
 
 interface Props {
@@ -80,17 +60,22 @@ export function ProjectContent({
 }: Props) {
   const router = useRouter();
 
-  const [codeOverrides, setCodeOverrides] = useState<Record<string, string>>(
-    {},
-  );
+  const [codeOverrides, setCodeOverrides] = useState<
+    Record<string, Record<string, string>>
+  >({});
 
   const remixes = useMemo(
     () =>
-      initialRemixes.map((r) =>
-        r.id in codeOverrides
-          ? { ...r, projectJsonData: codeOverrides[r.id] }
-          : r,
-      ),
+      initialRemixes.map((r) => {
+        const overrides = codeOverrides[r.id];
+        if (!overrides) return r;
+        return {
+          ...r,
+          files: r.files.map((f) =>
+            f.name in overrides ? { ...f, data: overrides[f.name] } : f,
+          ),
+        };
+      }),
     [initialRemixes, codeOverrides],
   );
 
@@ -103,6 +88,10 @@ export function ProjectContent({
       return selectedId;
     return (remixes.find((r) => r.isMain) ?? remixes[0])?.id ?? null;
   }, [selectedId, remixes]);
+
+  const [selectedFileByRemix, setSelectedFileByRemix] = useState<
+    Record<string, string>
+  >({});
 
   const [panelWidth, setPanelWidth] = useState(240);
   const [collapsed, setCollapsed] = useState(false);
@@ -144,10 +133,27 @@ export function ProjectContent({
 
   const selectedRemix = remixes.find((r) => r.id === safeSelectedId) ?? null;
 
+  const selectedFileName = useMemo(() => {
+    if (!selectedRemix) return "";
+    const explicit = selectedFileByRemix[selectedRemix.id];
+    if (explicit && selectedRemix.files.some((f) => f.name === explicit))
+      return explicit;
+    return selectedRemix.files[0]?.name ?? "";
+  }, [selectedRemix, selectedFileByRemix]);
+
+  function handleSelectFile(fileName: string) {
+    if (!selectedRemix) return;
+    setSelectedFileByRemix((prev) => ({
+      ...prev,
+      [selectedRemix.id]: fileName,
+    }));
+  }
+
   const scripts = useMemo(() => {
-    if (!selectedRemix?.projectJsonData) return {};
+    const data = selectedRemix?.files[0]?.data;
+    if (!data) return {};
     try {
-      return parseScripts(selectedRemix.projectJsonData);
+      return parseScripts(data);
     } catch {
       return {};
     }
@@ -191,8 +197,11 @@ export function ProjectContent({
     }
   }
 
-  function handleCodeSaved(remixId: string, code: string) {
-    setCodeOverrides((prev) => ({ ...prev, [remixId]: code }));
+  function handleCodeSaved(remixId: string, fileName: string, code: string) {
+    setCodeOverrides((prev) => ({
+      ...prev,
+      [remixId]: { ...(prev[remixId] ?? {}), [fileName]: code },
+    }));
   }
 
   async function handleDeleteRemix() {
@@ -229,7 +238,7 @@ export function ProjectContent({
                 onCreated={setSelectedId}
               />
             )}
-            <Chip>{remixes.length}</Chip>
+            <Chip size="lg">{remixes.length}</Chip>
             <Button
               className="hidden sm:flex"
               size="sm"
@@ -362,7 +371,9 @@ export function ProjectContent({
         <div className="hidden [@media(min-height:500px)]:flex flex-col flex-1 min-h-0">
           <ScriptsPanel
             key={safeSelectedId ?? ""}
-            raw={selectedRemix?.projectJsonData}
+            files={selectedRemix?.files ?? []}
+            selectedFileName={selectedFileName}
+            onSelectFile={handleSelectFile}
             scripts={scripts}
             aiFeedback={aiFeedback}
             feedbackStatus={feedbackStatus}
@@ -374,8 +385,7 @@ export function ProjectContent({
             remixDescription={selectedRemix?.description ?? null}
             feedbackTimestamp={feedbackTimestamp}
             remixType={selectedRemix?.remixType ?? "blockcode"}
-            fileName={selectedRemix?.fileName ?? "project.json"}
-            language={fileNameToLanguage(selectedRemix?.fileName ?? "")}
+            language={fileNameToLanguage(selectedFileName)}
             remixId={selectedRemix?.id ?? null}
             onCodeSaved={handleCodeSaved}
             canEdit={
@@ -408,18 +418,6 @@ export function ProjectContent({
               <ScrollShadow className="max-h-18">
                 {selectedRemix.description}
               </ScrollShadow>
-              {selectedRemix.remixType === "raw" && (
-                <div className="flex items-center">
-                  <Label className="text-xs text-foreground/50 font-semibold">
-                    Language:
-                  </Label>
-                  <Chip size="sm" variant="secondary">
-                    {languageDisplayName(
-                      fileNameToLanguage(selectedRemix.fileName),
-                    )}
-                  </Chip>
-                </div>
-              )}
             </Card.Content>
           </Card>
         )}

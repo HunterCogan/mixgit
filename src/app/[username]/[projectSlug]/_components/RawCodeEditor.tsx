@@ -7,14 +7,6 @@ const MonacoEditor = dynamic(
   { ssr: false },
 );
 
-const LANGUAGE_MAP: Record<string, string> = {
-  python: "python",
-  javascript: "javascript",
-  typescript: "typescript",
-  html: "html",
-  css: "css",
-};
-
 interface RawCodeEditorProps {
   value: string;
   onChange?: (value: string) => void;
@@ -31,7 +23,7 @@ export default function RawCodeEditor({
   return (
     <MonacoEditor
       height="100%"
-      language={LANGUAGE_MAP[language] ?? "plaintext"}
+      language={language}
       value={value}
       onChange={(val) => onChange?.(val ?? "")}
       options={{
