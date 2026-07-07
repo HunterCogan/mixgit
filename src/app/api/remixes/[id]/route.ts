@@ -37,17 +37,25 @@ export async function PATCH(
       );
     }
 
-    const { code } = await req.json();
+    const { code, fileName } = await req.json();
     if (typeof code !== "string") {
       return NextResponse.json({ error: "Code is required" }, { status: 400 });
     }
+    if (typeof fileName !== "string" || !fileName) {
+      return NextResponse.json(
+        { error: "File name is required" },
+        { status: 400 },
+      );
+    }
 
     const logicFile = remix.files.find(
-      (f: import("@/models/Remix").IProgramFile) => f.fileType === "logic",
+      (f: import("@/models/Remix").IProgramFile) =>
+        f.fileType === "logic" && f.name === fileName,
     );
-    if (logicFile) {
-      logicFile.data = code;
+    if (!logicFile) {
+      return NextResponse.json({ error: "File not found" }, { status: 404 });
     }
+    logicFile.data = code;
     await remix.save();
 
     return NextResponse.json({ success: true }, { status: 200 });

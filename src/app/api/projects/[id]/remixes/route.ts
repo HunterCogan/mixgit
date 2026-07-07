@@ -4,7 +4,7 @@ import connectDB from "@/lib/db";
 import ProjectModel from "@/models/Project";
 import RemixModel from "@/models/Remix";
 import mongoose from "mongoose";
-import { RemixSchema } from "@/lib/schemas/remix.zod";
+import { FileNameSchema, RemixSchema } from "@/lib/schemas/remix.zod";
 import { z } from "zod";
 
 export async function POST(
@@ -70,14 +70,6 @@ export async function POST(
 
     const rawData: string = body.projectData ?? body.code ?? "";
 
-    const LANGUAGE_FILE_NAMES: Record<string, string> = {
-      python: "main.py",
-      javascript: "main.js",
-      typescript: "main.ts",
-      html: "index.html",
-      css: "styles.css",
-    };
-
     let remixType: "blockcode" | "raw";
     let fileName: string;
     try {
@@ -86,7 +78,14 @@ export async function POST(
       fileName = "project.json";
     } catch {
       remixType = "raw";
-      fileName = LANGUAGE_FILE_NAMES[body.language as string] ?? "main.txt";
+      const fileNameResult = FileNameSchema.safeParse(body.fileName);
+      if (!fileNameResult.success) {
+        return NextResponse.json(
+          { error: fileNameResult.error.issues[0].message },
+          { status: 400 },
+        );
+      }
+      fileName = fileNameResult.data;
     }
 
     // TODO: a Remix is created with the "project.json" ProgramFile
