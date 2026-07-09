@@ -27,6 +27,11 @@
   --category-procedures: #ff6680;
   --category-argument: #575e75;
   --category-default: #e5e7eb;
+
+  /* brand (from logo) */
+  --brand-blue: #3b93f5;
+  --brand-orange: #ff890c;
+  --brand-green: #57b85a;
 }
 
 @theme inline {
@@ -56,6 +61,11 @@
   --color-category-procedures: var(--category-procedures);
   --color-category-argument: var(--category-argument);
   --color-category-default: var(--category-default);
+
+  /* brand (from logo) */
+  --color-brand-blue: var(--brand-blue);
+  --color-brand-orange: var(--brand-orange);
+  --color-brand-green: var(--brand-green);
 }
 
 /* Commenting out dark theme, can be added later */
