@@ -868,9 +868,9 @@ export function ScriptsPanel({
               </ComboBox.Popover>
             </ComboBox>
           </div>
-          <div className="columns-xs gap-3 p-3">
+          <div className="columns-1 sm:columns-2 lg:columns-3 gap-3 p-3">
             {targetScripts.map((script) => (
-              <div key={script.hatBlockId} className="break-inside-avoid mb-3">
+              <div key={script.hatBlockId} className="mb-3 break-inside-avoid">
                 <ScriptStack script={script} />
               </div>
             ))}

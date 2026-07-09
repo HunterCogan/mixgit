@@ -37,12 +37,11 @@ export function BlockRow({ block, indent, isReporter, lineNumber }: Props) {
   const inputs = getAllInputValues(block);
 
   // padding for line indent, made more visible the further indented
-  const padding = indent * 1.25;
-  const paddingOpacity = Math.min(Math.max(indent / 10, 0), 1);
+  const padding = indent;
 
   return (
     <div
-      className={`flex flex-wrap items-center gap-1.5 p-1.5 text-sm text-white ${color}`}
+      className={`flex items-center gap-1.5 p-1.5 text-sm text-white ${color}`}
     >
       <span className="font-mono text-xs opacity-50 select-none">
         {String(lineNumber).padStart(2, "0")}
@@ -51,22 +50,28 @@ export function BlockRow({ block, indent, isReporter, lineNumber }: Props) {
         style={{
           width: `${padding}rem`,
           height: `1rem`,
-          opacity: paddingOpacity,
+          opacity: 0.1,
         }}
         className="bg-white rounded-md"
       ></span>
       {block.topLevel && <CodeBracketSquareIcon className="size-3" />}
-      {isReporter && <ArrowUpIcon className="size-3" />}
+      {isReporter && <ArrowUpIcon className="size-3 shrink-0" />}
       <span className="font-mono font-semibold tracking-wide">{action}</span>
       {Object.entries(fields).map(([k, v]) => (
-        <span key={k} className="rounded bg-black/10 px-1 py-0.5 font-mono">
+        <span
+          key={k}
+          className="rounded-full bg-black/10 text-xs text-center px-2.5 py-0.5 font-mono"
+        >
           {v}
         </span>
       ))}
       {Object.entries(inputs).map(([k, inp]) => {
         const label = inputLabel(inp);
         return label !== null ? (
-          <span key={k} className="rounded bg-white/10 px-1 py-0.5 font-mono">
+          <span
+            key={k}
+            className="rounded-full bg-white text-black text-xs text-center px-2.5 py-0.5 font-mono"
+          >
             {label}
           </span>
         ) : null;
