@@ -4,17 +4,17 @@ import { ArrowUpIcon, CodeBracketSquareIcon } from "@heroicons/react/20/solid";
 import { inputLabel } from "@/lib/scratch-pseudocode";
 
 const CATEGORY_COLORS: Record<string, string> = {
-  motion: "bg-blue-600",
-  looks: "bg-purple-500",
-  sound: "bg-fuchsia-500",
-  event: "bg-yellow-500",
-  control: "bg-amber-500",
-  sensing: "bg-cyan-500",
-  operator: "bg-green-500",
-  variables: "bg-orange-500",
-  data: "bg-orange-500",
-  procedures: "bg-rose-400",
-  argument: "bg-rose-300",
+  motion: "bg-category-motion",
+  looks: "bg-category-looks",
+  sound: "bg-category-sound",
+  event: "bg-category-event",
+  control: "bg-category-control",
+  sensing: "bg-category-sensing",
+  pen: "bg-category-pen",
+  operator: "bg-category-operator",
+  data: "bg-category-data",
+  procedures: "bg-category-procedures",
+  argument: "bg-category-argument",
 };
 
 function parseOpcode(opcode: string): { category: string; action: string } {
@@ -32,7 +32,7 @@ interface Props {
 
 export function BlockRow({ block, indent, isReporter, lineNumber }: Props) {
   const { category, action } = parseOpcode(block.opcode);
-  const color = CATEGORY_COLORS[category] ?? "bg-gray-200";
+  const color = CATEGORY_COLORS[category] ?? "bg-category-default";
   const fields = getAllFieldValues(block);
   const inputs = getAllInputValues(block);
 
