@@ -530,6 +530,7 @@ export function ScriptsPanel({
             )}
           </>
         )}
+
         {hasSelectedRemix && !isEmpty && remixType === "blockcode" && (
           <Modal>
             <Modal.Trigger>
