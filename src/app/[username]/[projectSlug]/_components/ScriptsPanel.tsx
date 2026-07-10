@@ -870,7 +870,7 @@ export function ScriptsPanel({
           </div>
           <div className="columns-1 sm:columns-2 lg:columns-3 gap-3 p-3">
             {targetScripts.map((script) => (
-              <div key={script.hatBlockId} className="mb-3 break-inside-avoid">
+              <div key={script.hatBlockId} className="break-inside-avoid mb-3">
                 <ScriptStack script={script} />
               </div>
             ))}

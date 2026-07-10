@@ -119,14 +119,14 @@ const FEATURES = [
   {
     icon: PuzzlePieceIcon,
     accent: "orange",
-    title: "Block parser",
+    title: "Code Parser",
     description:
-      "Reconstructs your full program and shows it as clean, indented, readable block stacks.",
+      "Reconstructs your full program and shows it as clean, indented, readable block stacks. Or, import from your favorite typed language.",
   },
   {
     icon: SparklesIcon,
     accent: "green",
-    title: "AI code review",
+    title: "AI Code Review",
     description:
       "Claude returns plain-language structured feedback on your code, tuned to a 5th grade reading level.",
   },
