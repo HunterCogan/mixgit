@@ -165,10 +165,17 @@ export function ProjectContent({
     setAiFeedback(null);
     setFeedbackError(null);
     try {
-      const res = await fetch("/api/ai/feedback/block", {
+      const endpoint =
+        selectedRemix.remixType === "raw"
+          ? "/api/ai/feedback/raw"
+          : "/api/ai/feedback/block";
+
+      const res = await fetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ remixId: selectedRemix.id }),
+        body: JSON.stringify({
+          remixId: selectedRemix.id,
+        }),
       });
       const data = await res.json();
       if (!res.ok) {

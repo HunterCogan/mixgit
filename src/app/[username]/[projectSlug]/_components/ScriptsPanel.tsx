@@ -105,6 +105,17 @@ export function ScriptsPanel({
   const [edits, setEdits] = useState<Record<string, string>>({});
   const currentCode = edits[selectedFileName] ?? raw;
   const hasUnsavedChanges = currentCode !== raw;
+  const feedbackModal = useOverlayState();
+
+  async function handleOpenFeedback() {
+    feedbackModal.open();
+
+    if (hasUnsavedChanges) {
+      await handleSaveCode();
+    }
+
+    await onGetFeedback();
+  }
 
   function setCurrentCode(value: string) {
     setEdits((prev) => ({ ...prev, [selectedFileName]: value }));
@@ -530,160 +541,161 @@ export function ScriptsPanel({
             )}
           </>
         )}
-        {hasSelectedRemix && !isEmpty && remixType === "blockcode" && (
-          <Modal>
-            <Modal.Trigger>
-              <Button size="sm">
+        {hasSelectedRemix &&
+          ((remixType === "blockcode" && !isEmpty) || remixType === "raw") && (
+            <Modal state={feedbackModal}>
+              <Button size="sm" onPress={handleOpenFeedback}>
                 <SparklesIcon className="h-4 w-4" />
                 AI Feedback
               </Button>
-            </Modal.Trigger>
-            <Modal.Backdrop>
-              <Modal.Container size="lg">
-                <Modal.Dialog>
-                  <Modal.CloseTrigger className="m-2" />
-                  <Modal.Header>
-                    <Modal.Heading className="text-2xl">
-                      AI Feedback
-                    </Modal.Heading>
-                  </Modal.Header>
-                  <Separator className="my-4" />
-                  <Modal.Body className="flex flex-col gap-1">
-                    {remixName && (
-                      <h3 className="text-base font-semibold">
-                        <span className="font-normal">Feedback for: </span>
-                        {remixName}
-                      </h3>
-                    )}
-                    {remixDescription && (
-                      <p className="text-sm mb-4">{remixDescription}</p>
-                    )}
-                    {feedbackStatus === "error" && feedbackError && (
-                      <ErrorMessage>{feedbackError}</ErrorMessage>
-                    )}
-                    {feedbackStatus === "empty" && (
-                      <Card variant="secondary">
-                        <Card.Content>
-                          <p className="text-sm">
-                            There&apos;s nothing to review here yet — add a few
-                            blocks to your remix and try again!
-                          </p>
-                        </Card.Content>
-                      </Card>
-                    )}
-                    {feedbackStatus === "ready" && aiFeedback && (
-                      <Card variant="secondary">
-                        <Card.Content className="overflow-auto">
-                          <div>
-                            <h4 className="text-base font-semibold">
-                              What Works Well
-                            </h4>
-                            <div className="text-sm prose prose-code:before:content-none prose-code:after:content-none">
-                              <ReactMarkdown>
-                                {aiFeedback.what_works_well}
-                              </ReactMarkdown>
-                            </div>
-                            <h4 className="text-base font-semibold mt-2">
-                              Issues & Suggestions
-                            </h4>
+              <Modal.Backdrop>
+                <Modal.Container size="lg">
+                  <Modal.Dialog>
+                    <Modal.CloseTrigger className="m-2" />
+                    <Modal.Header>
+                      <Modal.Heading className="text-2xl">
+                        AI Feedback
+                      </Modal.Heading>
+                    </Modal.Header>
+                    <Separator className="my-4" />
+                    <Modal.Body className="flex flex-col gap-1">
+                      {remixName && (
+                        <h3 className="text-base font-semibold">
+                          <span className="font-normal">Feedback for: </span>
+                          {remixName}
+                        </h3>
+                      )}
+                      {remixDescription && (
+                        <p className="text-sm mb-4">{remixDescription}</p>
+                      )}
+                      {feedbackStatus === "error" && feedbackError && (
+                        <ErrorMessage>{feedbackError}</ErrorMessage>
+                      )}
+                      {feedbackStatus === "empty" && (
+                        <Card variant="secondary">
+                          <Card.Content>
+                            <p className="text-sm">
+                              There&apos;s nothing to review here yet — add a
+                              few blocks to your remix and try again!
+                            </p>
+                          </Card.Content>
+                        </Card>
+                      )}
+                      {feedbackStatus === "ready" && aiFeedback && (
+                        <Card variant="secondary">
+                          <Card.Content className="overflow-auto">
                             <div>
-                              <DisclosureGroup>
-                                {aiFeedback.logic_issues.map((issue, i) => {
-                                  return (
-                                    <div key={i}>
-                                      <Disclosure>
-                                        <Disclosure.Heading>
-                                          <Button
-                                            slot="trigger"
-                                            variant="secondary"
-                                            className="flex h-auto min-h-fit whitespace-normal bg-transparent justify-between gap-2 text-left text-danger"
-                                            fullWidth
-                                          >
-                                            <div className="flex min-w-0 flex-1 items-center justify-start gap-2">
-                                              <ExclamationTriangleIcon className="size-5 shrink-0" />
-                                              <span className="min-w-0 whitespace-normal wrap-break-word text-left">
-                                                {issue.title}
-                                              </span>
-                                            </div>
-                                            <Disclosure.Indicator className="shrink-0" />
-                                          </Button>
-                                        </Disclosure.Heading>
-                                        <Disclosure.Content>
-                                          <Disclosure.Body>
-                                            <div className="text-sm prose prose-code:before:content-none prose-code:after:content-none">
-                                              <ReactMarkdown>
-                                                {issue.detail}
-                                              </ReactMarkdown>
-                                            </div>
-                                            <div className="flex flex-col items-center">
-                                              <Button className="mt-2">
-                                                <SparklesIcon />
-                                                Generate Remix
+                              <h4 className="text-base font-semibold">
+                                What Works Well
+                              </h4>
+                              <div className="text-sm prose prose-code:before:content-none prose-code:after:content-none">
+                                <ReactMarkdown>
+                                  {aiFeedback.what_works_well}
+                                </ReactMarkdown>
+                              </div>
+                              <h4 className="text-base font-semibold mt-2">
+                                Issues & Suggestions
+                              </h4>
+                              <div>
+                                <DisclosureGroup>
+                                  {aiFeedback.logic_issues.map((issue, i) => {
+                                    return (
+                                      <div key={i}>
+                                        <Disclosure>
+                                          <Disclosure.Heading>
+                                            <Button
+                                              slot="trigger"
+                                              variant="secondary"
+                                              className="flex h-auto min-h-fit whitespace-normal bg-transparent justify-between gap-2 text-left text-danger"
+                                              fullWidth
+                                            >
+                                              <div className="flex min-w-0 flex-1 items-center justify-start gap-2">
+                                                <ExclamationTriangleIcon className="size-5 shrink-0" />
+                                                <span className="min-w-0 whitespace-normal wrap-break-word text-left">
+                                                  {issue.title}
+                                                </span>
+                                              </div>
+                                              <Disclosure.Indicator className="shrink-0" />
+                                            </Button>
+                                          </Disclosure.Heading>
+                                          <Disclosure.Content>
+                                            <Disclosure.Body>
+                                              <div className="text-sm prose prose-code:before:content-none prose-code:after:content-none">
+                                                <ReactMarkdown>
+                                                  {issue.detail}
+                                                </ReactMarkdown>
+                                              </div>
+                                              <div className="flex flex-col items-center">
+                                                <Button className="mt-2">
+                                                  <SparklesIcon />
+                                                  Generate Remix
+                                                </Button>
+                                              </div>
+                                            </Disclosure.Body>
+                                          </Disclosure.Content>
+                                        </Disclosure>
+                                        <Separator />
+                                      </div>
+                                    );
+                                  })}
+                                  {aiFeedback.suggestions.map(
+                                    (suggestion, i) => {
+                                      return (
+                                        <div key={i}>
+                                          <Disclosure>
+                                            <Disclosure.Heading>
+                                              <Button
+                                                slot="trigger"
+                                                variant="secondary"
+                                                className="flex h-auto min-h-fit whitespace-normal bg-transparent justify-between gap-2 text-left text-foreground"
+                                                fullWidth
+                                              >
+                                                <div className="flex min-w-0 flex-1 items-center justify-start gap-2">
+                                                  <LightBulbIcon className="size-5 shrink-0" />
+                                                  <span className="min-w-0 whitespace-normal wrap-break-word text-left">
+                                                    {suggestion.title}
+                                                  </span>
+                                                </div>
+                                                <Disclosure.Indicator className="shrink-0" />
                                               </Button>
-                                            </div>
-                                          </Disclosure.Body>
-                                        </Disclosure.Content>
-                                      </Disclosure>
-                                      <Separator />
-                                    </div>
-                                  );
-                                })}
-                                {aiFeedback.suggestions.map((suggestion, i) => {
-                                  return (
-                                    <div key={i}>
-                                      <Disclosure>
-                                        <Disclosure.Heading>
-                                          <Button
-                                            slot="trigger"
-                                            variant="secondary"
-                                            className="flex h-auto min-h-fit whitespace-normal bg-transparent justify-between gap-2 text-left text-foreground"
-                                            fullWidth
-                                          >
-                                            <div className="flex min-w-0 flex-1 items-center justify-start gap-2">
-                                              <LightBulbIcon className="size-5 shrink-0" />
-                                              <span className="min-w-0 whitespace-normal wrap-break-word text-left">
-                                                {suggestion.title}
-                                              </span>
-                                            </div>
-                                            <Disclosure.Indicator className="shrink-0" />
-                                          </Button>
-                                        </Disclosure.Heading>
-                                        <Disclosure.Content>
-                                          <Disclosure.Body>
-                                            <div className="text-sm prose prose-code:before:content-none prose-code:after:content-none">
-                                              <ReactMarkdown>
-                                                {suggestion.detail}
-                                              </ReactMarkdown>
-                                            </div>
-                                            <div className="flex flex-col items-center">
-                                              <Button className="mt-2">
-                                                <SparklesIcon />
-                                                Generate Remix
-                                              </Button>
-                                            </div>
-                                          </Disclosure.Body>
-                                        </Disclosure.Content>
-                                      </Disclosure>
-                                      <Separator />
-                                    </div>
-                                  );
-                                })}
-                              </DisclosureGroup>
+                                            </Disclosure.Heading>
+                                            <Disclosure.Content>
+                                              <Disclosure.Body>
+                                                <div className="text-sm prose prose-code:before:content-none prose-code:after:content-none">
+                                                  <ReactMarkdown>
+                                                    {suggestion.detail}
+                                                  </ReactMarkdown>
+                                                </div>
+                                                <div className="flex flex-col items-center">
+                                                  <Button className="mt-2">
+                                                    <SparklesIcon />
+                                                    Generate Remix
+                                                  </Button>
+                                                </div>
+                                              </Disclosure.Body>
+                                            </Disclosure.Content>
+                                          </Disclosure>
+                                          <Separator />
+                                        </div>
+                                      );
+                                    },
+                                  )}
+                                </DisclosureGroup>
+                              </div>
                             </div>
-                          </div>
-                        </Card.Content>
-                      </Card>
-                    )}
-                  </Modal.Body>
-                  <Modal.Footer className="flex justify-between items-center">
-                    {feedbackTimestamp ? (
-                      <p className="text-xs text-gray-400">
-                        Generated at {feedbackTimestamp}
-                      </p>
-                    ) : (
+                          </Card.Content>
+                        </Card>
+                      )}
+                    </Modal.Body>
+                    <Modal.Footer className="flex justify-between items-center">
                       <div className="flex items-center gap-2">
                         <Button
-                          onPress={onGetFeedback}
+                          onPress={async () => {
+                            if (hasUnsavedChanges) {
+                              await handleSaveCode();
+                            }
+                            onGetFeedback();
+                          }}
                           isDisabled={isLoadingFeedback}
                         >
                           {isLoadingFeedback && (
@@ -692,8 +704,13 @@ export function ScriptsPanel({
                           {!isLoadingFeedback && (
                             <SparklesIcon className="h-4 w-4" />
                           )}
-                          {isLoadingFeedback ? "Analyzing..." : "Get Feedback"}
+                          {isLoadingFeedback
+                            ? "Analyzing..."
+                            : feedbackTimestamp
+                              ? "Regenerate Feedback"
+                              : "Get Feedback"}
                         </Button>
+
                         <Popover>
                           <Popover.Trigger>
                             <InformationCircleIcon className="h-4 w-4 text-gray-400 cursor-pointer" />
@@ -709,17 +726,23 @@ export function ScriptsPanel({
                             </Popover.Dialog>
                           </Popover.Content>
                         </Popover>
+
+                        {feedbackTimestamp && (
+                          <span className="ml-2 text-xs text-gray-400">
+                            Generated at {feedbackTimestamp}
+                          </span>
+                        )}
                       </div>
-                    )}
-                    <Button slot="close" variant="outline">
-                      Close
-                    </Button>
-                  </Modal.Footer>
-                </Modal.Dialog>
-              </Modal.Container>
-            </Modal.Backdrop>
-          </Modal>
-        )}
+
+                      <Button slot="close" variant="outline">
+                        Close
+                      </Button>
+                    </Modal.Footer>
+                  </Modal.Dialog>
+                </Modal.Container>
+              </Modal.Backdrop>
+            </Modal>
+          )}
         <ToggleButton
           isSelected={isEmpty || isRawToggled}
           onChange={setIsRawToggled}
