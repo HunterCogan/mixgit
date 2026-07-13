@@ -58,6 +58,7 @@ export default async function Navbar() {
       projects={serialized}
       username={username}
       sharedProjects={serializedShared}
+      achievements={[]}
     />
   );
 }

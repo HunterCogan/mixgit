@@ -12,7 +12,6 @@ import {
   Label,
   Modal,
   Spinner,
-  Switch,
   TextArea,
   TextField,
   useOverlayState,
