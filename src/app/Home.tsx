@@ -155,7 +155,7 @@ const FEATURES = [
 
 export default function Home() {
   return (
-    <div className="flex flex-col min-h-screen bg-linear-to-br from-brand-blue/30 via-brand-blue/10 to-brand-green/30">
+    <div className="flex flex-col justify-between min-h-[calc(100vh-56px)] bg-linear-to-br from-brand-blue/30 via-brand-blue/10 to-brand-green/30">
       <section className="mx-auto grid max-w-6xl gap-12 px-4 pt-12 pb-16 sm:px-6 sm:pt-16 sm:pb-24 lg:grid-cols-2 lg:items-center">
         <div className="mx-auto flex w-full max-w-xl flex-col items-center gap-5 text-center lg:mx-0 lg:max-w-none lg:items-start lg:text-left">
           <h1 className="text-4xl leading-tight font-bold tracking-tight sm:text-5xl">
@@ -215,7 +215,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section id="features" className="bg-white py-16">
+      <section id="features" className="bg-grid py-16">
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {FEATURES.map((feature) => (
