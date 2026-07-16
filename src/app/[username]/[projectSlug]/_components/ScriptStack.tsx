@@ -32,19 +32,24 @@ export function ScriptStack({ script }: Props) {
   }, []);
 
   return (
-    <Card className="w-fit h-fit rounded-md p-1" variant="secondary">
-      <Card.Content className="gap-0 overflow-hidden rounded-md">
-        {blocks.map((block, i) => {
-          return (
-            <BlockRow
-              key={`${script.hatBlockId}-${i}`}
-              block={block}
-              indent={indents[i]}
-              isReporter={blockReporters[i]}
-              lineNumber={lineNumbers[i]}
-            />
-          );
-        })}
+    <Card
+      className="w-fit max-w-full h-fit min-w-0 rounded-md p-1"
+      variant="secondary"
+    >
+      <Card.Content className="gap-0 overflow-x-auto overflow-y-hidden rounded-md">
+        <div className="flex flex-col min-w-max">
+          {blocks.map((block, i) => {
+            return (
+              <BlockRow
+                key={`${script.hatBlockId}-${i}`}
+                block={block}
+                indent={indents[i]}
+                isReporter={blockReporters[i]}
+                lineNumber={lineNumbers[i]}
+              />
+            );
+          })}
+        </div>
       </Card.Content>
     </Card>
   );
