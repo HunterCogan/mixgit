@@ -8,6 +8,7 @@ import mongoose from "mongoose";
 import { ProjectSchema } from "@/lib/schemas/project.zod";
 import { z } from "zod";
 import DEFAULT_PROJECT_JSON from "@/lib/defaults/project.json";
+import { updateAchievementProgress } from "@/lib/update-achievements";
 
 export async function POST(request: NextRequest) {
   try {
@@ -65,7 +66,30 @@ export async function POST(request: NextRequest) {
       ],
     });
 
-    return NextResponse.json({ project }, { status: 201 });
+    // Fire achievement tracking now that the project has actually been
+    // saved. "Make your first project on MixGit" is the only achievement
+    // tied to project creation right now, so we update it directly.
+    let unlockedAchievements: { achievementName: string }[] = [];
+    try {
+      const achievementResult = await updateAchievementProgress(
+        "Let's Get Started test",
+        1,
+      );
+      if (achievementResult.justCompleted) {
+        unlockedAchievements = [
+          { achievementName: achievementResult.achievementName },
+        ];
+      }
+    } catch (achievementError) {
+      // Achievement tracking failing shouldn't break project creation —
+      // log it and let the request succeed regardless.
+      console.error("Achievement tracking error:", achievementError);
+    }
+
+    return NextResponse.json(
+      { project, unlockedAchievements },
+      { status: 201 },
+    );
   } catch (error) {
     console.error("Create project error:", error);
     return NextResponse.json(

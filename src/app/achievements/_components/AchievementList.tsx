@@ -1,12 +1,9 @@
 "use client";
 
-import { Button, Card, Chip, Separator } from "@heroui/react";
-import {
-  CheckCircleIcon,
-  ClockIcon,
-  TrophyIcon,
-} from "@heroicons/react/24/outline";
-import { useRouter } from "next/navigation";
+import { Button, Card, Chip, Separator, toast } from "@heroui/react";
+import { CheckCircleIcon, ClockIcon } from "@heroicons/react/24/outline";
+import { useState } from "react";
+import { updateAchievementProgress } from "@/lib/update-achievements";
 
 type Achievement = {
   id: string;
@@ -15,8 +12,7 @@ type Achievement = {
   progress: number;
   completed: boolean;
   unlockedAt?: string;
-  points: number;
-  tags?: string[];
+  goal: number;
 };
 
 function CompletedRow({ achievement }: { achievement: Achievement }) {
@@ -38,13 +34,6 @@ function CompletedRow({ achievement }: { achievement: Achievement }) {
               Unlocked
               {achievement.unlockedAt ? `: ${achievement.unlockedAt}` : ""}
             </Chip>
-            <Chip size="md">{achievement.points} pts</Chip>
-
-            {achievement.tags?.map((tag) => (
-              <Chip key={tag} size="md" variant="secondary">
-                {tag}
-              </Chip>
-            ))}
           </div>
         </Card.Footer>
       </div>
@@ -54,10 +43,10 @@ function CompletedRow({ achievement }: { achievement: Achievement }) {
 
 function InProgressRow({
   achievement,
-  onViewDetails,
+  onUpdateProgress,
 }: {
   achievement: Achievement;
-  onViewDetails: (id: string) => void;
+  onUpdateProgress: (achievementName: string, currentValue: number) => void;
 }) {
   return (
     <Card className="w-full items-stretch flex-row">
@@ -76,22 +65,16 @@ function InProgressRow({
               <ClockIcon className="h-3.5 w-3.5 inline mr-1" />
               {achievement.progress}% complete
             </Chip>
-            <Chip size="md">{achievement.points} pts</Chip>
-
-            {achievement.tags?.map((tag) => (
-              <Chip key={tag} size="md" variant="secondary">
-                {tag}
-              </Chip>
-            ))}
           </div>
           <div className="flex gap-1 ml-auto shrink-0">
             <Button
               variant="outline"
               size="sm"
-              onPress={() => onViewDetails(achievement.id)}
+              onPress={() =>
+                onUpdateProgress(achievement.name, achievement.goal)
+              }
             >
-              <TrophyIcon className="h-4 w-4" />
-              Details
+              Mark Complete (test)
             </Button>
           </div>
         </Card.Footer>
@@ -105,14 +88,50 @@ export default function AchievementList({
 }: {
   achievements: Achievement[];
 }) {
-  const router = useRouter();
+  const [achievementState, setAchievementState] =
+    useState<Achievement[]>(achievements);
 
-  const completed = achievements.filter((a) => a.completed);
-  const inProgress = achievements.filter((a) => !a.completed);
+  async function handleUpdateProgress(
+    achievementName: string,
+    currentValue: number,
+  ) {
+    try {
+      const data = await updateAchievementProgress(
+        achievementName,
+        currentValue,
+      );
 
-  function handleViewDetails(achievementId: string) {
-    router.push(`/achievement/${achievementId}`);
+      if (data.justCompleted) {
+        toast.success("Achievement unlocked!", {
+          description: achievementName,
+        });
+      }
+
+      setAchievementState((prev) =>
+        prev.map((a) =>
+          a.name === achievementName
+            ? {
+                ...a,
+                progress: data.progress,
+                completed: data.completed,
+                unlockedAt: data.unlockedAt
+                  ? new Date(data.unlockedAt).toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    })
+                  : a.unlockedAt,
+              }
+            : a,
+        ),
+      );
+    } catch (err) {
+      console.error(err);
+    }
   }
+
+  const completed = achievementState.filter((a) => a.completed);
+  const inProgress = achievementState.filter((a) => !a.completed);
 
   return (
     <div className="flex flex-col gap-8">
@@ -151,7 +170,7 @@ export default function AchievementList({
             <InProgressRow
               key={a.id}
               achievement={a}
-              onViewDetails={handleViewDetails}
+              onUpdateProgress={handleUpdateProgress}
             />
           ))}
       </section>
