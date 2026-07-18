@@ -66,17 +66,6 @@ function InProgressRow({
               {achievement.progress}% complete
             </Chip>
           </div>
-          <div className="flex gap-1 ml-auto shrink-0">
-            <Button
-              variant="outline"
-              size="sm"
-              onPress={() =>
-                onUpdateProgress(achievement.name, achievement.goal)
-              }
-            >
-              Mark Complete (test)
-            </Button>
-          </div>
         </Card.Footer>
       </div>
     </Card>
