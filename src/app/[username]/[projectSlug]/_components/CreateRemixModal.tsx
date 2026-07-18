@@ -15,6 +15,7 @@ import {
   Spinner,
   TextArea,
   TextField,
+  Tooltip,
   useOverlayState,
 } from "@heroui/react";
 import { RemixSchema } from "@/lib/schemas/remix.zod";
@@ -134,10 +135,17 @@ export default function CreateRemixModal({
 
   return (
     <Modal state={state}>
-      <Button size="sm">
-        <PlusIcon />
-        Remix
-      </Button>
+      <Tooltip delay={0}>
+        <Tooltip.Trigger>
+          <Button size="sm">
+            <PlusIcon />
+            Remix
+          </Button>
+        </Tooltip.Trigger>
+        <Tooltip.Content>
+          <p>Create a new Blockcode Remix</p>
+        </Tooltip.Content>
+      </Tooltip>
       <Modal.Backdrop>
         <Modal.Container>
           <Modal.Dialog>

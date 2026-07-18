@@ -7,6 +7,7 @@ import { SubmitFeedbackSchema } from "@/lib/schemas/ai.zod";
 import { rawToPseudocode } from "@/lib/scratch-pseudocode";
 import connectDB from "@/lib/db";
 import RemixModel from "@/models/Remix";
+import ProjectModel from "@/models/Project";
 import { logFeedback } from "@/lib/feedback-log";
 
 const FEEDBACK_SYSTEM = `You are an expert Scratch mentor for young learners (5th–8th grade). You give constructive, friendly, encouraging feedback on remixes. Keep sentences short and the language simple. Only use markdown for code references — wrap block names in backticks, e.g. \`move (10) steps\`.
@@ -94,7 +95,7 @@ const SUBMIT_FEEDBACK_TOOL: Anthropic.Tool = {
 const client = new Anthropic();
 
 export async function POST(req: NextRequest) {
-  await verifySession();
+  const session = await verifySession();
 
   // projectJsonData can be very large to send over the network,
   // instead, user can send Remix id and we query from DB
@@ -114,6 +115,16 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Remix not found" }, { status: 404 });
   }
 
+  const project = await ProjectModel.findById(remix.project).lean();
+  const isAuthorized =
+    !!project &&
+    (project.creator.toString() === session.userId ||
+      project.team.some((memberId) => memberId.toString() === session.userId));
+
+  if (!isAuthorized) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
   const projectJsonData =
     remix.files.find((f) => f.fileType === "logic")?.data ?? "";
 
@@ -129,9 +140,11 @@ export async function POST(req: NextRequest) {
   let message;
   try {
     message = await client.messages.create({
-      model: "claude-sonnet-4-6",
+      model: "claude-sonnet-5",
       max_tokens: 3500,
-      temperature: 0,
+      output_config: {
+        effort: "low",
+      },
       system: FEEDBACK_SYSTEM,
       tools: [SUBMIT_FEEDBACK_TOOL],
       tool_choice: { type: "auto" },

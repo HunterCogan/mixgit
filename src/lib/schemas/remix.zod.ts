@@ -25,5 +25,16 @@ export const RemixSchema = z.object({
   files: z.array(ProgramFileSchema).optional(),
 });
 
+export const FileNameSchema = z
+  .string()
+  .trim()
+  .min(1, "File name is required")
+  .max(100, "File name cannot exceed 100 characters")
+  .regex(/^[^/\\]+$/, "File name cannot contain slashes")
+  .regex(
+    /^[^/\\]+\.[^/\\]+$/,
+    'File name must include an extension, like "main.py"',
+  );
+
 export type ProgramFile = z.infer<typeof ProgramFileSchema>;
 export type Remix = z.infer<typeof RemixSchema>;

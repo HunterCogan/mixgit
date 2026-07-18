@@ -4,29 +4,22 @@ import { useState } from "react";
 import { PlusIcon } from "@heroicons/react/24/outline";
 import {
   Button,
+  Description,
   ErrorMessage,
   FieldError,
   Form,
   Input,
   Label,
-  ListBox,
   Modal,
-  Select,
   Spinner,
   TextArea,
   TextField,
+  Tooltip,
   useOverlayState,
 } from "@heroui/react";
-import { RemixSchema } from "@/lib/schemas/remix.zod";
+import { FileNameSchema, RemixSchema } from "@/lib/schemas/remix.zod";
+import { fileNameToLanguage, languageDisplayName } from "@/lib/language";
 import { useRouter } from "next/navigation";
-
-const LANGUAGES = [
-  { id: "python", label: "Python" },
-  { id: "javascript", label: "JavaScript" },
-  { id: "typescript", label: "TypeScript" },
-  { id: "html", label: "HTML" },
-  { id: "css", label: "CSS" },
-];
 
 export default function CreateRawRemixModal({
   projectId,
@@ -41,7 +34,7 @@ export default function CreateRawRemixModal({
   const router = useRouter();
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [language, setLanguage] = useState<string>("python");
+  const [fileName, setFileName] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -49,7 +42,7 @@ export default function CreateRawRemixModal({
   async function handleSubmit(e: React.SyntheticEvent) {
     e.preventDefault();
     setSubmitted(true);
-    if (!name || !description) return;
+    if (!name || !description || !fileName) return;
 
     setLoading(true);
     setError(null);
@@ -57,7 +50,7 @@ export default function CreateRawRemixModal({
       const res = await fetch(`/api/projects/${projectId}/remixes`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, description, language, creatorId }),
+        body: JSON.stringify({ name, description, fileName, creatorId }),
       });
 
       if (res.ok) {
@@ -65,7 +58,7 @@ export default function CreateRawRemixModal({
         state.close();
         setName("");
         setDescription("");
-        setLanguage("python");
+        setFileName("");
         setSubmitted(false);
         router.refresh();
         onCreated?.(data.remix._id);
@@ -84,9 +77,21 @@ export default function CreateRawRemixModal({
 
   return (
     <Modal state={state}>
-      <Button isIconOnly size="sm" variant="ghost" className="h-6.5 w-6.5">
-        <PlusIcon className="h-4 w-4" />
-      </Button>
+      <Tooltip delay={0}>
+        <Tooltip.Trigger>
+          <Button
+            isIconOnly
+            size="sm"
+            variant="ghost"
+            aria-label="New Raw Code Remix"
+          >
+            <PlusIcon className="h-4 w-4" />
+          </Button>
+        </Tooltip.Trigger>
+        <Tooltip.Content>
+          <p>Create a new Raw Code Remix</p>
+        </Tooltip.Content>
+      </Tooltip>
       <Modal.Backdrop>
         <Modal.Container>
           <Modal.Dialog>
@@ -95,6 +100,11 @@ export default function CreateRawRemixModal({
               <Modal.Heading>New Raw Code Remix</Modal.Heading>
             </Modal.Header>
             <Modal.Body>
+              <p className="px-1 mb-2 text-sm">
+                You can add more files after creating this Remix — each
+                file&apos;s extension (like <code>.py</code> or <code>.js</code>
+                ) sets its own language.
+              </p>
               <Form
                 className="flex flex-col gap-4 p-1"
                 validationBehavior="aria"
@@ -143,29 +153,31 @@ export default function CreateRawRemixModal({
                   <FieldError />
                 </TextField>
 
-                <Select
-                  value={language}
-                  onChange={(value) => setLanguage(value as string)}
+                <TextField
+                  isRequired
+                  name="fileName"
+                  value={fileName}
+                  onChange={setFileName}
+                  validate={(value) => {
+                    if (!submitted && !value) return null;
+                    const result = FileNameSchema.safeParse(value);
+                    return result.success
+                      ? null
+                      : result.error.issues[0].message;
+                  }}
                 >
-                  <Label>Language</Label>
-                  <Select.Trigger>
-                    <Select.Value />
-                    <Select.Indicator />
-                  </Select.Trigger>
-                  <Select.Popover>
-                    <ListBox>
-                      {LANGUAGES.map((lang) => (
-                        <ListBox.Item
-                          key={lang.id}
-                          id={lang.id}
-                          textValue={lang.label}
-                        >
-                          {lang.label}
-                        </ListBox.Item>
-                      ))}
-                    </ListBox>
-                  </Select.Popover>
-                </Select>
+                  <Label>File name</Label>
+                  <Input
+                    variant="secondary"
+                    placeholder='"main.py", "app.js", "index.html"'
+                  />
+                  <Description>
+                    {fileName
+                      ? `Detected language: ${languageDisplayName(fileNameToLanguage(fileName))}`
+                      : "The extension you choose (like .py or .js) sets this file's language."}
+                  </Description>
+                  <FieldError />
+                </TextField>
 
                 <ErrorMessage>{error}</ErrorMessage>
 
