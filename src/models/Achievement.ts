@@ -32,24 +32,4 @@ export const ACHIEVEMENTS: IAchievement[] = [
     description: "Create a remix for your project.",
     goal: 1,
   },
-  {
-    name: "Repo Founder",
-    description: "Create your first repository.",
-    goal: 1,
-  },
-  {
-    name: "Getting the Hang of It",
-    description: "Reach 10 total commits.",
-    goal: 10,
-  },
-  {
-    name: "Commit Streak",
-    description: "Reach 100 total commits.",
-    goal: 100,
-  },
-  {
-    name: "Commit Machine",
-    description: "Reach 1,000 total commits.",
-    goal: 1000,
-  },
 ];
