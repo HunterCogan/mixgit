@@ -23,13 +23,13 @@ export default Achievement;
 
 export const ACHIEVEMENTS: IAchievement[] = [
   {
-    name: "Let's Get Started test",
-    description: "Created your first project on MixGit.",
+    name: "Let's Get Started",
+    description: "Create your first project on MixGit.",
     goal: 1,
   },
   {
-    name: "First Push",
-    description: "Push your first commit to a remote repository.",
+    name: "New Remix",
+    description: "Create a remix for your project.",
     goal: 1,
   },
   {
@@ -37,8 +37,6 @@ export const ACHIEVEMENTS: IAchievement[] = [
     description: "Create your first repository.",
     goal: 1,
   },
-
-  // Commit milestones
   {
     name: "Getting the Hang of It",
     description: "Reach 10 total commits.",

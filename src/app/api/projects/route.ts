@@ -66,13 +66,10 @@ export async function POST(request: NextRequest) {
       ],
     });
 
-    // Fire achievement tracking now that the project has actually been
-    // saved. "Make your first project on MixGit" is the only achievement
-    // tied to project creation right now, so we update it directly.
     let unlockedAchievements: { achievementName: string }[] = [];
     try {
       const achievementResult = await updateAchievementProgress(
-        "Let's Get Started test",
+        "Let's Get Started",
         1,
       );
       if (achievementResult.justCompleted) {
@@ -81,8 +78,6 @@ export async function POST(request: NextRequest) {
         ];
       }
     } catch (achievementError) {
-      // Achievement tracking failing shouldn't break project creation —
-      // log it and let the request succeed regardless.
       console.error("Achievement tracking error:", achievementError);
     }
 

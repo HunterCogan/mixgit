@@ -25,7 +25,6 @@ type Achievement = {
   completed: boolean;
   unlockedAt?: string;
   points: number;
-  tags?: string[];
 };
 
 export default function NavbarClient({
@@ -40,6 +39,9 @@ export default function NavbarClient({
   achievements: Achievement[];
 }) {
   const pathname = usePathname();
+
+  const completedCount = achievements.filter((a) => a.completed).length;
+  const totalCount = achievements.length;
 
   return (
     <nav className="flex flex-col p-3 h-full">
@@ -65,13 +67,18 @@ export default function NavbarClient({
       </Link>
       <Link
         href="/achievements"
-        className={`px-2 py-2 md-2 rounded-md text-sm font-medium transition-colors ${
+        className={`flex items-center justify-between px-2 py-2 md-2 rounded-md text-sm font-medium transition-colors ${
           pathname === "/achievements"
             ? "bg-nav-item-active text-nav-text"
             : "text-nav-text hover:bg-nav-item-hover hover:text-nav-text"
         }`}
       >
         Achievements
+        {totalCount > 0 && (
+          <span className="text-xs font-semibold text-nav-text-subtle">
+            {completedCount}/{totalCount}
+          </span>
+        )}
       </Link>
 
       {projects.length > 0 && (

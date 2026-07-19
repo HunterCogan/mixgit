@@ -17,6 +17,7 @@ import {
   TextField,
   Tooltip,
   useOverlayState,
+  toast,
 } from "@heroui/react";
 import { RemixSchema } from "@/lib/schemas/remix.zod";
 import { projectIdSchema } from "@/lib/schemas/scratch.zod";
@@ -118,6 +119,21 @@ export default function CreateRemixModal({
       });
 
       if (res.ok) {
+        const data = await res.json();
+
+        const unlockedAchievements: { achievementName: string }[] =
+          data.unlockedAchievements ?? [];
+
+        for (const achievement of unlockedAchievements) {
+          toast.success("Achievement unlocked!", {
+            description: achievement.achievementName,
+          });
+        }
+
+        setName("");
+        setDescription("");
+        setSubmitted(false);
+        setError(null);
         state.close();
         router.refresh();
       } else {
