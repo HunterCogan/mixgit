@@ -23,8 +23,8 @@ import {
  * @param blocks - List of blocks in a script, in traversal order (e.g. as produced by `parseScripts`).
  * @returns - Array of indent depths, one per block, in the same order as `blocks`.
  */
-export function computeIndents(blocks: Script["blocks"]): number[] {
-  const idMap = new Map(blocks.map((b) => [b.id, b]));
+export function computeIndents(script: Block[]): number[] {
+  const idMap = new Map(script.map((b) => [b.id, b]));
   const memo = new Map<string, number>();
 
   function depth(block: Block): number {
@@ -49,7 +49,7 @@ export function computeIndents(blocks: Script["blocks"]): number[] {
     return result;
   }
 
-  return blocks.map(depth);
+  return script.map(depth);
 }
 
 function formatListItems(items: (string | number | boolean)[]): string {
@@ -191,85 +191,130 @@ function blockToLine(
  */
 export function rawToPseudocode(raw: string, targets?: string[]): string {
   try {
-    const project: ScratchProject = JSON.parse(raw);
-    // Create a full block map because getScripts(project, true) excludes reporter blocks
-    // but we need access to these excluded blocks to render inline in blockToLine
-    const blockMaps = Object.fromEntries(
-      project.targets.map((t) => [t.name, t.blocks]),
-    );
-    // Create a full id-to-name map for every variable and list for consistency.
-    // Relying on name is fragile (e.g. stale variable names), so inputLabel prioritizes id.
-    const idToName = new Map<string, string>();
-    for (const t of project.targets) {
-      for (const [id, [name]] of Object.entries(t.variables)) {
-        idToName.set(id, name);
-      }
-      for (const [id, [name]] of Object.entries(t.lists)) {
-        idToName.set(id, name);
-      }
-    }
-    const scripts = getScripts(project, true);
-    let pseudocode = "";
-    for (const [targetName, targetScripts] of Object.entries(scripts)) {
-      if (!targets || targets.includes(targetName)) {
-        const blockMap = blockMaps[targetName];
-        const target = project.targets.find((t) => t.name === targetName);
-
-        // Collect all ids that appear in any block's SUBSTACK2 input so "else" can be added before.
-        // This feels very hacky, but only opcode "control_if_else" has SUBSTACK2, so it's correct.
-        // Reference: https://github.com/scratchfoundation/scratch-editor/blob/develop/packages/scratch-vm/src/serialization/sb2_specmap.js
-        const elseIds = new Set<string>();
-        for (const b of Object.values(blockMap)) {
-          const elseInput = getInputValue(b, "SUBSTACK2");
-          if (elseInput.type === "block") elseIds.add(elseInput.blockId);
-        }
-
-        // Target header (name, variables, lists, costumes)
-        pseudocode += `Target: ${targetName}\n`;
-        if (target?.variables && Object.values(target.variables).length > 0) {
-          pseudocode += `${target?.isStage ? "Global" : "Local"} variables: [${Object.values(
-            target.variables,
-          )
-            .map((v) => `${v[0]}=${v[1]}`)
-            .join(", ")}]\n`;
-        }
-        if (target?.lists && Object.values(target.lists).length > 0) {
-          pseudocode += `${target?.isStage ? "Global" : "Local"} lists: [${Object.values(
-            target.lists,
-          )
-            .map(([name, items]) => `${name}=${formatListItems(items)}`)
-            .join(", ")}]\n`;
-        }
-        if (target?.costumes && Object.values(target.costumes).length > 0) {
-          pseudocode += `Costumes: [${Object.values(target.costumes)
-            .map((c) => c.name)
-            .join(", ")}]\n`;
-        }
-
-        // Target body (scripts)
-        if (targetScripts.length === 0) {
-          pseudocode += "No scripts\n\n";
-          continue;
-        } else {
-          for (const script of targetScripts) {
-            const indents = computeIndents(script.blocks);
-            for (const [i, block] of script.blocks.entries()) {
-              if (i !== 0 && elseIds.has(block.id)) {
-                pseudocode += `${"\t".repeat(indents[i])}else:\n`;
-              }
-              const line = blockToLine(block, blockMap, idToName);
-              pseudocode +=
-                i === 0
-                  ? `${line}${!line.endsWith(":") && block.next ? ":" : ""}\n`
-                  : `${"\t".repeat(indents[i] + 1)}${line}\n`;
-            }
-          }
-          pseudocode += "\n";
-        }
-      }
-    }
-    return pseudocode.trim();
+    return collectPseudocodeLines(raw, targets)
+      .map((l) => l.text)
+      .join("\n")
+      .trim();
   } catch {
     return raw;
   }
+}
+
+type PseudocodeLine = { text: string; blockId?: string };
+
+function collectPseudocodeLines(
+  raw: string,
+  targets?: string[],
+): PseudocodeLine[] {
+  const project: ScratchProject = JSON.parse(raw);
+  // Create a full block map because getScripts(project, true) excludes reporter blocks
+  // but we need access to these excluded blocks to render inline in blockToLine
+  const blockMaps = Object.fromEntries(
+    project.targets.map((t) => [t.name, t.blocks]),
+  );
+  // Create a full id-to-name map for every variable and list for consistency.
+  // Relying on name is fragile (e.g. stale variable names), so inputLabel prioritizes id.
+  const idToName = new Map<string, string>();
+  for (const t of project.targets) {
+    for (const [id, [name]] of Object.entries(t.variables)) {
+      idToName.set(id, name);
+    }
+    for (const [id, [name]] of Object.entries(t.lists)) {
+      idToName.set(id, name);
+    }
+  }
+  const scripts = getScripts(project, true);
+  const lines: PseudocodeLine[] = [];
+
+  for (const [targetName, targetScripts] of Object.entries(scripts)) {
+    if (targets && !targets.includes(targetName)) continue;
+
+    const blockMap = blockMaps[targetName];
+    const target = project.targets.find((t) => t.name === targetName);
+
+    // Collect all ids that appear in any block's SUBSTACK2 input so "else" can be added before.
+    // This feels very hacky, but only opcode "control_if_else" has SUBSTACK2, so it's correct.
+    // Reference: https://github.com/scratchfoundation/scratch-editor/blob/develop/packages/scratch-vm/src/serialization/sb2_specmap.js
+    const elseIds = new Set<string>();
+    for (const b of Object.values(blockMap)) {
+      const elseInput = getInputValue(b, "SUBSTACK2");
+      if (elseInput.type === "block") elseIds.add(elseInput.blockId);
+    }
+
+    // Target header (name, variables, lists, costumes)
+    lines.push({ text: `Target: ${targetName}` });
+    if (target?.variables && Object.values(target.variables).length > 0) {
+      lines.push({
+        text: `${target?.isStage ? "Global" : "Local"} variables: [${Object.values(
+          target.variables,
+        )
+          .map((v) => `${v[0]}=${v[1]}`)
+          .join(", ")}]`,
+      });
+    }
+    if (target?.lists && Object.values(target.lists).length > 0) {
+      lines.push({
+        text: `${target?.isStage ? "Global" : "Local"} lists: [${Object.values(
+          target.lists,
+        )
+          .map(([name, items]) => `${name}=${formatListItems(items)}`)
+          .join(", ")}]`,
+      });
+    }
+    if (target?.costumes && Object.values(target.costumes).length > 0) {
+      lines.push({
+        text: `Costumes: [${Object.values(target.costumes)
+          .map((c) => c.name)
+          .join(", ")}]`,
+      });
+    }
+
+    // Target body (scripts)
+    if (targetScripts.length === 0) {
+      lines.push({ text: "No scripts" });
+      lines.push({ text: "" });
+      continue;
+    }
+
+    for (const script of targetScripts) {
+      const indents = computeIndents(script.blocks);
+      for (const [i, block] of script.blocks.entries()) {
+        if (i !== 0 && elseIds.has(block.id)) {
+          lines.push({ text: `${"\t".repeat(indents[i])}else:` });
+        }
+        const line = blockToLine(block, blockMap, idToName);
+        const text =
+          i === 0
+            ? `${line}${!line.endsWith(":") && block.next ? ":" : ""}`
+            : `${"\t".repeat(indents[i] + 1)}${line}`;
+        lines.push({ text, blockId: block.id });
+      }
+    }
+    lines.push({ text: "" });
+  }
+
+  // Drop trailing empty line to match prior trim() behavior for plain text.
+  while (lines.length > 0 && lines[lines.length - 1].text === "") {
+    lines.pop();
+  }
+  return lines;
+}
+
+/**
+ * Line-numbers the project pseudocode and maps each block line to its Scratch block id.
+ */
+export function buildTaggedPseudocode(
+  raw: string,
+  targets?: string[],
+): { lines: string[]; lineToBlockId: Record<number, string> } {
+  const collected = collectPseudocodeLines(raw, targets).filter(
+    (l) => l.text.length > 0,
+  );
+  const lineToBlockId: Record<number, string> = {};
+  const lines = collected.map((l, i) => {
+    const lineNo = i + 1;
+    if (l.blockId) lineToBlockId[lineNo] = l.blockId;
+    return `${lineNo}|${l.text}`;
+  });
+  return { lines, lineToBlockId };
 }
