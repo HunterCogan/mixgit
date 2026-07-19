@@ -1,10 +1,4 @@
-import type {
-  Block,
-  BlockMap,
-  ResolvedInput,
-  ScratchProject,
-  Script,
-} from "@/types";
+import type { Block, BlockMap, ResolvedInput, ScratchProject } from "@/types";
 import {
   getAllFieldValues,
   getAllInputValues,
