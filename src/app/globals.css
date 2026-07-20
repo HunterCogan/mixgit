@@ -13,6 +13,25 @@
   --nav-text-subtle: #94a3b8;
   --nav-item-hover: #f1f5f9;
   --nav-item-active: #e2e8f0;
+
+  /* block categories */
+  --category-motion: #4c97ff;
+  --category-looks: #9966ff;
+  --category-sound: #cf63cf;
+  --category-event: #ffbf00;
+  --category-control: #ffab19;
+  --category-sensing: #5cb1d6;
+  --category-pen: #0fbd8c;
+  --category-operator: #59c059;
+  --category-data: #ff8c1a;
+  --category-procedures: #ff6680;
+  --category-argument: #575e75;
+  --category-default: #e5e7eb;
+
+  /* brand (from logo) */
+  --brand-blue: #3b93f5;
+  --brand-orange: #ff890c;
+  --brand-green: #57b85a;
 }
 
 @theme inline {
@@ -28,6 +47,25 @@
   --color-nav-text-subtle: var(--nav-text-subtle);
   --color-nav-item-hover: var(--nav-item-hover);
   --color-nav-item-active: var(--nav-item-active);
+
+  /* block categories */
+  --color-category-motion: var(--category-motion);
+  --color-category-looks: var(--category-looks);
+  --color-category-sound: var(--category-sound);
+  --color-category-event: var(--category-event);
+  --color-category-control: var(--category-control);
+  --color-category-sensing: var(--category-sensing);
+  --color-category-pen: var(--category-pen);
+  --color-category-operator: var(--category-operator);
+  --color-category-data: var(--category-data);
+  --color-category-procedures: var(--category-procedures);
+  --color-category-argument: var(--category-argument);
+  --color-category-default: var(--category-default);
+
+  /* brand (from logo) */
+  --color-brand-blue: var(--brand-blue);
+  --color-brand-orange: var(--brand-orange);
+  --color-brand-green: var(--brand-green);
 }
 
 /* Commenting out dark theme, can be added later */

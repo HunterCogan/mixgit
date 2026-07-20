@@ -64,6 +64,8 @@ interface Props {
   onCodeSaved: (remixId: string, fileName: string, code: string) => void;
   canEdit: boolean;
   language: string;
+  isLoggedIn: boolean;
+  canUseAIFeedback: boolean;
 }
 
 export function ScriptsPanel({
@@ -86,6 +88,8 @@ export function ScriptsPanel({
   onCodeSaved,
   canEdit,
   language,
+  isLoggedIn,
+  canUseAIFeedback,
 }: Props) {
   const router = useRouter();
   const isLoadingFeedback = feedbackStatus === "loading";
@@ -541,13 +545,40 @@ export function ScriptsPanel({
             )}
           </>
         )}
+
         {hasSelectedRemix &&
-          ((remixType === "blockcode" && !isEmpty) || remixType === "raw") && (
-            <Modal state={feedbackModal}>
-              <Button size="sm" onPress={handleOpenFeedback}>
+          !isEmpty &&
+          remixType === "blockcode" &&
+          !canUseAIFeedback && (
+            <div className="flex items-center gap-1">
+              <Button size="sm" isDisabled>
                 <SparklesIcon className="h-4 w-4" />
                 AI Feedback
               </Button>
+              <Tooltip delay={0}>
+                <Tooltip.Trigger>
+                  <InformationCircleIcon className="h-4 w-4 text-gray-400 cursor-pointer" />
+                </Tooltip.Trigger>
+                <Tooltip.Content>
+                  {isLoggedIn
+                    ? "You need to be a Collaborator to use AI Feedback."
+                    : "You need to be signed in to use AI Feedback."}
+                </Tooltip.Content>
+              </Tooltip>
+            </div>
+          )}
+
+        {hasSelectedRemix &&
+          !isEmpty &&
+          remixType === "blockcode" &&
+          canUseAIFeedback && (
+            <Modal>
+              <Modal.Trigger>
+                <Button size="sm">
+                  <SparklesIcon className="h-4 w-4" />
+                  AI Feedback
+                </Button>
+              </Modal.Trigger>
               <Modal.Backdrop>
                 <Modal.Container size="lg">
                   <Modal.Dialog>
@@ -688,52 +719,43 @@ export function ScriptsPanel({
                       )}
                     </Modal.Body>
                     <Modal.Footer className="flex justify-between items-center">
-                      <div className="flex items-center gap-2">
-                        <Button
-                          onPress={async () => {
-                            if (hasUnsavedChanges) {
-                              await handleSaveCode();
-                            }
-                            onGetFeedback();
-                          }}
-                          isDisabled={isLoadingFeedback}
-                        >
-                          {isLoadingFeedback && (
-                            <Spinner size="sm" color="current" />
-                          )}
-                          {!isLoadingFeedback && (
-                            <SparklesIcon className="h-4 w-4" />
-                          )}
-                          {isLoadingFeedback
-                            ? "Analyzing..."
-                            : feedbackTimestamp
-                              ? "Regenerate Feedback"
+                      {feedbackTimestamp ? (
+                        <p className="text-xs text-gray-400">
+                          Generated at {feedbackTimestamp}
+                        </p>
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          <Button
+                            onPress={onGetFeedback}
+                            isDisabled={isLoadingFeedback}
+                          >
+                            {isLoadingFeedback && (
+                              <Spinner size="sm" color="current" />
+                            )}
+                            {!isLoadingFeedback && (
+                              <SparklesIcon className="h-4 w-4" />
+                            )}
+                            {isLoadingFeedback
+                              ? "Analyzing..."
                               : "Get Feedback"}
-                        </Button>
-
-                        <Popover>
-                          <Popover.Trigger>
-                            <InformationCircleIcon className="h-4 w-4 text-gray-400 cursor-pointer" />
-                          </Popover.Trigger>
-                          <Popover.Content className="mt-2">
-                            <Popover.Arrow />
-                            <Popover.Dialog>
-                              <p className="text-xs max-w-56">
-                                Analyzes this remix&apos;s code and provides
-                                suggestions for improvement, highlights what it
-                                does well, and flags any logic issues.
-                              </p>
-                            </Popover.Dialog>
-                          </Popover.Content>
-                        </Popover>
-
-                        {feedbackTimestamp && (
-                          <span className="ml-2 text-xs text-gray-400">
-                            Generated at {feedbackTimestamp}
-                          </span>
-                        )}
-                      </div>
-
+                          </Button>
+                          <Popover>
+                            <Popover.Trigger>
+                              <InformationCircleIcon className="h-4 w-4 text-gray-400 cursor-pointer" />
+                            </Popover.Trigger>
+                            <Popover.Content className="mt-2">
+                              <Popover.Arrow />
+                              <Popover.Dialog>
+                                <p className="text-xs max-w-56">
+                                  Analyzes this remix&apos;s code and provides
+                                  suggestions for improvement, highlights what
+                                  it does well, and flags any logic issues.
+                                </p>
+                              </Popover.Dialog>
+                            </Popover.Content>
+                          </Popover>
+                        </div>
+                      )}
                       <Button slot="close" variant="outline">
                         Close
                       </Button>
@@ -890,7 +912,7 @@ export function ScriptsPanel({
               </ComboBox.Popover>
             </ComboBox>
           </div>
-          <div className="columns-xs gap-3 p-3">
+          <div className="columns-1 sm:columns-2 lg:columns-3 gap-3 p-3">
             {targetScripts.map((script) => (
               <div key={script.hatBlockId} className="break-inside-avoid mb-3">
                 <ScriptStack script={script} />

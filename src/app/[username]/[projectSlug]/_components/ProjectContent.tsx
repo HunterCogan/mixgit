@@ -403,6 +403,8 @@ export function ProjectContent({
               selectedRemix !== null &&
               (userId === creatorId || userId === selectedRemix.uploaderId)
             }
+            isLoggedIn={!!userId}
+            canUseAIFeedback={isCollaborator}
           />
         </div>
         {selectedRemix && (
