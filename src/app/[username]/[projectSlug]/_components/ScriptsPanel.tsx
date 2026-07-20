@@ -285,33 +285,39 @@ export function ScriptsPanel({
             {savedSuccessfully && (
               <p className="text-xs text-green-500">Saved!</p>
             )}
-            <ComboBox
-              aria-label="Select file"
-              variant="secondary"
-              className="w-fit"
-              value={selectedFileName}
-              onChange={(key) => {
-                if (key) onSelectFile(String(key));
-              }}
-            >
-              <ComboBox.InputGroup>
-                <Input
-                  placeholder="Search files..."
-                  className="h-9 py-0 md:h-8"
-                />
-                <ComboBox.Trigger />
-              </ComboBox.InputGroup>
-              <ComboBox.Popover>
-                <ListBox>
-                  {logicFiles.map((f) => (
-                    <ListBox.Item key={f.name} id={f.name} textValue={f.name}>
-                      <Label>{f.name}</Label>
-                      <ListBox.ItemIndicator />
-                    </ListBox.Item>
-                  ))}
-                </ListBox>
-              </ComboBox.Popover>
-            </ComboBox>
+          </>
+        )}
+        {remixType === "raw" && (
+          <ComboBox
+            aria-label="Select file"
+            variant="secondary"
+            className="w-fit"
+            value={selectedFileName}
+            onChange={(key) => {
+              if (key) onSelectFile(String(key));
+            }}
+          >
+            <ComboBox.InputGroup>
+              <Input
+                placeholder="Search files..."
+                className="h-9 py-0 md:h-8"
+              />
+              <ComboBox.Trigger />
+            </ComboBox.InputGroup>
+            <ComboBox.Popover>
+              <ListBox>
+                {logicFiles.map((f) => (
+                  <ListBox.Item key={f.name} id={f.name} textValue={f.name}>
+                    <Label>{f.name}</Label>
+                    <ListBox.ItemIndicator />
+                  </ListBox.Item>
+                ))}
+              </ListBox>
+            </ComboBox.Popover>
+          </ComboBox>
+        )}
+        {remixType === "raw" && canEdit && (
+          <>
             <Modal state={addFileState}>
               <Tooltip delay={0}>
                 <Tooltip.Trigger>
