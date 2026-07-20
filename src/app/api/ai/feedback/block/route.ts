@@ -202,7 +202,6 @@ export async function POST(req: NextRequest) {
       remixId,
       remixName: remix.name,
       model: "claude-sonnet-4-6",
-      pseudocode,
       analysis,
       feedback: null,
       stopReason: message.stop_reason,
@@ -216,6 +215,22 @@ export async function POST(req: NextRequest) {
 
   if (!result.success) {
     console.error("submit_feedback input failed validation:", result.error);
+    await logFeedback({
+      remixId,
+      remixName: remix.name,
+      model: "claude-sonnet-5",
+      analysis,
+      feedback: null,
+      toolCall: {
+        id: toolUse.id,
+        name: toolUse.name,
+        input: toolUse.input,
+      },
+      validationError: result.error.issues,
+      stopReason: message.stop_reason,
+      usage: message.usage,
+      latencyMs: Date.now() - started,
+    });
     return NextResponse.json(
       { error: "Failed to generate feedback" },
       { status: 502 },
@@ -231,11 +246,8 @@ export async function POST(req: NextRequest) {
   await logFeedback({
     remixId,
     remixName: remix.name,
-    model: "claude-sonnet-4-6",
-    pseudocode,
-    analysis,
+    model: "claude-sonnet-5",
     feedback,
-    stopReason: message.stop_reason,
     usage: message.usage,
     latencyMs: Date.now() - started,
   });
