@@ -124,9 +124,6 @@ export function insertBlock(
   return id;
 }
 
-/**
- * Extracts the block ids referenced by a single input value.
- */
 function inputBlockIds(value: unknown): string[] {
   if (!Array.isArray(value)) return [];
   const ids: string[] = [];
@@ -136,11 +133,6 @@ function inputBlockIds(value: unknown): string[] {
   return ids;
 }
 
-/**
- * Extracts the shadow fallback (a primitive like `[10, ""]` or a shadow block
- * id) from an existing input value, so a reporter dropped into the slot can keep
- * the original default. Returns `null` when there is no reusable shadow.
- */
 function shadowFallback(value: unknown): unknown | null {
   if (!Array.isArray(value)) return null;
   // [1, [4, "10"]] — a literal shadow primitive lives at index 1.
@@ -152,8 +144,6 @@ function shadowFallback(value: unknown): unknown | null {
 
 /**
  * Repoints (or removes) the input slot in `inputs` that references `oldId`.
- * Used when healing a stack after a block is deleted: a substack head is
- * repointed to the next block, or the slot is dropped when nothing follows.
  */
 function replaceInputRef(
   inputs: ProjectBlock["inputs"],
@@ -211,7 +201,7 @@ export function deleteBlock(blocks: ProjectBlockMap, id: string): void {
   const parentId = block.parent;
   const nextId = block.next;
 
-  // Heal the surrounding stack: reconnect the following block to the parent.
+  // Reconnect the following block to the parent.
   if (parentId && blocks[parentId]) {
     const parent = blocks[parentId];
     if (parent.next === id) {
@@ -225,8 +215,7 @@ export function deleteBlock(blocks: ProjectBlockMap, id: string): void {
     blocks[nextId].parent = parentId;
   }
 
-  // Remove the block plus everything it owns via its inputs. The `next` sibling
-  // was healed above, so it is intentionally excluded here.
+  // Remove the block and everything it owns via its inputs.
   for (const value of Object.values(block.inputs)) {
     for (const childId of inputBlockIds(value)) {
       deleteOwnedChain(blocks, childId);
