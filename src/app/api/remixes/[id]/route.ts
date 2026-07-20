@@ -58,6 +58,12 @@ export async function PATCH(
     logicFile.data = code;
     await remix.save();
 
+    console.log("========== PATCH ==========");
+    console.log("Remix:", remix._id.toString());
+    console.log("File:", fileName);
+    console.log("Saved code:");
+    console.log(logicFile.data);
+
     return NextResponse.json({ success: true }, { status: 200 });
   } catch (error) {
     console.error("Update remix error:", error);
