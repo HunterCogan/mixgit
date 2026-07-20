@@ -247,9 +247,7 @@ export async function POST(req: NextRequest) {
     remixId,
     remixName: remix.name,
     model: "claude-sonnet-4-6",
-    analysis,
     feedback,
-    stopReason: message.stop_reason,
     usage: message.usage,
     latencyMs: Date.now() - started,
   });

@@ -165,12 +165,6 @@ function replaceInputRef(
   }
 }
 
-/**
- * Deletes a block and everything it owns through its inputs — its shadow
- * blocks, nested reporters, and substack bodies — following each owned block's
- * `next` chain so whole branches are removed. The starting block's own `next`
- * sibling is NOT followed; callers heal that link separately.
- */
 function deleteOwnedChain(blocks: ProjectBlockMap, id: string): void {
   let current: string | null = id;
   while (current && blocks[current]) {
