@@ -175,9 +175,11 @@ export function ProjectContent({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           remixId: selectedRemix.id,
+          fileName: selectedFileName,
         }),
       });
       const data = await res.json();
+
       if (!res.ok) {
         setFeedbackError(
           data.error ??

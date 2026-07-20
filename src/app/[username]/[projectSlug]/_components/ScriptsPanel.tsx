@@ -111,16 +111,6 @@ export function ScriptsPanel({
   const hasUnsavedChanges = currentCode !== raw;
   const feedbackModal = useOverlayState();
 
-  async function handleOpenFeedback() {
-    feedbackModal.open();
-
-    if (hasUnsavedChanges) {
-      await handleSaveCode();
-    }
-
-    await onGetFeedback();
-  }
-
   function setCurrentCode(value: string) {
     setEdits((prev) => ({ ...prev, [selectedFileName]: value }));
   }
@@ -572,7 +562,7 @@ export function ScriptsPanel({
           !isEmpty &&
           remixType === "blockcode" &&
           canUseAIFeedback && (
-            <Modal>
+            <Modal state={feedbackModal}>
               <Modal.Trigger>
                 <Button size="sm">
                   <SparklesIcon className="h-4 w-4" />
@@ -726,7 +716,13 @@ export function ScriptsPanel({
                       ) : (
                         <div className="flex items-center gap-2">
                           <Button
-                            onPress={onGetFeedback}
+                            onPress={async () => {
+                              if (hasUnsavedChanges) {
+                                await handleSaveCode();
+                              }
+
+                              await onGetFeedback();
+                            }}
                             isDisabled={isLoadingFeedback}
                           >
                             {isLoadingFeedback && (
@@ -765,6 +761,159 @@ export function ScriptsPanel({
               </Modal.Backdrop>
             </Modal>
           )}
+        {hasSelectedRemix && remixType === "raw" && canUseAIFeedback && (
+          <Modal>
+            <Button
+              size="sm"
+              onPress={() => {
+                feedbackModal.open();
+              }}
+            >
+              <SparklesIcon className="h-4 w-4" />
+              AI Feedback
+            </Button>
+
+            <Modal.Backdrop>
+              <Modal.Container size="lg">
+                <Modal.Dialog>
+                  <Modal.CloseTrigger className="m-2" />
+
+                  <Modal.Header>
+                    <Modal.Heading className="text-2xl">
+                      AI Feedback
+                    </Modal.Heading>
+                  </Modal.Header>
+
+                  <Separator className="my-4" />
+
+                  <Modal.Body className="flex flex-col gap-3">
+                    {feedbackStatus === "error" && feedbackError && (
+                      <ErrorMessage>{feedbackError}</ErrorMessage>
+                    )}
+
+                    {feedbackStatus === "empty" && (
+                      <Card variant="secondary">
+                        <Card.Content>
+                          <p className="text-sm">
+                            There&apos;s nothing to review yet.
+                          </p>
+                        </Card.Content>
+                      </Card>
+                    )}
+
+                    {feedbackStatus === "ready" && aiFeedback && (
+                      <Card variant="secondary">
+                        <Card.Content className="overflow-auto">
+                          <div>
+                            <h4 className="text-base font-semibold">
+                              What Works Well
+                            </h4>
+
+                            <div className="text-sm prose prose-code:before:content-none prose-code:after:content-none">
+                              <ReactMarkdown>
+                                {aiFeedback.what_works_well}
+                              </ReactMarkdown>
+                            </div>
+
+                            <h4 className="text-base font-semibold mt-4">
+                              Suggestions
+                            </h4>
+
+                            <DisclosureGroup>
+                              {aiFeedback.suggestions.map((suggestion, i) => (
+                                <Disclosure key={i}>
+                                  <Disclosure.Heading>
+                                    <Button
+                                      slot="trigger"
+                                      variant="secondary"
+                                      fullWidth
+                                    >
+                                      {suggestion.title}
+                                    </Button>
+                                  </Disclosure.Heading>
+
+                                  <Disclosure.Content>
+                                    <Disclosure.Body>
+                                      <ReactMarkdown>
+                                        {suggestion.detail}
+                                      </ReactMarkdown>
+                                    </Disclosure.Body>
+                                  </Disclosure.Content>
+                                </Disclosure>
+                              ))}
+
+                              {aiFeedback.logic_issues.map((issue, i) => (
+                                <Disclosure key={i}>
+                                  <Disclosure.Heading>
+                                    <Button
+                                      slot="trigger"
+                                      variant="secondary"
+                                      fullWidth
+                                    >
+                                      {issue.title}
+                                    </Button>
+                                  </Disclosure.Heading>
+
+                                  <Disclosure.Content>
+                                    <Disclosure.Body>
+                                      <ReactMarkdown>
+                                        {issue.detail}
+                                      </ReactMarkdown>
+                                    </Disclosure.Body>
+                                  </Disclosure.Content>
+                                </Disclosure>
+                              ))}
+                            </DisclosureGroup>
+                          </div>
+                        </Card.Content>
+                      </Card>
+                    )}
+                  </Modal.Body>
+
+                  <Modal.Footer className="flex justify-between items-center">
+                    <div className="flex items-center gap-3">
+                      <Button
+                        onPress={async () => {
+                          if (hasUnsavedChanges) {
+                            await handleSaveCode();
+                          }
+
+                          await onGetFeedback();
+                        }}
+                        isDisabled={isLoadingFeedback}
+                      >
+                        {isLoadingFeedback && (
+                          <Spinner size="sm" color="current" />
+                        )}
+                        {!isLoadingFeedback && (
+                          <SparklesIcon className="h-4 w-4" />
+                        )}
+
+                        {feedbackTimestamp
+                          ? isLoadingFeedback
+                            ? "Regenerating..."
+                            : "Regenerate Feedback"
+                          : isLoadingFeedback
+                            ? "Generating..."
+                            : "Generate AI Feedback"}
+                      </Button>
+
+                      {feedbackTimestamp && (
+                        <p className="text-xs text-gray-400">
+                          Generated at {feedbackTimestamp}
+                        </p>
+                      )}
+                    </div>
+
+                    <Button slot="close" variant="outline">
+                      Close
+                    </Button>
+                  </Modal.Footer>
+                </Modal.Dialog>
+              </Modal.Container>
+            </Modal.Backdrop>
+          </Modal>
+        )}
         <ToggleButton
           isSelected={isEmpty || isRawToggled}
           onChange={setIsRawToggled}

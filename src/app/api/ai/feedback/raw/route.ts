@@ -88,7 +88,7 @@ export async function POST(req: NextRequest) {
 
   // projectJsonData can be very large to send over the network,
   // instead, user can send Remix id and we query from DB
-  const { remixId } = await req.json();
+  const { remixId, fileName } = await req.json();
 
   if (!remixId) {
     return NextResponse.json(
@@ -111,13 +111,16 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const logicFile = remix.files.find((f) => f.fileType === "logic");
+  const logicFile = remix.files.find(
+    (f) => f.fileType === "logic" && f.name === fileName,
+  );
 
   if (!logicFile) {
     return NextResponse.json({ error: "No code file found" }, { status: 400 });
   }
 
   const code = logicFile.data ?? "";
+
   const language = fileNameToLanguage(logicFile.name);
 
   const started = Date.now();
