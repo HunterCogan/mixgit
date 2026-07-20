@@ -246,7 +246,7 @@ export async function POST(req: NextRequest) {
   await logFeedback({
     remixId,
     remixName: remix.name,
-    model: "claude-sonnet-4-6",
+    model: "claude-sonnet-5",
     feedback,
     usage: message.usage,
     latencyMs: Date.now() - started,
