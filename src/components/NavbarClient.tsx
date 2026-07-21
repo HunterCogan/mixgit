@@ -67,7 +67,7 @@ export default function NavbarClient({
       </Link>
       <Link
         href="/achievements"
-        className={`flex items-center justify-between px-2 py-2 md-2 rounded-md text-sm font-medium transition-colors ${
+        className={`flex items-center justify-between px-2 py-2 mb-4 rounded-md text-sm font-medium transition-colors ${
           pathname === "/achievements"
             ? "bg-nav-item-active text-nav-text"
             : "text-nav-text hover:bg-nav-item-hover hover:text-nav-text"
