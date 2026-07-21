@@ -11,7 +11,6 @@ type AnthropicUsage = {
   output_tokens_details?: { thinking_tokens?: number };
 };
 
-/** Keep only the token counts we actually read; drop the all-zero noise. */
 function slimUsage(usage: AnthropicUsage) {
   return {
     in: usage.input_tokens,

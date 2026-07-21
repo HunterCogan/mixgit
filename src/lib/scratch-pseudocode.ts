@@ -287,7 +287,6 @@ function collectPseudocodeLines(
     lines.push({ text: "" });
   }
 
-  // Drop trailing empty line to match prior trim() behavior for plain text.
   while (lines.length > 0 && lines[lines.length - 1].text === "") {
     lines.pop();
   }
