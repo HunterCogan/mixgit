@@ -17,22 +17,37 @@ type SharedProject = {
   slug: string;
 };
 
+type Achievement = {
+  id: string;
+  name: string;
+  description: string;
+  progress: number;
+  completed: boolean;
+  unlockedAt?: string;
+  points: number;
+};
+
 export default function NavbarClient({
   projects,
   username,
   sharedProjects,
+  achievements,
 }: {
   projects: Project[];
   username: string;
   sharedProjects: SharedProject[];
+  achievements: Achievement[];
 }) {
   const pathname = usePathname();
+
+  const completedCount = achievements.filter((a) => a.completed).length;
+  const totalCount = achievements.length;
 
   return (
     <nav className="flex flex-col p-3 h-full">
       <Link
         href="/dashboard"
-        className={`px-3 py-2 mb-2 rounded-md text-sm font-medium transition-colors ${
+        className={`px-2 py-2 mb-2 rounded-md text-sm font-medium transition-colors ${
           pathname === "/dashboard"
             ? "bg-nav-item-active text-nav-text"
             : "text-nav-text hover:bg-nav-item-hover hover:text-nav-text"
@@ -42,13 +57,28 @@ export default function NavbarClient({
       </Link>
       <Link
         href="/shared-projects"
-        className={`px-3 py-2 mb-2 rounded-md text-sm font-medium transition-colors ${
+        className={`px-2 py-2 mb-2 rounded-md text-sm font-medium transition-colors ${
           pathname === "/shared-projects"
             ? "bg-nav-item-active text-nav-text"
             : "text-nav-text hover:bg-nav-item-hover hover:text-nav-text"
         }`}
       >
         Shared Projects
+      </Link>
+      <Link
+        href="/achievements"
+        className={`flex items-center justify-between px-2 py-2 mb-4 rounded-md text-sm font-medium transition-colors ${
+          pathname === "/achievements"
+            ? "bg-nav-item-active text-nav-text"
+            : "text-nav-text hover:bg-nav-item-hover hover:text-nav-text"
+        }`}
+      >
+        Achievements
+        {totalCount > 0 && (
+          <span className="text-xs font-semibold text-nav-text-subtle">
+            {completedCount}/{totalCount}
+          </span>
+        )}
       </Link>
 
       {projects.length > 0 && (
@@ -92,7 +122,6 @@ export default function NavbarClient({
           ))}
         </div>
       )}
-
       <div className="flex-1" />
     </nav>
   );

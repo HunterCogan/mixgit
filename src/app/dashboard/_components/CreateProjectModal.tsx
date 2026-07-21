@@ -12,10 +12,10 @@ import {
   Label,
   Modal,
   Spinner,
-  Switch,
   TextArea,
   TextField,
   useOverlayState,
+  toast,
 } from "@heroui/react";
 import { ProjectSchema } from "@/lib/schemas/project.zod";
 import { generateSlug } from "@/lib/slugify";
@@ -75,6 +75,17 @@ export default function CreateProjectModal() {
       });
 
       if (res.ok) {
+        const data = await res.json();
+
+        const unlockedAchievements: { achievementName: string }[] =
+          data.unlockedAchievements ?? [];
+
+        for (const achievement of unlockedAchievements) {
+          toast.success("Achievement unlocked!", {
+            description: achievement.achievementName,
+          });
+        }
+
         setName("");
         setDescription("");
         setSubmitted(false);

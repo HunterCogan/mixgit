@@ -16,6 +16,7 @@ import {
   TextField,
   Tooltip,
   useOverlayState,
+  toast,
 } from "@heroui/react";
 import { FileNameSchema, RemixSchema } from "@/lib/schemas/remix.zod";
 import { fileNameToLanguage, languageDisplayName } from "@/lib/language";
@@ -55,11 +56,21 @@ export default function CreateRawRemixModal({
 
       if (res.ok) {
         const data = await res.json();
-        state.close();
+
+        const unlockedAchievements: { achievementName: string }[] =
+          data.unlockedAchievements ?? [];
+
+        for (const achievement of unlockedAchievements) {
+          toast.success("Achievement unlocked!", {
+            description: achievement.achievementName,
+          });
+        }
+
         setName("");
         setDescription("");
         setFileName("");
         setSubmitted(false);
+        state.close();
         router.refresh();
         onCreated?.(data.remix._id);
       } else {
