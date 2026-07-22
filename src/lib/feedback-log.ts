@@ -4,6 +4,8 @@ import path from "path";
 const LOG_DIR = path.join(process.cwd(), "logs");
 const LOG_FILE = path.join(LOG_DIR, "feedback.jsonl");
 
+const DEFAULT_MODEL = "claude-sonnet-5";
+
 type AnthropicUsage = {
   input_tokens?: number;
   output_tokens?: number;
@@ -11,6 +13,7 @@ type AnthropicUsage = {
   output_tokens_details?: { thinking_tokens?: number };
 };
 
+/** Keep only the token counts we actually read; drop the all-zero noise. */
 function slimUsage(usage: AnthropicUsage) {
   return {
     in: usage.input_tokens,
@@ -20,6 +23,10 @@ function slimUsage(usage: AnthropicUsage) {
   };
 }
 
+/**
+ * Low-level JSONL append. Prefer {@link logAiEvent} from AI routes so the
+ * common remix/model/latency envelope stays consistent.
+ */
 export async function logFeedback(
   entry: Record<string, unknown>,
 ): Promise<void> {
@@ -38,4 +45,41 @@ export async function logFeedback(
   } catch (err) {
     console.error("Feedback log failed:", err);
   }
+}
+
+export type LogAiEventArgs = {
+  kind: "feedback" | "generate";
+  remixId: string;
+  remixName: string;
+  /** Wall-clock start from `Date.now()` at the beginning of the AI call. */
+  started: number;
+  model?: string;
+  usage?: unknown;
+  stopReason?: string | null;
+} & Record<string, unknown>;
+
+/**
+ * Logs one AI interaction with the shared envelope fields filled in.
+ * Route-specific fields (feedback, toolTrace, outcome, …) go in the rest args.
+ */
+export async function logAiEvent({
+  kind,
+  remixId,
+  remixName,
+  started,
+  model = DEFAULT_MODEL,
+  usage,
+  stopReason,
+  ...extra
+}: LogAiEventArgs): Promise<void> {
+  await logFeedback({
+    kind,
+    remixId,
+    remixName,
+    model,
+    ...(usage !== undefined ? { usage } : {}),
+    ...(stopReason !== undefined ? { stopReason } : {}),
+    latencyMs: Date.now() - started,
+    ...extra,
+  });
 }

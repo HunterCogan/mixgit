@@ -73,20 +73,20 @@ export const InsertBlockToolSchema = z.object({
     .nullable()
     .optional()
     .describe(
-      "Pseudocode line of the block whose input slot to fill. Use to nest a reporter/boolean into an existing block's slot. Requires inputName.",
+      "Pseudocode line of the block whose input slot to fill. Use for reporters/booleans AND for C-block bodies (SUBSTACK). Requires inputName.",
     ),
   intoId: z
     .string()
     .nullable()
     .optional()
     .describe(
-      "Id returned by a previous insert_block whose input slot to fill. Use to nest a reporter into a block you just created. Requires inputName.",
+      "Id returned by a previous insert_block whose input slot to fill. Use for reporters/booleans AND for putting the first statement inside a C-block mouth (inputName SUBSTACK). Requires inputName.",
     ),
   inputName: z
     .string()
     .optional()
     .describe(
-      'Name of the input slot to fill when using intoLine/intoId, e.g. "CONDITION", "OPERAND1", "VALUE".',
+      'Name of the input slot when using intoLine/intoId, e.g. "CONDITION", "OPERAND1", "SUBSTACK", "SUBSTACK2".',
     ),
   shadow: z
     .json()
