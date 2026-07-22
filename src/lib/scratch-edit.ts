@@ -25,6 +25,8 @@ export type BlockDef = {
   inputs?: ProjectBlock["inputs"];
   fields?: ProjectBlock["fields"];
   mutation?: ProjectBlock["mutation"];
+  /** True for menu/dropdown shadow blocks (e.g. sensing_touchingobjectmenu). */
+  shadow?: boolean;
 };
 
 export type InsertBlockOpts = {
@@ -67,7 +69,7 @@ export function insertBlock(
     parent: null,
     inputs: blockDef.inputs || {},
     fields: blockDef.fields || {},
-    shadow: false,
+    shadow: blockDef.shadow ?? false,
     topLevel: false,
     ...(blockDef.mutation ? { mutation: blockDef.mutation } : {}),
   };
@@ -82,6 +84,13 @@ export function insertBlock(
     }
     block.parent = into.parentId;
     block.topLevel = false;
+
+    // Menu/dropdown shadows use input mode 1 (same as a literal shadow block id).
+    if (block.shadow) {
+      parent.inputs[into.inputName] = [1, id];
+      blocks[id] = block;
+      return id;
+    }
 
     const explicitShadow = into.shadow ?? null;
     const shadow =

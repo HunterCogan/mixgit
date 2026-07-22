@@ -261,6 +261,35 @@ describe("insertBlock intoInput", () => {
     expect(blocks[id].topLevel).toBe(false);
   });
 
+  it("nests a menu shadow block with input mode 1", () => {
+    const blocks: ProjectBlockMap = {
+      touch: {
+        opcode: "sensing_touchingobject",
+        next: null,
+        parent: "if",
+        inputs: {},
+        fields: {},
+        shadow: false,
+        topLevel: false,
+      },
+    };
+
+    const id = insertBlock(
+      blocks,
+      {
+        opcode: "sensing_touchingobjectmenu",
+        fields: { TOUCHINGOBJECTMENU: ["Ben", null] },
+        shadow: true,
+      },
+      { intoInput: { parentId: "touch", inputName: "TOUCHINGOBJECTMENU" } },
+    );
+
+    expect(blocks.touch.inputs.TOUCHINGOBJECTMENU).toEqual([1, id]);
+    expect(blocks[id].shadow).toBe(true);
+    expect(blocks[id].parent).toBe("touch");
+    expect(blocks[id].fields).toEqual({ TOUCHINGOBJECTMENU: ["Ben", null] });
+  });
+
   it("nests a value reporter with a shadow fallback", () => {
     const blocks: ProjectBlockMap = {
       set: {

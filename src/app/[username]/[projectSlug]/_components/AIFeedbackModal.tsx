@@ -32,7 +32,6 @@ interface Props {
   feedbackTimestamp: string | null;
   isLoggedIn: boolean;
   canUseAIFeedback: boolean;
-  remixType: "blockcode" | "raw";
 }
 
 export function AIFeedbackModal({
@@ -46,7 +45,6 @@ export function AIFeedbackModal({
   feedbackTimestamp,
   isLoggedIn,
   canUseAIFeedback,
-  remixType,
 }: Props) {
   const isLoadingFeedback = feedbackStatus === "loading";
 
@@ -166,7 +164,6 @@ export function AIFeedbackModal({
                                       <div className="flex flex-col items-center">
                                         <Button
                                           className="mt-2"
-                                          isDisabled={remixType === "blockcode"}
                                           onPress={() =>
                                             handleGenerateRemix(issue)
                                           }
@@ -212,7 +209,6 @@ export function AIFeedbackModal({
                                       <div className="flex flex-col items-center">
                                         <Button
                                           className="mt-2"
-                                          isDisabled={remixType === "blockcode"}
                                           onPress={() =>
                                             handleGenerateRemix(suggestion)
                                           }

@@ -543,7 +543,6 @@ export function ScriptsPanel({
             feedbackTimestamp={feedbackTimestamp}
             isLoggedIn={isLoggedIn}
             canUseAIFeedback={canUseAIFeedback}
-            remixType={remixType}
           />
         )}
         <ToggleButton

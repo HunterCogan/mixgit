@@ -4,6 +4,8 @@ import path from "path";
 const LOG_DIR = path.join(process.cwd(), "logs");
 const LOG_FILE = path.join(LOG_DIR, "feedback.jsonl");
 
+const DEFAULT_MODEL = "claude-sonnet-5";
+
 type AnthropicUsage = {
   input_tokens?: number;
   output_tokens?: number;
@@ -11,7 +13,6 @@ type AnthropicUsage = {
   output_tokens_details?: { thinking_tokens?: number };
 };
 
-/** Keep only the token counts we actually read; drop the all-zero noise. */
 function slimUsage(usage: AnthropicUsage) {
   return {
     in: usage.input_tokens,
@@ -39,4 +40,36 @@ export async function logFeedback(
   } catch (err) {
     console.error("Feedback log failed:", err);
   }
+}
+
+export type LogAiEventArgs = {
+  kind: "feedback" | "generate";
+  remixId: string;
+  remixName: string;
+  started: number;
+  model?: string;
+  usage?: unknown;
+  stopReason?: string | null;
+} & Record<string, unknown>;
+
+export async function logAiEvent({
+  kind,
+  remixId,
+  remixName,
+  started,
+  model = DEFAULT_MODEL,
+  usage,
+  stopReason,
+  ...extra
+}: LogAiEventArgs): Promise<void> {
+  await logFeedback({
+    kind,
+    remixId,
+    remixName,
+    model,
+    ...(usage !== undefined ? { usage } : {}),
+    ...(stopReason !== undefined ? { stopReason } : {}),
+    latencyMs: Date.now() - started,
+    ...extra,
+  });
 }
