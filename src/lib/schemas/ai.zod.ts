@@ -50,6 +50,12 @@ export const InsertBlockToolSchema = z.object({
       'Scratch fields, e.g. { "VARIABLE": ["score", "varId"] }. Omit or {} if none.',
     ),
   mutation: z.json().optional().describe("Optional procedure mutation object."),
+  isShadow: z
+    .boolean()
+    .optional()
+    .describe(
+      "Set true when inserting a menu/dropdown shadow block (opcodes ending in `menu`, e.g. sensing_touchingobjectmenu). Wires the parent input as [1, id] and marks the block shadow:true.",
+    ),
   afterLine: z
     .number()
     .int()

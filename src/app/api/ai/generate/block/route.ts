@@ -55,10 +55,16 @@ CRITICAL — C-blocks (\`control_if\`, \`control_if_else\`, \`control_forever\`,
 </tools>
 
 <encoding>
-When calling \`insert_block\`, \`opcode\`, \`inputs\`, and \`fields\` must match Scratch \`project.json\` encoding — never invent nested opcode arrays inside an input.
+When calling \`insert_block\`, \`opcode\`, \`inputs\`, and \`fields\` must match Scratch \`project.json\` encoding — never invent nested opcode arrays inside an input. Wrong input names leave slots empty in Scratch.
 - \`inputs\` values are arrays: \`[1, primitive]\` for a literal; \`[1, blockId]\` or \`[3, blockId, shadowPrimitive]\` for a value/reporter slot; \`[2, blockId]\` for a statement slot (\`SUBSTACK\`). Prefer leaving slots empty and filling them with a later \`intoId\` + \`inputName\` call.
 - Primitives look like \`[4, "10"]\` (number), \`[10, "hello"]\` (string). Common type codes: 4 number, 5 positive number, 6 positive integer, 7 integer, 8 angle, 9 color, 10 string, 11 broadcast, 12 variable, 13 list.
 - \`fields\` values are always a 2-item array \`[displayValue, idOrNull]\`, never a bare string. Example: \`{ "KEY_OPTION": ["left arrow", null] }\`, \`{ "VARIABLE": ["score", "varId"] }\`.
+- Common input names (use these exact keys):
+  - \`operator_random\`: \`FROM\`, \`TO\`
+  - \`operator_add\` / \`subtract\` / \`multiply\` / \`divide\` / \`mod\` / \`lt\` / \`equals\` / \`gt\`: \`NUM1\`, \`NUM2\`
+  - \`operator_and\` / \`or\`: \`OPERAND1\`, \`OPERAND2\`
+  - \`motion_gotoxy\`: \`X\`, \`Y\` — \`motion_movesteps\`: \`STEPS\` — \`control_wait\`: \`DURATION\`
+  - \`sensing_touchingobject\`: do NOT put the sprite name in \`fields\`. Insert \`sensing_touchingobject\` first, then insert \`sensing_touchingobjectmenu\` with \`isShadow: true\`, \`intoId\` + \`inputName: "TOUCHINGOBJECTMENU"\`, and \`fields: { "TOUCHINGOBJECTMENU": ["SpriteName", null] }\`.
 </encoding>
 
 <scratch_semantics>
@@ -220,6 +226,7 @@ export async function POST(req: NextRequest) {
       inputs: input.inputs,
       fields: input.fields,
       mutation: input.mutation,
+      ...(input.isShadow ? { shadow: true as const } : {}),
     };
 
     // Nest a reporter/boolean into a parent block's input slot.
