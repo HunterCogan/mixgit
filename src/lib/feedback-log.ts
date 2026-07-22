@@ -13,7 +13,6 @@ type AnthropicUsage = {
   output_tokens_details?: { thinking_tokens?: number };
 };
 
-/** Keep only the token counts we actually read; drop the all-zero noise. */
 function slimUsage(usage: AnthropicUsage) {
   return {
     in: usage.input_tokens,
@@ -23,10 +22,6 @@ function slimUsage(usage: AnthropicUsage) {
   };
 }
 
-/**
- * Low-level JSONL append. Prefer {@link logAiEvent} from AI routes so the
- * common remix/model/latency envelope stays consistent.
- */
 export async function logFeedback(
   entry: Record<string, unknown>,
 ): Promise<void> {
@@ -51,17 +46,12 @@ export type LogAiEventArgs = {
   kind: "feedback" | "generate";
   remixId: string;
   remixName: string;
-  /** Wall-clock start from `Date.now()` at the beginning of the AI call. */
   started: number;
   model?: string;
   usage?: unknown;
   stopReason?: string | null;
 } & Record<string, unknown>;
 
-/**
- * Logs one AI interaction with the shared envelope fields filled in.
- * Route-specific fields (feedback, toolTrace, outcome, …) go in the rest args.
- */
 export async function logAiEvent({
   kind,
   remixId,
