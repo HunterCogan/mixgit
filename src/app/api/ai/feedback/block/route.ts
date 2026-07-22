@@ -13,7 +13,7 @@ import { rawToPseudocode } from "@/lib/scratch-pseudocode";
 import connectDB from "@/lib/db";
 import RemixModel from "@/models/Remix";
 import ProjectModel from "@/models/Project";
-import { logFeedback } from "@/lib/feedback-log";
+import { logAiEvent } from "@/lib/feedback-log";
 
 const FEEDBACK_SYSTEM = `You are an expert Scratch mentor for young learners (5th–8th grade). You give constructive, friendly, encouraging feedback on remixes. Keep sentences short and the language simple. Only use markdown for code references — wrap block names in backticks, e.g. \`move (10) steps\`.
 
@@ -192,15 +192,15 @@ export async function POST(req: NextRequest) {
 
   // If there's no tool call, it means the model judged there was nothing to review.
   if (!toolUse) {
-    await logFeedback({
+    await logAiEvent({
+      kind: "feedback",
       remixId,
       remixName: remix.name,
-      model: "claude-sonnet-4-6",
+      started,
       analysis,
       feedback: null,
       stopReason: message.stop_reason,
       usage: message.usage,
-      latencyMs: Date.now() - started,
     });
     return NextResponse.json({ feedback: null });
   }
@@ -209,10 +209,11 @@ export async function POST(req: NextRequest) {
 
   if (!result.success) {
     console.error("submit_feedback input failed validation:", result.error);
-    await logFeedback({
+    await logAiEvent({
+      kind: "feedback",
       remixId,
       remixName: remix.name,
-      model: "claude-sonnet-5",
+      started,
       analysis,
       feedback: null,
       toolCall: {
@@ -223,7 +224,6 @@ export async function POST(req: NextRequest) {
       validationError: result.error.issues,
       stopReason: message.stop_reason,
       usage: message.usage,
-      latencyMs: Date.now() - started,
     });
     return NextResponse.json(
       { error: "Failed to generate feedback" },
@@ -237,13 +237,13 @@ export async function POST(req: NextRequest) {
     logic_issues: result.data.logic_issues,
   };
 
-  await logFeedback({
+  await logAiEvent({
+    kind: "feedback",
     remixId,
     remixName: remix.name,
-    model: "claude-sonnet-5",
+    started,
     feedback,
     usage: message.usage,
-    latencyMs: Date.now() - started,
   });
 
   return NextResponse.json({ feedback });
