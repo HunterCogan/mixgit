@@ -88,12 +88,63 @@ const SUBMIT_FEEDBACK_TOOL: Anthropic.Tool = {
 
 const client = new Anthropic();
 
+function toClientFeedback(aiFeedback: {
+  whatWorksWell: string;
+  suggestions: { title: string; detail: string }[];
+  logicIssues: { title: string; detail: string }[];
+  generatedAt: Date;
+}) {
+  return {
+    feedback: {
+      what_works_well: aiFeedback.whatWorksWell,
+      suggestions: aiFeedback.suggestions,
+      logic_issues: aiFeedback.logicIssues,
+    },
+    generatedAt: aiFeedback.generatedAt.toISOString(),
+  };
+}
+
+export async function GET(req: NextRequest) {
+  const session = await verifySession();
+
+  const remixId = req.nextUrl.searchParams.get("remixId");
+  if (!remixId) {
+    return NextResponse.json(
+      { error: "No remix ID provided" },
+      { status: 400 },
+    );
+  }
+
+  await connectDB();
+  const remix = await RemixModel.findById(remixId).lean();
+
+  if (!remix) {
+    return NextResponse.json({ error: "Remix not found" }, { status: 404 });
+  }
+
+  const project = await ProjectModel.findById(remix.project).lean();
+  const isAuthorized =
+    !!project &&
+    (project.creator.toString() === session.userId ||
+      project.team.some((memberId) => memberId.toString() === session.userId));
+
+  if (!isAuthorized) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  if (!remix.aiFeedback) {
+    return NextResponse.json({ feedback: null });
+  }
+
+  return NextResponse.json(toClientFeedback(remix.aiFeedback));
+}
+
 export async function POST(req: NextRequest) {
   const session = await verifySession();
 
   // projectJsonData can be very large to send over the network,
   // instead, user can send Remix id and we query from DB
-  const { remixId } = await req.json();
+  const { remixId, force } = await req.json();
 
   if (!remixId) {
     return NextResponse.json(
@@ -117,6 +168,12 @@ export async function POST(req: NextRequest) {
 
   if (!isAuthorized) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  // Feedback is a stable, shared artifact per Remix
+  // return the saved copy instead of calling the model again, unless the caller explicitly forces it.
+  if (remix.aiFeedback && !force) {
+    return NextResponse.json(toClientFeedback(remix.aiFeedback));
   }
 
   const projectJsonData =
@@ -236,6 +293,16 @@ export async function POST(req: NextRequest) {
     suggestions: result.data.suggestions,
     logic_issues: result.data.logic_issues,
   };
+  const generatedAt = new Date();
+
+  await RemixModel.findByIdAndUpdate(remixId, {
+    aiFeedback: {
+      whatWorksWell: feedback.what_works_well,
+      suggestions: feedback.suggestions,
+      logicIssues: feedback.logic_issues,
+      generatedAt,
+    },
+  });
 
   await logAiEvent({
     kind: "feedback",
@@ -246,5 +313,8 @@ export async function POST(req: NextRequest) {
     usage: message.usage,
   });
 
-  return NextResponse.json({ feedback });
+  return NextResponse.json({
+    feedback,
+    generatedAt: generatedAt.toISOString(),
+  });
 }

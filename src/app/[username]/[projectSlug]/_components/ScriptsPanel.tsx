@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   AlertDialog,
@@ -35,20 +35,22 @@ import { fileNameToLanguage, languageDisplayName } from "@/lib/language";
 import type { RemixFile } from "./ProjectContent";
 import type { Script, AIFeedback, FeedbackStatus } from "@/types";
 
+function formatFeedbackTimestamp(iso: string) {
+  return new Date(iso).toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
 interface Props {
   files: RemixFile[];
   selectedFileName: string;
   onSelectFile: (fileName: string) => void;
   scripts: Record<string, Script[]>;
-  aiFeedback: AIFeedback | null;
-  feedbackStatus: FeedbackStatus;
-  feedbackError: string | null;
-  onGetFeedback: () => void;
   onDeleteRemix: () => Promise<void>;
   hasSelectedRemix: boolean;
   remixName: string | null;
   remixDescription: string | null;
-  feedbackTimestamp: string | null;
   canDelete: boolean;
   remixType: "blockcode" | "raw";
   remixId: string | null;
@@ -64,15 +66,10 @@ export function ScriptsPanel({
   selectedFileName,
   onSelectFile,
   scripts,
-  aiFeedback,
-  feedbackStatus,
-  feedbackError,
-  onGetFeedback,
   onDeleteRemix,
   hasSelectedRemix,
   remixName,
   remixDescription,
-  feedbackTimestamp,
   canDelete,
   remixType,
   remixId,
@@ -83,6 +80,79 @@ export function ScriptsPanel({
   canUseAIFeedback,
 }: Props) {
   const router = useRouter();
+
+  // AI Feedback is saved per-Remix and shared across all Owners/Collaborators.
+  // This component is remounted whenever the selected remix changes,
+  // so the states below always start fresh for the current remix.
+  const canLoadFeedback = canUseAIFeedback && remixType === "blockcode";
+  const [aiFeedback, setAiFeedback] = useState<AIFeedback | null>(null);
+  const [feedbackStatus, setFeedbackStatus] = useState<FeedbackStatus>(
+    canLoadFeedback ? "checking" : "idle",
+  );
+  const [feedbackError, setFeedbackError] = useState<string | null>(null);
+  const [feedbackTimestamp, setFeedbackTimestamp] = useState<string | null>(
+    null,
+  );
+
+  useEffect(() => {
+    if (!remixId || !canLoadFeedback) return;
+    let cancelled = false;
+
+    fetch(`/api/ai/feedback/block?remixId=${remixId}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (cancelled) return;
+        if (data.feedback) {
+          setAiFeedback(data.feedback);
+          setFeedbackStatus("ready");
+          setFeedbackTimestamp(formatFeedbackTimestamp(data.generatedAt));
+        } else {
+          setFeedbackStatus("idle");
+        }
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setFeedbackStatus("idle");
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [remixId, canLoadFeedback]);
+
+  async function handleGetFeedback(force = false) {
+    if (!remixId) return;
+    setFeedbackStatus("loading");
+    setAiFeedback(null);
+    setFeedbackError(null);
+    try {
+      const res = await fetch("/api/ai/feedback/block", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ remixId, force }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setFeedbackError(
+          data.error ??
+            "Something went wrong on our end. Please try again later.",
+        );
+        setFeedbackStatus("error");
+        return;
+      }
+      if (data.feedback) {
+        setAiFeedback(data.feedback);
+        setFeedbackStatus("ready");
+        setFeedbackTimestamp(formatFeedbackTimestamp(data.generatedAt));
+      } else {
+        setFeedbackStatus("empty");
+      }
+    } catch {
+      setFeedbackError("Network error. Check your connection and try again.");
+      setFeedbackStatus("error");
+    }
+  }
+
   // isEmpty overrides the toggle, as empty projects should be viewed raw.
   const isEmpty = Object.keys(scripts).length === 0;
   const [isRawToggled, setIsRawToggled] = useState(false);
@@ -536,7 +606,7 @@ export function ScriptsPanel({
             aiFeedback={aiFeedback}
             feedbackStatus={feedbackStatus}
             feedbackError={feedbackError}
-            onGetFeedback={onGetFeedback}
+            onGetFeedback={handleGetFeedback}
             remixId={remixId}
             remixName={remixName}
             remixDescription={remixDescription}

@@ -13,10 +13,17 @@ export type AIFeedback = {
 
 /**
  * Status of an AI feedback request:
+ * - checking: looking up whether feedback was already saved for this Remix
  * - idle: not requested yet
  * - loading: request in flight
  * - ready: feedback returned and available
  * - empty: request succeeded but the model had nothing to review
  * - error: request failed
  */
-export type FeedbackStatus = "idle" | "loading" | "ready" | "empty" | "error";
+export type FeedbackStatus =
+  | "checking"
+  | "idle"
+  | "loading"
+  | "ready"
+  | "empty"
+  | "error";
