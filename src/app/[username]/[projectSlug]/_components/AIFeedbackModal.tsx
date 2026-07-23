@@ -25,7 +25,7 @@ interface Props {
   aiFeedback: AIFeedback | null;
   feedbackStatus: FeedbackStatus;
   feedbackError: string | null;
-  onGetFeedback: () => void;
+  onGetFeedback: (force?: boolean) => void;
   remixId: string | null;
   remixName: string | null;
   remixDescription: string | null;
@@ -47,6 +47,7 @@ export function AIFeedbackModal({
   canUseAIFeedback,
 }: Props) {
   const isLoadingFeedback = feedbackStatus === "loading";
+  const isCheckingFeedback = feedbackStatus === "checking";
 
   async function handleGenerateRemix(topic: AIFeedbackTopic) {
     if (!remixId) return;
@@ -232,19 +233,41 @@ export function AIFeedbackModal({
               )}
             </Modal.Body>
             <Modal.Footer className="flex justify-between items-center">
-              {feedbackTimestamp ? (
-                <p className="text-xs text-gray-400">
-                  Generated at {feedbackTimestamp}
-                </p>
-              ) : (
-                <div className="flex items-center gap-2">
+              {feedbackStatus === "ready" ? (
+                <div className="flex items-center gap-3">
                   <Button
-                    onPress={onGetFeedback}
+                    onPress={() => onGetFeedback(true)}
                     isDisabled={isLoadingFeedback}
                   >
                     {isLoadingFeedback && <Spinner size="sm" color="current" />}
                     {!isLoadingFeedback && <SparklesIcon className="h-4 w-4" />}
-                    {isLoadingFeedback ? "Analyzing..." : "Get Feedback"}
+                    {isLoadingFeedback
+                      ? "Regenerating..."
+                      : "Regenerate Feedback"}
+                  </Button>
+                  {feedbackTimestamp && (
+                    <p className="text-xs text-gray-400">
+                      Generated at {feedbackTimestamp}
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <Button
+                    onPress={() => onGetFeedback(false)}
+                    isDisabled={isLoadingFeedback || isCheckingFeedback}
+                  >
+                    {(isLoadingFeedback || isCheckingFeedback) && (
+                      <Spinner size="sm" color="current" />
+                    )}
+                    {!isLoadingFeedback && !isCheckingFeedback && (
+                      <SparklesIcon className="h-4 w-4" />
+                    )}
+                    {isLoadingFeedback
+                      ? "Analyzing..."
+                      : isCheckingFeedback
+                        ? "Checking..."
+                        : "Get Feedback"}
                   </Button>
                   <Popover>
                     <Popover.Trigger>
