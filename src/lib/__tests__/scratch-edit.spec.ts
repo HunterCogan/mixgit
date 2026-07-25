@@ -341,6 +341,59 @@ describe("insertBlock intoInput", () => {
     expect(blocks.move.inputs.STEPS).toEqual([3, id, [4, 10]]);
   });
 
+  it("removes the previous occupant of a slot (and its nested inputs)", () => {
+    const blocks: ProjectBlockMap = {
+      set: {
+        opcode: "data_setvariableto",
+        next: null,
+        parent: null,
+        inputs: { VALUE: [3, "oldRandom", [4, 10]] },
+        fields: { VARIABLE: ["yv", "yvId"] },
+        shadow: false,
+        topLevel: true,
+        x: 0,
+        y: 0,
+      },
+      oldRandom: {
+        opcode: "operator_random",
+        next: null,
+        parent: "set",
+        inputs: {
+          FROM: [1, [4, 23]],
+          TO: [3, "oldTo", [4, 25]],
+        },
+        fields: {},
+        shadow: false,
+        topLevel: false,
+      },
+      oldTo: {
+        opcode: "operator_add",
+        next: null,
+        parent: "oldRandom",
+        inputs: { NUM1: [1, [4, 1]], NUM2: [1, [4, 1]] },
+        fields: {},
+        shadow: false,
+        topLevel: false,
+      },
+    };
+
+    const addId = insertBlock(
+      blocks,
+      { opcode: "operator_add" },
+      { intoInput: { parentId: "set", inputName: "VALUE" } },
+    );
+
+    expect(blocks.set.inputs.VALUE).toEqual([3, addId, [4, 10]]);
+    expect(blocks[addId].parent).toBe("set");
+    expect(blocks.oldRandom).toBeUndefined();
+    expect(blocks.oldTo).toBeUndefined();
+    expect(
+      validateProjectIntegrity({
+        targets: [{ name: "Sprite1", blocks }],
+      }).issues,
+    ).toEqual([]);
+  });
+
   it("throws when the parent block is missing", () => {
     const blocks: ProjectBlockMap = {};
     expect(() =>
