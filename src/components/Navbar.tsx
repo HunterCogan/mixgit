@@ -4,6 +4,8 @@ import Project from "@/models/Project";
 import UserModel from "@/models/User";
 import mongoose from "mongoose";
 import NavbarClient from "./NavbarClient";
+import { ACHIEVEMENTS } from "@/models/Achievement";
+import UserAchievement, { IUserAchievement } from "@/models/UserAchievement";
 
 export default async function Navbar() {
   const { userId } = await verifySession();
@@ -11,21 +13,26 @@ export default async function Navbar() {
   await connectDB();
   const objectId = new mongoose.Types.ObjectId(userId);
 
-  const [currentUser, projects, sharedProjects] = await Promise.all([
-    UserModel.findById(objectId).select("username").lean(),
-    Project.find({ creator: objectId }).sort({ createdAt: -1 }).limit(5).lean(),
-    Project.find({
-      $expr: {
-        $in: [
-          userId,
-          { $map: { input: "$team", as: "id", in: { $toString: "$$id" } } },
-        ],
-      },
-    })
-      .sort({ createdAt: -1 })
-      .limit(5)
-      .lean(),
-  ]);
+  const [currentUser, projects, sharedProjects, userAchievementsRaw] =
+    await Promise.all([
+      UserModel.findById(objectId).select("username").lean(),
+      Project.find({ creator: objectId })
+        .sort({ createdAt: -1 })
+        .limit(5)
+        .lean(),
+      Project.find({
+        $expr: {
+          $in: [
+            userId,
+            { $map: { input: "$team", as: "id", in: { $toString: "$$id" } } },
+          ],
+        },
+      })
+        .sort({ createdAt: -1 })
+        .limit(5)
+        .lean(),
+      UserAchievement.find({ user: objectId }).lean<IUserAchievement[]>(),
+    ]);
 
   const username = currentUser?.username ?? "";
 
@@ -53,11 +60,42 @@ export default async function Navbar() {
     slug: p.slug,
   }));
 
+  const progressByName = new Map(
+    userAchievementsRaw.map((up) => [up.achievementName, up]),
+  );
+
+  const achievements = ACHIEVEMENTS.map((def) => {
+    const userProgress = progressByName.get(def.name);
+    const currentValue = userProgress?.currentValue ?? 0;
+    const completed = userProgress?.completed ?? false;
+
+    const progress = completed
+      ? 100
+      : Math.min(100, Math.round((currentValue / def.goal) * 100));
+
+    return {
+      id: def.name,
+      name: def.name,
+      description: def.description,
+      progress,
+      completed,
+      unlockedAt: userProgress?.unlockedAt
+        ? new Date(userProgress.unlockedAt).toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+          })
+        : undefined,
+      points: 0,
+    };
+  });
+
   return (
     <NavbarClient
       projects={serialized}
       username={username}
       sharedProjects={serializedShared}
+      achievements={achievements}
     />
   );
 }

@@ -8,6 +8,18 @@ export interface IProgramFile {
   imagePath?: string;
 }
 
+export interface IAiFeedbackTopic {
+  title: string;
+  detail: string;
+}
+
+export interface IAiFeedback {
+  whatWorksWell: string;
+  suggestions: IAiFeedbackTopic[];
+  logicIssues: IAiFeedbackTopic[];
+  generatedAt: Date;
+}
+
 export interface IRemix {
   project: mongoose.Types.ObjectId;
   uploader: mongoose.Types.ObjectId;
@@ -17,6 +29,7 @@ export interface IRemix {
   remixType: "blockcode" | "raw";
   parents: mongoose.Types.ObjectId[];
   files: IProgramFile[];
+  aiFeedback?: IAiFeedback;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -37,6 +50,36 @@ const ProgramFileSchema = new mongoose.Schema<IProgramFile>(
     },
     imagePath: {
       type: String,
+    },
+  },
+  { _id: false },
+);
+
+const AiFeedbackTopicSchema = new mongoose.Schema<IAiFeedbackTopic>(
+  {
+    title: {
+      type: String,
+      required: true,
+    },
+    detail: {
+      type: String,
+      required: true,
+    },
+  },
+  { _id: false },
+);
+
+const AiFeedbackSchema = new mongoose.Schema<IAiFeedback>(
+  {
+    whatWorksWell: {
+      type: String,
+      required: true,
+    },
+    suggestions: [AiFeedbackTopicSchema],
+    logicIssues: [AiFeedbackTopicSchema],
+    generatedAt: {
+      type: Date,
+      required: true,
     },
   },
   { _id: false },
@@ -85,6 +128,10 @@ const RemixSchema = new mongoose.Schema<IRemix>(
       },
     ],
     files: [ProgramFileSchema],
+    aiFeedback: {
+      type: AiFeedbackSchema,
+      required: false,
+    },
   },
   { collection: "remix", timestamps: true },
 );

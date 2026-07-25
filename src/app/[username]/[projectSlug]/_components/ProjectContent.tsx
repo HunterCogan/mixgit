@@ -9,7 +9,6 @@ import { parseScripts } from "@/lib/scratch";
 import { fileNameToLanguage } from "@/lib/language";
 import { ScriptsPanel } from "./ScriptsPanel";
 import CreateRawRemixModal from "./CreateRawRemixModal";
-import type { AIFeedback, FeedbackStatus } from "@/types";
 import { StarIcon } from "@heroicons/react/16/solid";
 
 function subscribeToDesktop(cb: () => void) {
@@ -124,13 +123,6 @@ export function ProjectContent({
     document.addEventListener("mousemove", onMouseMove);
     document.addEventListener("mouseup", onMouseUp);
   }
-  const [aiFeedback, setAiFeedback] = useState<AIFeedback | null>(null);
-  const [feedbackStatus, setFeedbackStatus] = useState<FeedbackStatus>("idle");
-  const [feedbackError, setFeedbackError] = useState<string | null>(null);
-  const [feedbackTimestamp, setFeedbackTimestamp] = useState<string | null>(
-    null,
-  );
-
   const selectedRemix = remixes.find((r) => r.id === safeSelectedId) ?? null;
 
   const selectedFileName = useMemo(() => {
@@ -158,44 +150,6 @@ export function ProjectContent({
       return {};
     }
   }, [selectedRemix]);
-
-  async function handleGetFeedback() {
-    if (!selectedRemix) return;
-    setFeedbackStatus("loading");
-    setAiFeedback(null);
-    setFeedbackError(null);
-    try {
-      const res = await fetch("/api/ai/feedback/block", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ remixId: selectedRemix.id }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setFeedbackError(
-          data.error ??
-            "Something went wrong on our end. Please try again later.",
-        );
-        setFeedbackStatus("error");
-        return;
-      }
-      if (data.feedback) {
-        setAiFeedback(data.feedback);
-        setFeedbackStatus("ready");
-      } else {
-        setFeedbackStatus("empty");
-      }
-      setFeedbackTimestamp(
-        new Date().toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
-      );
-    } catch {
-      setFeedbackError("Network error. Check your connection and try again.");
-      setFeedbackStatus("error");
-    }
-  }
 
   function handleCodeSaved(remixId: string, fileName: string, code: string) {
     setCodeOverrides((prev) => ({
@@ -325,13 +279,7 @@ export function ProjectContent({
                         variant="ghost"
                         isSelected={remix.id === safeSelectedId}
                         defaultSelected={remix.isMain}
-                        onPress={() => {
-                          setSelectedId(remix.id);
-                          setAiFeedback(null);
-                          setFeedbackError(null);
-                          setFeedbackStatus("idle");
-                          setFeedbackTimestamp(null);
-                        }}
+                        onPress={() => setSelectedId(remix.id)}
                       >
                         View
                       </ToggleButton>
@@ -375,15 +323,10 @@ export function ProjectContent({
             selectedFileName={selectedFileName}
             onSelectFile={handleSelectFile}
             scripts={scripts}
-            aiFeedback={aiFeedback}
-            feedbackStatus={feedbackStatus}
-            feedbackError={feedbackError}
-            onGetFeedback={handleGetFeedback}
             onDeleteRemix={handleDeleteRemix}
             hasSelectedRemix={selectedRemix !== null}
             remixName={selectedRemix?.name ?? null}
             remixDescription={selectedRemix?.description ?? null}
-            feedbackTimestamp={feedbackTimestamp}
             remixType={selectedRemix?.remixType ?? "blockcode"}
             language={fileNameToLanguage(selectedFileName)}
             remixId={selectedRemix?.id ?? null}

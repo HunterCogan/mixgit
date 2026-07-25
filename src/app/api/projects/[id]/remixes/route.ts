@@ -6,6 +6,7 @@ import RemixModel from "@/models/Remix";
 import mongoose from "mongoose";
 import { FileNameSchema, RemixSchema } from "@/lib/schemas/remix.zod";
 import { z } from "zod";
+import { updateAchievementProgress } from "@/lib/update-achievements";
 
 export async function POST(
   request: NextRequest,
@@ -98,7 +99,20 @@ export async function POST(
       files: [{ name: fileName, fileType: "logic", data: rawData }],
     });
 
-    return NextResponse.json({ remix }, { status: 201 });
+    // Fire achievement tracking now that the remix has actually been saved.
+    let unlockedAchievements: { achievementName: string }[] = [];
+    try {
+      const achievementResult = await updateAchievementProgress("New Remix", 1);
+      if (achievementResult.justCompleted) {
+        unlockedAchievements = [
+          { achievementName: achievementResult.achievementName },
+        ];
+      }
+    } catch (achievementError) {
+      console.error("Achievement tracking error:", achievementError);
+    }
+
+    return NextResponse.json({ remix, unlockedAchievements }, { status: 201 });
   } catch (error) {
     console.error("Create remix error:", error);
     return NextResponse.json(
