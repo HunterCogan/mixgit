@@ -420,7 +420,7 @@ export async function POST(req: NextRequest) {
     for (let turn = 0; turn < MAX_TOOL_TURNS; turn++) {
       const message = await client.messages.create({
         model: "claude-sonnet-5",
-        max_tokens: 9000,
+        max_tokens: 16000,
         system: GENERATE_SYSTEM,
         tools: TOOLS,
         tool_choice: { type: "auto" },
