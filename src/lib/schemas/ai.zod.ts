@@ -123,12 +123,17 @@ export const DeleteBlockToolSchema = z.object({
     ),
 });
 
-/** `finish` tool — end the editing session with a student-facing explanation. */
+/** `finish` tool — end the editing session with a kebab-case title and commit-style description. */
 export const FinishGenerateToolSchema = z.object({
+  title: z
+    .string()
+    .describe(
+      'Remix name in kebab-case only (lowercase letters, digits, hyphens). Example: "glide-instead-of-jump".',
+    ),
   explanation: z
     .string()
     .describe(
-      "A short, friendly explanation for the student of what the new blocks do and why they help.",
+      'Short git-commit-style one-liner summarizing the change (imperative, under ~72 characters). Must include the name of every Stage/sprite changed. Example: "Sprite1: swap wait+goto for glide so movement is visible".',
     ),
 });
 

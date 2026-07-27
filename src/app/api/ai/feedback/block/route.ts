@@ -192,10 +192,9 @@ export async function POST(req: NextRequest) {
   try {
     message = await client.messages.create({
       model: "claude-sonnet-5",
-      max_tokens: 5000,
-      output_config: {
-        effort: "medium",
-      },
+      // Adaptive thinking counts toward max_tokens; leave headroom for
+      // reasoning plus a full submit_feedback tool call on large remixes.
+      max_tokens: 16000,
       system: FEEDBACK_SYSTEM,
       tools: [SUBMIT_FEEDBACK_TOOL],
       tool_choice: { type: "auto" },

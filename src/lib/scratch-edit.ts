@@ -85,16 +85,26 @@ export function insertBlock(
     block.parent = into.parentId;
     block.topLevel = false;
 
+    const previous = parent.inputs[into.inputName];
+
     // Menu/dropdown shadows use input mode 1 (same as a literal shadow block id).
     if (block.shadow) {
+      for (const oldId of inputBlockIds(previous)) {
+        deleteOwnedChain(blocks, oldId);
+      }
       parent.inputs[into.inputName] = [1, id];
       blocks[id] = block;
       return id;
     }
 
     const explicitShadow = into.shadow ?? null;
-    const shadow =
-      explicitShadow ?? shadowFallback(parent.inputs[into.inputName]);
+    const shadow = explicitShadow ?? shadowFallback(previous);
+
+    // Drop whatever occupied this slot (reporter, menu, or substack head) so
+    // we don't leave orphaned blocks with a stale parent pointer.
+    for (const oldId of inputBlockIds(previous)) {
+      deleteOwnedChain(blocks, oldId);
+    }
 
     parent.inputs[into.inputName] = shadow != null ? [3, id, shadow] : [2, id];
     blocks[id] = block;

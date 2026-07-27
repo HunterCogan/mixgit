@@ -11,6 +11,8 @@ import {
   Separator,
   Spinner,
   Tooltip,
+  toast,
+  useOverlayState,
 } from "@heroui/react";
 import {
   ExclamationTriangleIcon,
@@ -19,6 +21,7 @@ import {
   SparklesIcon,
 } from "@heroicons/react/24/outline";
 import ReactMarkdown from "react-markdown";
+import { useRouter } from "next/navigation";
 import type { AIFeedback, AIFeedbackTopic, FeedbackStatus } from "@/types";
 
 interface Props {
@@ -46,16 +49,49 @@ export function AIFeedbackModal({
   isLoggedIn,
   canUseAIFeedback,
 }: Props) {
+  const router = useRouter();
+  const state = useOverlayState();
   const isLoadingFeedback = feedbackStatus === "loading";
   const isCheckingFeedback = feedbackStatus === "checking";
 
   async function handleGenerateRemix(topic: AIFeedbackTopic) {
     if (!remixId) return;
-    await fetch("/api/ai/generate/block", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ remixId, topic }),
+
+    state.close();
+    const loadingKey = toast("Generating remix…", {
+      description: "This usually takes a few seconds.",
+      isLoading: true,
+      timeout: 0,
     });
+
+    try {
+      const res = await fetch("/api/ai/generate/block", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ remixId, topic }),
+      });
+      toast.close(loadingKey);
+
+      if (res.ok) {
+        toast.success("Your remix is ready", {
+          description: "Refresh to see it in the remix list.",
+          timeout: 0,
+          actionProps: {
+            children: "Refresh",
+            onPress: () => router.refresh(),
+          },
+        });
+      } else {
+        toast.danger("Couldn't generate remix", {
+          description: "Something went wrong. Please try again.",
+        });
+      }
+    } catch {
+      toast.close(loadingKey);
+      toast.danger("Couldn't generate remix", {
+        description: "Something went wrong. Please try again.",
+      });
+    }
   }
 
   if (!canUseAIFeedback) {
@@ -80,7 +116,7 @@ export function AIFeedbackModal({
   }
 
   return (
-    <Modal>
+    <Modal state={state}>
       <Modal.Trigger>
         <Button size="sm">
           <SparklesIcon className="h-4 w-4" />
