@@ -51,8 +51,8 @@ Mixgit is a full-stack web app that brings collaboration, version history, and b
 ### 1. Clone and install
 
 ```bash
-git clone https://github.com/HunterCogan/scratchpad.git
-cd scratchpad
+git clone https://github.com/HunterCogan/mixgit.git
+cd mixgit
 npm install
 ```
 
