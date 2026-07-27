@@ -2,9 +2,20 @@
 
 import { useMemo, useRef, useState, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
-import { Badge, Button, Label, Popover, ToggleButton } from "@heroui/react";
+import {
+  Badge,
+  Button,
+  Label,
+  Popover,
+  ToggleButton,
+  Tooltip,
+} from "@heroui/react";
 import { Avatar, Card, Chip, ScrollShadow, Link } from "@heroui/react";
-import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/24/outline";
+import {
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  StarIcon as StarOutlineIcon,
+} from "@heroicons/react/24/outline";
 import { parseScripts } from "@/lib/scratch";
 import { fileNameToLanguage } from "@/lib/language";
 import { ScriptsPanel } from "./ScriptsPanel";
@@ -158,6 +169,9 @@ export function ProjectContent({
     }));
   }
 
+  const isOwner = userId === creatorId;
+  const [settingMainId, setSettingMainId] = useState<string | null>(null);
+
   async function handleDeleteRemix() {
     if (!selectedRemix) return;
     const res = await fetch(`/api/remixes/${selectedRemix.id}`, {
@@ -171,6 +185,28 @@ export function ProjectContent({
       );
     }
     router.refresh();
+  }
+
+  async function handleSetMainRemix(remixId: string) {
+    if (settingMainId) return;
+    setSettingMainId(remixId);
+    try {
+      const res = await fetch(`/api/remixes/${remixId}/main`, {
+        method: "PATCH",
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        console.error(
+          typeof data.error === "string"
+            ? data.error
+            : "Failed to set main remix",
+        );
+        return;
+      }
+      router.refresh();
+    } finally {
+      setSettingMainId(null);
+    }
   }
 
   return (
@@ -272,17 +308,38 @@ export function ProjectContent({
                     </Card.Header>
                   </div>
                   <Card.Content>
-                    <div className="flex justify-between items-end">
+                    <div className="flex justify-between items-end gap-1">
                       <p className="text-sm truncate">{remix.description}</p>
-                      <ToggleButton
-                        size="sm"
-                        variant="ghost"
-                        isSelected={remix.id === safeSelectedId}
-                        defaultSelected={remix.isMain}
-                        onPress={() => setSelectedId(remix.id)}
-                      >
-                        View
-                      </ToggleButton>
+                      <div className="flex items-center gap-1 shrink-0">
+                        {isOwner && !remix.isMain && (
+                          <Tooltip delay={0}>
+                            <Tooltip.Trigger>
+                              <Button
+                                isIconOnly
+                                size="sm"
+                                variant="ghost"
+                                aria-label="Set as main remix"
+                                isPending={settingMainId === remix.id}
+                                onPress={() => handleSetMainRemix(remix.id)}
+                              >
+                                <StarOutlineIcon className="h-4 w-4" />
+                              </Button>
+                            </Tooltip.Trigger>
+                            <Tooltip.Content>
+                              <p>Set as main remix</p>
+                            </Tooltip.Content>
+                          </Tooltip>
+                        )}
+                        <ToggleButton
+                          size="sm"
+                          variant="ghost"
+                          isSelected={remix.id === safeSelectedId}
+                          defaultSelected={remix.isMain}
+                          onPress={() => setSelectedId(remix.id)}
+                        >
+                          View
+                        </ToggleButton>
+                      </div>
                     </div>
                   </Card.Content>
                 </Card>
