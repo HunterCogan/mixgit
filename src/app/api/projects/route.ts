@@ -66,16 +66,25 @@ export async function POST(request: NextRequest) {
       ],
     });
 
-    let unlockedAchievements: { achievementName: string }[] = [];
+    const unlockedAchievements: { achievementName: string }[] = [];
     try {
-      const achievementResult = await updateAchievementProgress(
-        "Let's Get Started",
-        1,
-      );
-      if (achievementResult.justCompleted) {
-        unlockedAchievements = [
-          { achievementName: achievementResult.achievementName },
-        ];
+      const totalProjectCount = await ProjectModel.countDocuments({
+        creator: new mongoose.Types.ObjectId(session.userId),
+      });
+
+      const results = await Promise.allSettled([
+        updateAchievementProgress("Let's Get Started", 1),
+        updateAchievementProgress("The Project Creator", totalProjectCount),
+      ]);
+
+      for (const result of results) {
+        if (result.status === "fulfilled" && result.value.justCompleted) {
+          unlockedAchievements.push({
+            achievementName: result.value.achievementName,
+          });
+        } else if (result.status === "rejected") {
+          console.error("Achievement tracking error:", result.reason);
+        }
       }
     } catch (achievementError) {
       console.error("Achievement tracking error:", achievementError);

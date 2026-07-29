@@ -1,11 +1,11 @@
 "use client";
 
-import { Button, Card, Chip, Separator, toast } from "@heroui/react";
+import { Card, Chip, Separator, toast } from "@heroui/react";
 import { CheckCircleIcon, ClockIcon } from "@heroicons/react/24/outline";
 import { useState } from "react";
 import { updateAchievementProgress } from "@/lib/update-achievements";
 
-type Achievement = {
+export type Achievement = {
   id: string;
   name: string;
   description: string;
@@ -43,7 +43,6 @@ function CompletedRow({ achievement }: { achievement: Achievement }) {
 
 function InProgressRow({
   achievement,
-  onUpdateProgress,
 }: {
   achievement: Achievement;
   onUpdateProgress: (achievementName: string, currentValue: number) => void;
@@ -74,8 +73,14 @@ function InProgressRow({
 
 export default function AchievementList({
   achievements,
+  completedOnly = false,
+  isOwner = true,
+  compact = false,
 }: {
   achievements: Achievement[];
+  completedOnly?: boolean;
+  isOwner?: boolean;
+  compact?: boolean;
 }) {
   const [achievementState, setAchievementState] =
     useState<Achievement[]>(achievements);
@@ -126,43 +131,67 @@ export default function AchievementList({
     <div className="flex flex-col gap-8">
       <section className="flex flex-col gap-3">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold">Completed</h1>
+          <h1
+            className={
+              compact
+                ? "text-base sm:text-lg font-bold"
+                : "text-xl sm:text-2xl font-bold"
+            }
+          >
+            Completed
+          </h1>
           {completed.length === 0 ? (
             <p className="text-sm text-gray-500">
               No achievements unlocked yet.
             </p>
           ) : (
-            <p className="text-sm mt-0.5">Achievements you&apos;ve unlocked</p>
+            <p className="text-sm mt-0.5">
+              {isOwner
+                ? "Achievements you've had completed"
+                : "Achievements this user has completed"}
+            </p>
           )}
         </div>
         {completed.length > 0 &&
           completed.map((a) => <CompletedRow key={a.id} achievement={a} />)}
       </section>
 
-      <Separator />
+      {!completedOnly && (
+        <>
+          <Separator />
 
-      <section className="flex flex-col gap-3">
-        <div>
-          <h2 className="text-xl sm:text-2xl font-bold">In Progress</h2>
-          {inProgress.length === 0 ? (
-            <p className="text-sm text-gray-500">
-              You&apos;ve completed every achievement.
-            </p>
-          ) : (
-            <p className="text-sm mt-0.5">
-              Achievements you&apos;re still working toward
-            </p>
-          )}
-        </div>
-        {inProgress.length > 0 &&
-          inProgress.map((a) => (
-            <InProgressRow
-              key={a.id}
-              achievement={a}
-              onUpdateProgress={handleUpdateProgress}
-            />
-          ))}
-      </section>
+          <section className="flex flex-col gap-3">
+            <div>
+              <h2
+                className={
+                  compact
+                    ? "text-base sm:text-lg font-bold"
+                    : "text-xl sm:text-2xl font-bold"
+                }
+              >
+                In Progress
+              </h2>
+              {inProgress.length === 0 ? (
+                <p className="text-sm text-gray-500">
+                  You&apos;ve completed every achievement.
+                </p>
+              ) : (
+                <p className="text-sm mt-0.5">
+                  Achievements you&apos;re still working toward
+                </p>
+              )}
+            </div>
+            {inProgress.length > 0 &&
+              inProgress.map((a) => (
+                <InProgressRow
+                  key={a.id}
+                  achievement={a}
+                  onUpdateProgress={handleUpdateProgress}
+                />
+              ))}
+          </section>
+        </>
+      )}
     </div>
   );
 }

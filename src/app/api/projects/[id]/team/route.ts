@@ -4,6 +4,7 @@ import connectDB from "@/lib/db";
 import ProjectModel from "@/models/Project";
 import UserModel from "@/models/User";
 import mongoose from "mongoose";
+import { updateAchievementProgress } from "@/lib/update-achievements";
 
 // POST — add a collaborator to the project
 export async function POST(
@@ -77,6 +78,28 @@ export async function POST(
     await ProjectModel.updateOne(
       { _id: project._id },
       { $addToSet: { team: targetUserId } },
+    );
+
+    let unlockedAchievements: { achievementName: string }[] = [];
+    try {
+      const achievementResult = await updateAchievementProgress(
+        "Team Player",
+        1,
+      );
+      if (achievementResult.justCompleted) {
+        unlockedAchievements = [
+          { achievementName: achievementResult.achievementName },
+        ];
+      }
+    } catch (achievementError) {
+      // Achievement tracking failing shouldn't break adding a collaborator
+      // — log it and let the request succeed regardless.
+      console.error("Achievement tracking error:", achievementError);
+    }
+
+    return NextResponse.json(
+      { success: true, unlockedAchievements },
+      { status: 200 },
     );
 
     return NextResponse.json({ success: true }, { status: 200 });
