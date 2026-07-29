@@ -35,6 +35,15 @@ import { fileNameToLanguage, languageDisplayName } from "@/lib/language";
 import type { RemixFile } from "./ProjectContent";
 import type { Script, AIFeedback, FeedbackStatus } from "@/types";
 
+function formatCodeForDisplay(value: string, language: string) {
+  if (language !== "json") return value;
+  try {
+    return JSON.stringify(JSON.parse(value), null, 2);
+  } catch {
+    return value;
+  }
+}
+
 function formatFeedbackTimestamp(iso: string) {
   return new Date(iso).toLocaleTimeString([], {
     hour: "2-digit",
@@ -718,7 +727,7 @@ export function ScriptsPanel({
           <Surface className="flex flex-1 min-h-0 border rounded-lg overflow-hidden">
             <RawCodeEditor
               key={selectedFileName}
-              value={raw}
+              value={formatCodeForDisplay(raw, language)}
               language={language}
               readOnly
             />
