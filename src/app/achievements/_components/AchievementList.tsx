@@ -134,7 +134,7 @@ export default function AchievementList({
           <h1
             className={
               compact
-                ? "text-base sm:text-lg font-bold"
+                ? "text-lg font-semibold"
                 : "text-xl sm:text-2xl font-bold"
             }
           >
@@ -165,7 +165,7 @@ export default function AchievementList({
               <h2
                 className={
                   compact
-                    ? "text-base sm:text-lg font-bold"
+                    ? "text-lg font-semibold"
                     : "text-xl sm:text-2xl font-bold"
                 }
               >
