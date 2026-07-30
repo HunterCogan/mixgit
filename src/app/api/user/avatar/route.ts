@@ -1,9 +1,8 @@
 import { verifySession } from "@/lib/dal";
 import connectDB from "@/lib/db";
 import User from "@/models/User";
+import Avatar from "@/models/Avatar";
 import { NextRequest, NextResponse } from "next/server";
-import { DeleteObjectCommand } from "@aws-sdk/client-s3";
-import { s3 } from "@/lib/s3";
 
 export async function PATCH(request: NextRequest) {
   try {
@@ -20,12 +19,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     if (body.imagePath === null && existingUser.imagePath) {
-      await s3.send(
-        new DeleteObjectCommand({
-          Bucket: process.env.S3_BUCKET_NAME!,
-          Key: existingUser.imagePath,
-        }),
-      );
+      await Avatar.findByIdAndDelete(session.userId);
     }
 
     const user = await User.findByIdAndUpdate(

@@ -32,7 +32,7 @@ export default function UserProfile({
   achievements: Achievement[];
 }) {
   const imageUrl = imagePath
-    ? `https://scratchpad-profile-images.s3.us-east-1.amazonaws.com/${imagePath}`
+    ? `/api/avatar/${username}?v=${imagePath}`
     : undefined;
   const initial = name.substring(0, 2).toUpperCase();
   const aboutText = about.trim();
