@@ -47,7 +47,7 @@ export default async function AchievementsPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <main className="max-w-4xl mx-auto px-3 sm:px-6 py-8 flex flex-col gap-6">
+      <main className="max-w-3xl w-full mx-auto px-3 sm:px-6 py-8 flex flex-col gap-6">
         <AchievementList achievements={achievements} />
       </main>
     </div>
