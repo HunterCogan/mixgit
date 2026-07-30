@@ -407,7 +407,7 @@ export function ProjectHeader({
                         <Avatar className="ring-2 ring-white">
                           {member.imagePath && (
                             <Avatar.Image
-                              src={`https://scratchpad-profile-images.s3.us-east-1.amazonaws.com/${member.imagePath}`}
+                              src={`/api/avatar/${member.username ?? member.id}?v=${member.imagePath}`}
                               alt={member.name}
                             />
                           )}

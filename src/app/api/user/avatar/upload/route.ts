@@ -1,10 +1,8 @@
-import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { NextRequest, NextResponse } from "next/server";
-import { s3 } from "@/lib/s3";
-import { DeleteObjectCommand } from "@aws-sdk/client-s3";
 import { verifySession } from "@/lib/dal";
 import connectDB from "@/lib/db";
 import User from "@/models/User";
+import Avatar from "@/models/Avatar";
 
 export async function POST(request: NextRequest) {
   try {
@@ -28,29 +26,15 @@ export async function POST(request: NextRequest) {
 
     const buffer = Buffer.from(await file.arrayBuffer());
 
-    const key = `uploads/users/${Date.now()}-${file.name}`;
-
-    if (user.imagePath) {
-      await s3.send(
-        new DeleteObjectCommand({
-          Bucket: process.env.S3_BUCKET_NAME!,
-          Key: user.imagePath,
-        }),
-      );
-    }
-
-    await s3.send(
-      new PutObjectCommand({
-        Bucket: process.env.S3_BUCKET_NAME!,
-        Key: key,
-        Body: buffer,
-        ContentType: file.type,
-      }),
+    await Avatar.findByIdAndUpdate(
+      session.userId,
+      { data: buffer, contentType: file.type },
+      { upsert: true },
     );
 
     return NextResponse.json({
       success: true,
-      imagePath: key,
+      imagePath: Date.now().toString(),
     });
   } catch (error) {
     console.error("Avatar upload error:", error);

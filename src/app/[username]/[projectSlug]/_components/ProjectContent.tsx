@@ -261,7 +261,7 @@ export function ProjectContent({
                     <Avatar size="sm" className="ring-2 ring-white">
                       {remix.uploaderImagePath && (
                         <Avatar.Image
-                          src={`https://scratchpad-profile-images.s3.us-east-1.amazonaws.com/${remix.uploaderImagePath}`}
+                          src={`/api/avatar/${remix.uploaderUsername}?v=${remix.uploaderImagePath}`}
                           alt={remix.uploaderName}
                         />
                       )}

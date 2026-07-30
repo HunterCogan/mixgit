@@ -92,7 +92,7 @@ export default function SettingsForm({
   );
 
   const imageUrl = imagePath
-    ? `https://scratchpad-profile-images.s3.us-east-1.amazonaws.com/${imagePath}`
+    ? `/api/avatar/${username}?v=${imagePath}`
     : undefined;
 
   async function handleSubmit(e: React.SyntheticEvent) {
@@ -535,6 +535,7 @@ export default function SettingsForm({
                     alt={name}
                     width={800}
                     height={800}
+                    unoptimized
                     className="max-h-[85vh] max-w-full object-contain rounded-lg"
                   />
                 )}

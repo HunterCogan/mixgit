@@ -16,7 +16,7 @@ export default function UserMenu({
 }) {
   const initial = name.substring(0, 2).toUpperCase();
   const imageUrl = imagePath
-    ? `https://scratchpad-profile-images.s3.us-east-1.amazonaws.com/${imagePath}`
+    ? `/api/avatar/${username}?v=${imagePath}`
     : undefined;
 
   return (
