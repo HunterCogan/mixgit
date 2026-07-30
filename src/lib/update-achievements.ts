@@ -38,7 +38,7 @@ export async function updateAchievementProgress(
         ...(justCompleted ? { unlockedAt: new Date() } : {}),
       },
     },
-    { upsert: true, new: true },
+    { upsert: true, returnDocument: "after" },
   );
 
   const progress = completed

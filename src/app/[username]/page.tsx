@@ -4,6 +4,8 @@ import { headers } from "next/headers";
 import connectDB from "@/lib/db";
 import ProjectModel from "@/models/Project";
 import UserModel from "@/models/User";
+import { ACHIEVEMENTS } from "@/models/Achievement";
+import UserAchievement, { IUserAchievement } from "@/models/UserAchievement";
 import UserProfile from "./_components/UserProfile";
 
 export default async function UserProfilePage({
@@ -38,57 +40,62 @@ export default async function UserProfilePage({
     ],
   });
 
-  const [projects, collaboratingProjects] = await Promise.all([
-    // user's own projects
+  const [projects, collaboratingProjects, userAchievementsRaw] =
+    await Promise.all([
+      // user's own projects
 
-    ProjectModel.find(
-      isOwner
-        ? {
-            creator: user._id,
-          }
-        : viewerId
+      ProjectModel.find(
+        isOwner
           ? {
               creator: user._id,
-              ...visibilityFilter(viewerId),
             }
-          : {
-              creator: user._id,
-              $or: [
-                { visibility: "public" as const },
-                { visibility: { $exists: false } },
-              ],
-            },
-    )
-      .sort({ createdAt: -1 })
-      .lean(),
+          : viewerId
+            ? {
+                creator: user._id,
+                ...visibilityFilter(viewerId),
+              }
+            : {
+                creator: user._id,
+                $or: [
+                  { visibility: "public" as const },
+                  { visibility: { $exists: false } },
+                ],
+              },
+      )
+        .sort({ createdAt: -1 })
+        .lean(),
 
-    // collaborating projects
+      // collaborating projects
 
-    ProjectModel.find(
-      isOwner
-        ? {
-            team: user._id,
-            creator: { $ne: user._id },
-          }
-        : viewerId
+      ProjectModel.find(
+        isOwner
           ? {
               team: user._id,
               creator: { $ne: user._id },
-              ...visibilityFilter(viewerId),
             }
-          : {
-              team: user._id,
-              creator: { $ne: user._id },
-              $or: [
-                { visibility: "public" as const },
-                { visibility: { $exists: false } },
-              ],
-            },
-    )
-      .sort({ createdAt: -1 })
-      .populate<{ creator: { username: string } }>("creator", "username")
-      .lean(),
-  ]);
+          : viewerId
+            ? {
+                team: user._id,
+                creator: { $ne: user._id },
+                ...visibilityFilter(viewerId),
+              }
+            : {
+                team: user._id,
+                creator: { $ne: user._id },
+                $or: [
+                  { visibility: "public" as const },
+                  { visibility: { $exists: false } },
+                ],
+              },
+      )
+        .sort({ createdAt: -1 })
+        .populate<{ creator: { username: string } }>("creator", "username")
+        .lean(),
+
+      UserAchievement.find({
+        user: user._id,
+      }).lean<IUserAchievement[]>(),
+    ]);
 
   const formatDate = (date: Date) =>
     new Date(date).toLocaleDateString("en-US", {
@@ -119,6 +126,32 @@ export default async function UserProfilePage({
     ownerUsername: p.creator.username,
   }));
 
+  const progressByName = new Map(
+    userAchievementsRaw.map((ua) => [ua.achievementName, ua]),
+  );
+
+  const serializedAchievements = ACHIEVEMENTS.map((a) => {
+    const userProgress = progressByName.get(a.name);
+    const currentValue = userProgress?.currentValue ?? 0;
+    const completed = userProgress?.completed ?? false;
+
+    const progress = completed
+      ? 100
+      : Math.min(100, Math.round((currentValue / a.goal) * 100));
+
+    return {
+      id: a.name,
+      name: a.name,
+      description: a.description,
+      goal: a.goal,
+      progress,
+      completed,
+      unlockedAt: userProgress?.unlockedAt
+        ? formatDate(userProgress.unlockedAt)
+        : undefined,
+    };
+  });
+
   return (
     <UserProfile
       name={user.name}
@@ -130,6 +163,7 @@ export default async function UserProfilePage({
       isOwner={isOwner}
       projects={serializedProjects}
       collaboratingProjects={serializedCollaboratingProjects}
+      achievements={serializedAchievements}
     />
   );
 }

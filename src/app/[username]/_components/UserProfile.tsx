@@ -4,6 +4,9 @@ import Link from "next/link";
 import { Accordion, Avatar, Button, Card, Separator } from "@heroui/react";
 import { PencilSquareIcon } from "@heroicons/react/24/outline";
 import UserProjectsList, { type UserProject } from "./UserProjectsList";
+import AchievementList, {
+  type Achievement,
+} from "@/app/achievements/_components/AchievementList";
 
 export default function UserProfile({
   name,
@@ -15,6 +18,7 @@ export default function UserProfile({
   isOwner,
   projects,
   collaboratingProjects,
+  achievements,
 }: {
   name: string;
   username: string;
@@ -25,12 +29,14 @@ export default function UserProfile({
   isOwner: boolean;
   projects: UserProject[];
   collaboratingProjects: UserProject[];
+  achievements: Achievement[];
 }) {
   const imageUrl = imagePath
     ? `https://scratchpad-profile-images.s3.us-east-1.amazonaws.com/${imagePath}`
     : undefined;
   const initial = name.substring(0, 2).toUpperCase();
   const aboutText = about.trim();
+  const completedAchievements = achievements.filter((a) => a.completed);
 
   return (
     <div className="w-full max-w-5xl mx-auto px-4 sm:px-6 py-8 font-sans">
@@ -76,6 +82,21 @@ export default function UserProfile({
               </Button>
             </Link>
           )}
+
+          <Separator />
+
+          <div className="flex flex-col gap-3">
+            <h2 className="text-2xl font-bold px-3 py-2 -mx-3">
+              Achievements ({completedAchievements.length}
+              {isOwner ? ` / ${achievements.length}` : ""})
+            </h2>
+            <AchievementList
+              achievements={isOwner ? achievements : completedAchievements}
+              completedOnly={!isOwner}
+              isOwner={isOwner}
+              compact
+            />
+          </div>
         </Card>
 
         <Separator

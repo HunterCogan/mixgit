@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { UsersIcon } from "@heroicons/react/24/outline";
-import { Button, Modal, useOverlayState } from "@heroui/react";
+import { Button, Modal, useOverlayState, toast } from "@heroui/react";
 import UserSearch, { type UserResult } from "./UserSearch";
 
 interface Props {
@@ -54,6 +54,17 @@ export default function AddCollaboratorModal({
             ? data.error
             : "Failed to add collaborator",
         );
+      }
+
+      const data = await res.json();
+
+      const unlockedAchievements: { achievementName: string }[] =
+        data.unlockedAchievements ?? [];
+
+      for (const achievement of unlockedAchievements) {
+        toast.success("Achievement unlocked!", {
+          description: achievement.achievementName,
+        });
       }
 
       setAddedIds((prev) => [...prev, user.id]);

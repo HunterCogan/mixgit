@@ -32,4 +32,14 @@ export const ACHIEVEMENTS: IAchievement[] = [
     description: "Create a remix for your project.",
     goal: 1,
   },
+  {
+    name: "The Project Creator",
+    description: "Create 10 projects on MixGit.",
+    goal: 10,
+  },
+  {
+    name: "Team Player",
+    description: "Add a collaborator to one of your projects.",
+    goal: 1,
+  },
 ];
